@@ -5,8 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class MapSorterTest {
@@ -21,7 +20,7 @@ public class MapSorterTest {
 		toTest.put("e", 0.0);
 		List<String> sorted = MapSorter.sort(toTest);
 		Assert.assertEquals(Arrays.asList(new String[] { "e", "c", "a", "b",
-				"d" }), sorted);
+		"d" }), sorted);
 	}
 
 }
