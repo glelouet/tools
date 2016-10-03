@@ -18,7 +18,7 @@
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
-				<version>0.9.29</version>
+				<version>1.1.7</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.lelouet.tooling</groupId>
@@ -28,38 +28,26 @@
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>
-		<repository>
-			<id>local-repository</id>
-			<url>${tooling.deploypath}</url>
-		</repository>
-		<site>
-			<id>toolingSite</id>
-			<url>${tooling.site}</url>
-		</site>
+        <repository>
+            <id>kimsufi-repository</id>
+            <url>ftp://91.121.120.36:12345/stable</url>
+        </repository>
+        <snapshotRepository>
+            <id>kimsufi-repository</id>
+            <url>ftp://91.121.120.36:12345/snapshot</url>
+        </snapshotRepository>
 	</distributionManagement>
 
 	<repositories>
 		<repository>
-			<releases>
-				<updatePolicy>daily</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</releases>
-			<snapshots>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</snapshots>
-			<id>entropyrepo</id>
-			<name>entropy repo</name>
-			<url>http://www.emn.fr/z-info/entropy/repository/</url>
+			<id>LeLouet-stable</id>
+			<url>http://91.121.120.36/maven/stable</url>
 		</repository>
 		<repository>
-			<id>le louet tests</id>
-			<name>le louet tests repo</name>
-			<url>http://www.emn.fr/z-info/glelou10/repository/</url>
+			<id>LeLouet-snapshot</id>
+			<url>http://91.121.120.36/maven/snapshot</url>
 		</repository>
 	</repositories>
-
-	<url>http://www.emn.fr/z-info/glelou10/tooling/</url>
 
 	<developers>
 		<developer>
@@ -75,9 +63,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:svn:https://lelouettests.googlecode.com/svn/trunk/tooling</connection>
-		<developerConnection>scm:svn:https://lelouettests.googlecode.com/svn/trunk/tooling</developerConnection>
-		<url>https://lelouettests.googlecode.com/svn/trunk/tooling</url>
+		<url>https://github.com/glelouet/tooling</url>
+		<connection>scm:git:git://github.com/glelouet/tooling.git</connection>
+<developerConnection>scm:git:git@github.com:glelouet/tooling.git</developerConnection>
 	</scm>
 	<organization>
 		<name>EMN</name>
@@ -88,14 +76,14 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
+			<version>1.7.21</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>5.14.6</version>
+			<version>6.9.13.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
