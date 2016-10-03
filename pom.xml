@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.lelouet</groupId>
 	<artifactId>tooling</artifactId>
 	<version>0.3.12-SNAPSHOT</version>
@@ -28,14 +29,14 @@
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>
-        <repository>
-            <id>kimsufi-maven</id>
-            <url>ftp://91.121.120.36:12345/stable</url>
-        </repository>
-        <snapshotRepository>
-            <id>kimsufi-maven</id>
-            <url>ftp://91.121.120.36:12345/snapshot</url>
-        </snapshotRepository>
+		<repository>
+			<id>kimsufi-maven</id>
+			<url>ftp://91.121.120.36:12345/stable</url>
+		</repository>
+		<snapshotRepository>
+			<id>kimsufi-maven</id>
+			<url>ftp://91.121.120.36:12345/snapshot</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<repositories>
@@ -65,9 +66,9 @@
 	<scm>
 		<url>https://github.com/glelouet/tooling</url>
 		<connection>scm:git:git://github.com/glelouet/tooling.git</connection>
-<developerConnection>scm:git:git@github.com:glelouet/tooling.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+		<developerConnection>scm:git:git@github.com:glelouet/tooling.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 	<organization>
 		<name>EMN</name>
 		<url>http://www.mines-nantes.fr/</url>
@@ -119,22 +120,22 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
-                    <preparationGoals>clean install</preparationGoals>
-                    <useReleaseProfile>false</useReleaseProfile>
+					<preparationGoals>clean install</preparationGoals>
+					<useReleaseProfile>false</useReleaseProfile>
 				</configuration>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
