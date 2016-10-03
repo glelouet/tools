@@ -1,0 +1,193 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.lelouet</groupId>
+	<artifactId>tooling</artifactId>
+	<version>0.3.11-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Tooling</name>
+
+	<description>provide several tools, with classes or static methods
+	</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>0.9.29</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tooling</groupId>
+				<artifactId>synchronization</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<distributionManagement>
+		<repository>
+			<id>local-repository</id>
+			<url>${tooling.deploypath}</url>
+		</repository>
+		<site>
+			<id>toolingSite</id>
+			<url>${tooling.site}</url>
+		</site>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<releases>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+			<id>entropyrepo</id>
+			<name>entropy repo</name>
+			<url>http://www.emn.fr/z-info/entropy/repository/</url>
+		</repository>
+		<repository>
+			<id>le louet tests</id>
+			<name>le louet tests repo</name>
+			<url>http://www.emn.fr/z-info/glelou10/repository/</url>
+		</repository>
+	</repositories>
+
+	<url>http://www.emn.fr/z-info/glelou10/tooling/</url>
+
+	<developers>
+		<developer>
+			<id>glelou</id>
+			<name>Guillaume Le Louet</name>
+			<email>guillaume.lelouet@gmail.com</email>
+			<url>http://www.emn.fr/z-info/ascola/doku.php?id=internet:members:glelouet</url>
+			<organization>EMN</organization>
+			<organizationUrl>http://www.mines-nantes.fr/</organizationUrl>
+			<roles>
+			</roles>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:svn:https://lelouettests.googlecode.com/svn/trunk/tooling</connection>
+		<developerConnection>scm:svn:https://lelouettests.googlecode.com/svn/trunk/tooling</developerConnection>
+		<url>https://lelouettests.googlecode.com/svn/trunk/tooling</url>
+	</scm>
+	<organization>
+		<name>EMN</name>
+		<url>http://www.mines-nantes.fr/</url>
+	</organization>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>5.14.6</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+                    <preparationGoals>clean install</preparationGoals>
+                    <useReleaseProfile>false</useReleaseProfile>
+				</configuration>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+	</build>
+
+<!-- 	<reporting> -->
+<!-- 		<plugins> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.mojo</groupId> -->
+<!-- 				<artifactId>cobertura-maven-plugin</artifactId> -->
+<!-- 				<version>2.4</version> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-javadoc-plugin</artifactId> -->
+<!-- 				<version>2.7</version> -->
+<!-- 				<configuration> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.mojo</groupId> -->
+<!-- 				<artifactId>findbugs-maven-plugin</artifactId> -->
+<!-- 				<version>2.3.1</version> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-surefire-report-plugin</artifactId> -->
+<!-- 				<version>2.7.1</version> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-checkstyle-plugin</artifactId> -->
+<!-- 				<version>2.6</version> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-jxr-plugin</artifactId> -->
+<!-- 				<version>2.2</version> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-pmd-plugin</artifactId> -->
+<!-- 				<version>2.5</version> -->
+<!-- 				<configuration> -->
+<!-- 					<targetJdk>1.6</targetJdk> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+<!-- 		</plugins> -->
+<!-- 	</reporting> -->
+
+	<modules>
+		<module>cache</module>
+		<module>regression</module>
+		<module>synchronization</module>
+		<module>sorters</module>
+		<module>communication</module>
+		<module>containers</module>
+		<module>main</module>
+	</modules>
+
+</project>
