@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>tools</artifactId>
+    <groupId>fr.lelouet</groupId>
+    <version>0.3.12-SNAPSHOT</version>
+  </parent>
+  <groupId>fr.lelouet.tools</groupId>
+  <artifactId>Containers</artifactId>
+  <name>Containers</name>
+  <description>classes to contain objects, and be notified of their modifications.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>ch.qos.logback</groupId>
+  		<artifactId>logback-classic</artifactId>
+  		<scope>runtime</scope>
+  		<optional>true</optional>
+  	</dependency>
+  	<dependency>
+  		<groupId>fr.lelouet.tools</groupId>
+  		<artifactId>Synchronization</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.testng</groupId>
+  		<artifactId>testng</artifactId>
+  		<scope>test</scope>
+  	</dependency>
+  </dependencies>
+	<repositories>
+		<repository>
+			<id>le louet tests</id>
+			<name>le louet tests repo</name>
+			<url>http://www.emn.fr/z-info/glelou10/repository/</url>
+		</repository>
+	</repositories>
+</project>

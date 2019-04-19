@@ -1,29 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>fr.lelouet</groupId>
-	<artifactId>tooling</artifactId>
+	<artifactId>tools</artifactId>
 	<version>0.3.12-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Tooling</name>
 
 	<description>provide several tools, with classes or static methods
 	</description>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.1.7</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.lelouet.tooling</groupId>
-				<artifactId>synchronization</artifactId>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>Synchronization</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
@@ -55,97 +45,32 @@
 			<id>glelou</id>
 			<name>Guillaume Le Louet</name>
 			<email>guillaume.lelouet@gmail.com</email>
-			<url>http://www.emn.fr/z-info/ascola/doku.php?id=internet:members:glelouet</url>
-			<organization>EMN</organization>
-			<organizationUrl>http://www.mines-nantes.fr/</organizationUrl>
 			<roles>
 			</roles>
 		</developer>
 	</developers>
 
 	<scm>
-		<url>https://github.com/glelouet/tooling</url>
-		<connection>scm:git:git://github.com/glelouet/tooling.git</connection>
-		<developerConnection>scm:git:git@github.com:glelouet/tooling.git</developerConnection>
+		<url>https://github.com/glelouet/tools</url>
+		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
+		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
-	<organization>
-		<name>EMN</name>
-		<url>http://www.mines-nantes.fr/</url>
-	</organization>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.9.13.6</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<extensions>
-			<!-- Enabling the use of FTP -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
-				<version>1.0-beta-6</version>
-			</extension>
-			<!-- to connect to distant repos with https -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-http</artifactId>
-				<version>1.0-beta-7</version>
-			</extension>
-		</extensions>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<preparationGoals>clean install</preparationGoals>
-					<useReleaseProfile>false</useReleaseProfile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 	<modules>
-		<module>cache</module>
-		<module>synchronization</module>
-		<module>sorters</module>
-		<module>communication</module>
-		<module>containers</module>
-		<module>main</module>
+		<module>CollectionsHolders</module>
+		<module>Communication</module>
+		<module>Containers</module>
+		<module>Main</module>
+		<module>Sorters</module>
+		<module>Synchronization</module>
 	</modules>
 
+
+	<parent>
+		<groupId>fr.lelouet</groupId>
+		<artifactId>common-maven</artifactId>
+		<version>0.0.2</version>
+	</parent>
+	<name>Tools</name>
 </project>
