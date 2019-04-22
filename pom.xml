@@ -12,9 +12,59 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>2.9.8</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>2.9.8</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.9.8</version>
+			</dependency>
+			<dependency>
+				<groupId>io.swagger.parser.v3</groupId>
+				<artifactId>swagger-parser</artifactId>
+				<version>2.0.11</version>
+			</dependency>
+			<dependency>
+				<groupId>com.helger</groupId>
+				<artifactId>jcodemodel</artifactId>
+				<version>3.2.2</version>
+			</dependency>
+			<dependency>
 				<groupId>fr.lelouet.tools</groupId>
 				<artifactId>Synchronization</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.24.1-GA</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mdkt.compiler</groupId>
+				<artifactId>InMemoryJavaCompiler</artifactId>
+				<version>1.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-graphics</artifactId>
+				<version>${openjfx-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-controls</artifactId>
+				<version>${openjfx-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-fxml</artifactId>
+				<version>${openjfx-version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -64,13 +114,14 @@
 		<module>Main</module>
 		<module>Sorters</module>
 		<module>Synchronization</module>
+		<module>Compilation</module>
 	</modules>
 
 
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
-		<version>0.0.2</version>
+		<version>0.0.3</version>
 	</parent>
 	<name>Tools</name>
 </project>
