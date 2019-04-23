@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -70,23 +72,26 @@ public class LockWatchDog {
 			data.takerTraces.put(th, l.subList(2, l.size()));
 			// search for deadlocks
 			// starting by this thread, get all the locks it owns
-			// for each locked owned, add the thread that are taking them
+			// for each lock owned, add the thread that are taking them
 			// deadlock if a lock owned is the lock we are acquiring.
 			List<Thread> nextThreads = new ArrayList<>();
 			nextThreads.add(th);
+			Set<Thread> doneThreads = new HashSet<>();
 			do {
 				Thread loopThread = nextThreads.remove(0);
+				doneThreads.add(loopThread);
 				IdentityHashMap<Object, Object> locksHoldByLoopThread = threadsLocksHolding.get(loopThread);
 				if (locksHoldByLoopThread != null) {
 					for (Object otherLockHold : locksHoldByLoopThread.keySet()) {
 						if (otherLockHold == lock) {
-							logLocks();
-							data.takerTraces.remove(th);
-							throw new NullPointerException("deadlock");
+							onDeadlock(data, th);
 						}
 						AquireData ad = aquisitions.get(otherLockHold);
 						for (Thread toAdd : ad.takerTraces.keySet()) {
 							if(toAdd!=loopThread) {
+								if (doneThreads.contains(toAdd)) {
+									onDeadlock(data, th);
+								}
 								nextThreads.add(toAdd);
 							}
 						}
@@ -94,6 +99,13 @@ public class LockWatchDog {
 				}
 			} while (!nextThreads.isEmpty());
 		}
+	}
+
+	private void onDeadlock(AquireData data, Thread th) {
+		debug("deadlock on thread " + th);
+		logLocks();
+		data.takerTraces.remove(th);
+		throw new NullPointerException("deadlock");
 	}
 
 	public void rel(Object lock) {
@@ -151,14 +163,14 @@ public class LockWatchDog {
 					continue;
 				}
 				nolock = false;
-				logger.debug("" + val.takerTraces.size());
+				debug("" + val.takerTraces.size());
 				Date firstdate = val.dates.stream().sorted((d1, d2) -> (int) Math.signum(d2.getTime() - d1.getTime()))
 						.findFirst().orElse(null);
-				logger.debug("  acquired " + (now.getTime() - firstdate.getTime()) / 1000 + " s ago, hold by " + val.holder);
+				debug("  acquired " + (now.getTime() - firstdate.getTime()) / 1000 + " s ago, hold by " + val.holder);
 				for (Entry<Thread, List<StackTraceElement>> l : val.takerTraces.entrySet()) {
-					logger.debug("    " + l.getKey());
+					debug("    " + l.getKey());
 					for (StackTraceElement v : l.getValue()) {
-						logger.debug("      " + v.toString().replace('[', ' '));
+						debug("      " + v.toString().replace('[', ' '));
 					}
 				}
 			}
@@ -166,6 +178,11 @@ public class LockWatchDog {
 				logger.trace("watchdog no lock");
 			}
 		}
+	}
+
+	private void debug(String s) {
+		System.err.println(s);
+		logger.debug(s);
 	}
 
 	public static final long periodLogSeconds = 30;
@@ -198,22 +215,26 @@ public class LockWatchDog {
 	}
 
 	public void logMonitors() {
-		synchronized (monitorTime) {
-			logger.debug("monitored threads : ");
-			Date now = new Date();
-			for (Entry<Thread, Date> e : monitorTime.entrySet()) {
-				Exception ex = new Exception("thread at position");
-				ex.setStackTrace(e.getKey().getStackTrace());
-				long secondsAcquired = (now.getTime() - e.getValue().getTime()) / 1000;
-				if (secondsAcquired > periodLogSeconds) {
-					logger.debug(" " + (now.getTime() - e.getValue().getTime()) / 1000 +"s ago", ex);
+		if (monitorTime.size() > 0) {
+			synchronized (monitorTime) {
+				logger.debug("monitored threads : ");
+				Date now = new Date();
+				for (Entry<Thread, Date> e : monitorTime.entrySet()) {
+					Exception ex = new Exception("thread at position");
+					ex.setStackTrace(e.getKey().getStackTrace());
+					long secondsAcquired = (now.getTime() - e.getValue().getTime()) / 1000;
+					if (secondsAcquired > periodLogSeconds) {
+						logger.debug(" " + (now.getTime() - e.getValue().getTime()) / 1000 +"s ago", ex);
+					}
 				}
 			}
 		}
 	}
 
 	public void log() {
-		logLocks();
+		if (!skip) {
+			logLocks();
+		}
 		logMonitors();
 	}
 
