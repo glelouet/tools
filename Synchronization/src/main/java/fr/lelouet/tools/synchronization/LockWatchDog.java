@@ -1,15 +1,15 @@
 package fr.lelouet.tools.synchronization;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -31,22 +31,48 @@ public class LockWatchDog {
 	}
 
 	/**
-	 * execute a runnable in a try block, which starts by syncing on a lock. the
+	 * execute a callable in a try block, which starts by syncing on a lock. the
 	 * finally block releases the lock.
 	 *
+	 * @param <T>
+	 *          the type returned by the callable
+	 *
 	 * @param lock
+	 *          the lock to sync over
 	 * @param run
+	 *          the callable to execute
 	 */
-	public void syncExecute(Object lock, Runnable run) {
+	public <T> T syncExecute(Object lock, Callable<T> run) {
 		try {
 			tak(lock);
 			synchronized (lock) {
 				hld(lock);
-				run.run();
+				T ret = run.call();
+				rel(lock);
+				return ret;
 			}
+		} catch (Exception e) {
+			throw new UnsupportedOperationException("catch this", e);
 		} finally {
 			rel(lock);
 		}
+	}
+
+	/**
+	 * execute a runnable in a try block, which starts by syncing on a lock. the
+	 * finally block releases the lock.
+	 *
+	 *
+	 * @param lock
+	 *          the lock to sync over
+	 * @param run
+	 *          the runnable to execute
+	 */
+	public void syncExecute(Object lock, Runnable run) {
+		syncExecute(lock, () -> {
+			run.run();
+			return null;
+		});
 	}
 
 	private final IdentityHashMap<Object, AquireData> aquisitions = new IdentityHashMap<>();
@@ -66,46 +92,98 @@ public class LockWatchDog {
 			if (data == null) {
 				data = new AquireData();
 				aquisitions.put(lock, data);
+			} else {
+				Set<Object> idset = Collections.newSetFromMap(new IdentityHashMap<>());
+				idset.add(lock);
+				try {
+					searchdeadlocks(idset, th);
+				} catch (NullPointerException npe) {
+					debug(" while thread " + th + " is taking lock " + identityPrint(lock) + " on "
+							+ Thread.currentThread().getStackTrace()[2]);
+					throw npe;
+				}
 			}
 			data.dates.add(new Date());
 			List<StackTraceElement> l = Arrays.asList(Thread.currentThread().getStackTrace());
 			data.takerTraces.put(th, l.subList(2, l.size()));
-			// search for deadlocks
-			// starting by this thread, get all the locks it owns
-			// for each lock owned, add the thread that are taking them
-			// deadlock if a lock owned is the lock we are acquiring.
-			List<Thread> nextThreads = new ArrayList<>();
-			nextThreads.add(th);
-			Set<Thread> doneThreads = new HashSet<>();
-			do {
-				Thread loopThread = nextThreads.remove(0);
-				doneThreads.add(loopThread);
-				IdentityHashMap<Object, Object> locksHoldByLoopThread = threadsLocksHolding.get(loopThread);
-				if (locksHoldByLoopThread != null) {
-					for (Object otherLockHold : locksHoldByLoopThread.keySet()) {
-						if (otherLockHold == lock) {
-							onDeadlock(data, th);
-						}
-						AquireData ad = aquisitions.get(otherLockHold);
-						for (Thread toAdd : ad.takerTraces.keySet()) {
-							if(toAdd!=loopThread) {
-								if (doneThreads.contains(toAdd)) {
-									onDeadlock(data, th);
-								}
-								nextThreads.add(toAdd);
-							}
-						}
-					}
-				}
-			} while (!nextThreads.isEmpty());
 		}
 	}
 
-	private void onDeadlock(AquireData data, Thread th) {
-		debug("deadlock on thread " + th);
-		logLocks();
-		data.takerTraces.remove(th);
-		throw new NullPointerException("deadlock");
+	/**
+	 * search for a deadlock
+	 * <p>
+	 * The pattern of search is following : <br />
+	 * thread t_a wants lock l_a but the lock l_a is actually hold by a thread and
+	 * there is a list of locks l_a l_2 l_3 . . . l_n, that for each i, l_i is
+	 * hold by a thread t_i that is trying to take the lock l_i+1 and l_n is hold
+	 * by t_a
+	 * </p>
+	 * <p>
+	 * recursively checks that a forbidden object is not hold by a current thread
+	 * or a thread waiting after an object this current thread holds
+	 * </p>
+	 * <p>
+	 * recursion allows for easy stack trace explanation.
+	 * </p>
+	 *
+	 * @param forbidden
+	 * @param currentthread
+	 */
+	private void searchdeadlocks(Set<Object> forbidden, Thread currentthread) {
+		IdentityHashMap<Object, Object> locksHoldByLoopThread = threadsLocksHolding.get(currentthread);
+		if (locksHoldByLoopThread != null) {
+			for (Object nextLock : locksHoldByLoopThread.keySet()) {
+				if (forbidden.contains(nextLock)) {
+					AquireData acq = aquisitions.get(nextLock);
+					debug("deadlock : " + currentthread + " holds " + identityPrint(nextLock));
+					for (Entry<Thread, List<StackTraceElement>> e : acq.takerTraces.entrySet()) {
+						debug("    " + e.getKey());
+						for (int i = 0; i < e.getValue().size() && i < 5; i++) {
+							debug("     " + e.getValue().get(i));
+						}
+					}
+					debugtrace(acq.takerTraces.get(acq.holder));
+					throw new NullPointerException("deadlock");
+				} else {
+					forbidden.add(nextLock);
+					try {
+						AquireData ad = aquisitions.get(nextLock);
+						for (Thread nextthread : ad.takerTraces.keySet()) {
+							// we need to avoid checking which locks
+							if (nextthread != currentthread) {
+								searchdeadlocks(forbidden, nextthread);
+							}
+						}
+					} catch (Throwable e) {
+						AquireData acq = aquisitions.get(nextLock);
+						debug(" " + currentthread + " holds " + identityPrint(nextLock) + " on "
+								+ acq.takerTraces.get(acq.holder));
+						for (Entry<Thread, List<StackTraceElement>> entry : acq.takerTraces.entrySet()) {
+							debug("    " + entry.getKey());
+							for (int i = 0; i < entry.getValue().size() && i < 5; i++) {
+								debug("     " + entry.getValue().get(i));
+							}
+						}
+						debugtrace(acq.takerTraces.get(acq.holder));
+						throw e;
+					}
+					forbidden.remove(nextLock);
+				}
+			}
+		}
+	}
+
+	private static String identityPrint(Object ob) {
+		if (ob == null) {
+			return "null";
+		}
+		return ob.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(ob));
+	}
+
+	private static void debugtrace(List<StackTraceElement> list) {
+		for (StackTraceElement e : list) {
+			debug("  at " + e);
+		}
 	}
 
 	public void rel(Object lock) {
@@ -115,8 +193,8 @@ public class LockWatchDog {
 		Thread th = Thread.currentThread();
 		synchronized (aquisitions) {
 			AquireData data = aquisitions.get(lock);
-			if (data == null || data.takerTraces.size() == 0) {
-				throw new NullPointerException("releasing a lock not acquired");
+			if (data == null) {
+				return;
 			}
 			data.takerTraces.remove(th);
 			data.holder = null;
@@ -137,10 +215,24 @@ public class LockWatchDog {
 		}
 		Thread th = Thread.currentThread();
 		synchronized (aquisitions) {
+			for(Entry<Thread, IdentityHashMap<Object, Object>> e : threadsLocksHolding.entrySet()) {
+				if(e.getValue().containsKey(lock)) {
+					debug("lock " + identityPrint(lock) + " requested by " + th + " already hold by " + e.getKey());
+					AquireData acqa = aquisitions.get(lock);
+					if (acqa != null) {
+						for (Entry<Thread, List<StackTraceElement>> e2 : acqa.takerTraces.entrySet()) {
+							debug(" " + e2.getKey());
+							debugtrace(e2.getValue());
+							debug("  currently");
+							debugtrace(Arrays.asList(e2.getKey().getStackTrace()));
+						}
+					}
+					throw new NullPointerException("double hold");
+				}
+			}
 			AquireData data = aquisitions.get(lock);
 			if (data == null || data.takerTraces.size() == 0) {
-				logger.warn("holding a lock not acquired", new NullPointerException());
-				return;
+				throw new NullPointerException("holding lock not acquired " + identityPrint(lock));
 			}
 			data.holder = th;
 			IdentityHashMap<Object, Object> locks = threadsLocksHolding.get(th);
@@ -180,8 +272,8 @@ public class LockWatchDog {
 		}
 	}
 
-	private void debug(String s) {
-		System.err.println(s);
+	private static void debug(String s) {
+		// System.err.println(s);
 		logger.debug(s);
 	}
 
@@ -224,7 +316,7 @@ public class LockWatchDog {
 					ex.setStackTrace(e.getKey().getStackTrace());
 					long secondsAcquired = (now.getTime() - e.getValue().getTime()) / 1000;
 					if (secondsAcquired > periodLogSeconds) {
-						logger.debug(" " + (now.getTime() - e.getValue().getTime()) / 1000 +"s ago", ex);
+						logger.debug(" " + (now.getTime() - e.getValue().getTime()) / 1000 + "s ago", ex);
 					}
 				}
 			}

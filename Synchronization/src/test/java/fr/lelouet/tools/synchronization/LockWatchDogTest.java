@@ -1,41 +1,51 @@
 package fr.lelouet.tools.synchronization;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import fr.lelouet.tools.synchronization.LockWatchDog;
 
 public class LockWatchDogTest {
 
 	@Test
 	public void testDeadLocks() {
 		Object lock = "a";
-		LockWatchDog.BARKER.tak(lock);
-		LockWatchDog.BARKER.hld(lock);
 
 		try {
 			LockWatchDog.BARKER.tak(lock);
+			LockWatchDog.BARKER.hld(lock);
+			LockWatchDog.BARKER.tak(lock);
 			Assert.fail("expected a deadlock");
 		} catch (NullPointerException npe) {
+		} finally {
+			LockWatchDog.BARKER.rel(lock);
 		}
 
 		try {
 			LockWatchDog.BARKER.tak(lock);
+			LockWatchDog.BARKER.hld(lock);
+			LockWatchDog.BARKER.tak(lock);
 			Assert.fail("expected a deadlock");
 		} catch (NullPointerException npe) {
+		} finally {
+			LockWatchDog.BARKER.rel(lock);
 		}
 
 		Object lock2 = "b";
-		LockWatchDog.BARKER.tak(lock2);
-		LockWatchDog.BARKER.hld(lock2);
-		LockWatchDog.BARKER.rel(lock2);
 
 		try {
+			LockWatchDog.BARKER.tak(lock2);
+			LockWatchDog.BARKER.hld(lock2);
+			LockWatchDog.BARKER.tak(lock);
+			LockWatchDog.BARKER.hld(lock);
 			LockWatchDog.BARKER.tak(lock);
 			Assert.fail("expected a deadlock");
 		} catch (NullPointerException npe) {
+		} finally {
+			LockWatchDog.BARKER.rel(lock);
+			LockWatchDog.BARKER.rel(lock2);
 		}
 	}
 
@@ -69,6 +79,33 @@ public class LockWatchDogTest {
 			Assert.fail("expected a deadlock");
 		} catch (NullPointerException npe) {
 
+		}
+		LockWatchDog.BARKER.rel(a);
+		LockWatchDog.BARKER.rel(b);
+		LockWatchDog.BARKER.rel(c);
+	}
+
+	@Test
+	public void testNoLockEmptyLists() {
+		Object a = new ArrayList<>();
+		Object b = Collections.emptyList();
+		Object c = new ArrayList<>();
+		try {
+			LockWatchDog.BARKER.tak(a);
+			LockWatchDog.BARKER.hld(a);
+			LockWatchDog.BARKER.tak(b);
+			LockWatchDog.BARKER.hld(b);
+			LockWatchDog.BARKER.tak(c);
+			LockWatchDog.BARKER.hld(c);
+			try {
+				LockWatchDog.BARKER.tak(a);
+				Assert.fail("expected a deadlock");
+			} catch (NullPointerException e) {
+			}
+		} finally {
+			LockWatchDog.BARKER.rel(a);
+			LockWatchDog.BARKER.rel(b);
+			LockWatchDog.BARKER.rel(c);
 		}
 	}
 

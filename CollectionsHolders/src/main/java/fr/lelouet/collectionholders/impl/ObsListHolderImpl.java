@@ -43,40 +43,29 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 	@Override
 	public List<U> copy() {
 		waitData();
-		LockWatchDog.BARKER.tak(underlying);
-		List<U> ret;
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
-			ret = new ArrayList<>(underlying);
-		}
-		LockWatchDog.BARKER.rel(underlying);
-		return ret;
+		return LockWatchDog.BARKER.syncExecute(underlying, () -> {
+			return new ArrayList<>(underlying);
+		});
 	}
 
 	@Override
 	public void apply(BiConsumer<Integer, U> cons) {
 		waitData();
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			for (int i = 0; i < underlying.size(); i++) {
 				cons.accept(i, underlying.get(i));
 			}
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 
 	@Override
 	public void follow(ListChangeListener<? super U> listener) {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			ObservableList<U> otherlist = FXCollections.observableArrayList();
 			otherlist.addListener(listener);
 			otherlist.addAll(underlying);
 			underlying.addListener(listener);
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 
 	@Override
@@ -86,9 +75,7 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 
 	@Override
 	public void addReceivedListener(Consumer<List<U>> callback) {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
 			}
@@ -96,8 +83,7 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 			if (waitLatch.getCount() == 0) {
 				callback.accept(underlying);
 			}
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 
 	@Override
@@ -109,9 +95,7 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 
 	@Override
 	public void dataReceived() {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			waitLatch.countDown();
 			if (receiveListeners != null) {
 				List<U> consumed = underlying;
@@ -119,17 +103,13 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 					r.accept(consumed);
 				}
 			}
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 
 	@Override
 	public void unfollow(ListChangeListener<? super U> change) {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 }
