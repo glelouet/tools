@@ -28,9 +28,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<version>0.0.1</version>
-
-  <scm>
-    <tag>Synchronization-0.0.1</tag>
-  </scm>
+	<version>0.0.1-SNAPSHOT</version>
 </project>
