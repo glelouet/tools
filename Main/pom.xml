@@ -3,7 +3,7 @@
   <parent>
     <artifactId>tools</artifactId>
     <groupId>fr.lelouet</groupId>
-    <version>0.3.13-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <groupId>fr.lelouet.tools</groupId>
   <artifactId>Main</artifactId>
@@ -16,4 +16,5 @@
 			<url>http://www.emn.fr/z-info/glelou10/repository/</url>
 		</repository>
 	</repositories>
+	<version>0.0.1-SNAPSHOT</version>
 </project>

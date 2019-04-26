@@ -3,7 +3,7 @@
   <parent>
     <groupId>fr.lelouet</groupId>
     <artifactId>tools</artifactId>
-    <version>0.3.13-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <groupId>fr.lelouet.tools</groupId>
   <artifactId>Compilation</artifactId>
@@ -18,4 +18,5 @@
 			<artifactId>InMemoryJavaCompiler</artifactId>
 		</dependency>
   </dependencies>
+  <version>0.0.1-SNAPSHOT</version>
 </project>
