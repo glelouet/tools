@@ -1,7 +1,9 @@
-.project
-.settings/
-.classpath
+**/.project
+**/.settings/
 **/.classpath
-target/
-bin/
-test-output/
+**/.classpath
+**/target/
+**/bin/
+**/test-output/
+**/pom.xml.releaseBackup
+**/release.properties
