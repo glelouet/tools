@@ -19,7 +19,7 @@
   	<dependency>
   		<groupId>fr.lelouet.tools</groupId>
   		<artifactId>Synchronization</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
+  		<version>0.0.1</version>
   	</dependency>
   	<dependency>
   		<groupId>org.testng</groupId>
@@ -35,4 +35,11 @@
 		</repository>
 	</repositories>
 	<version>0.0.1-SNAPSHOT</version>
+
+	<scm>
+		<url>https://github.com/glelouet/tools</url>
+		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
+		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>
