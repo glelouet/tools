@@ -69,8 +69,8 @@ public interface ObsMapHolder<U, V> {
 	/**
 	 * add a callback that will be called everytime the map received a
 	 * dataReceived call. This is useful when you know the modifications are in
-	 * batches and rather recompmute the whole data instead of manage all the
-	 * small modifications
+	 * batches and rather recompute the whole data instead of manage all the small
+	 * modifications
 	 */
 	public void addReceivedListener(Consumer<Map<U, V>> callback);
 

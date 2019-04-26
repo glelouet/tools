@@ -1,5 +1,6 @@
 package fr.lelouet.collectionholders.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -44,6 +45,60 @@ public class ObsMapHolderTest {
 		sourceimpl.dataReceived();
 		Assert.assertEquals(count[0], 4);
 		Stream.of('a', 'b', 'c').parallel().mapToInt(c -> Character.digit(c, 10)).min().orElseGet(() -> Integer.MAX_VALUE);
+	}
+
+	@Test
+	public void testMerge() {
+		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String>m1 = new ObsMapHolderImpl<>(im1);
+		ObservableMap<String, String> im2 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String>m2 = new ObsMapHolderImpl<>(im2);
+		ObservableMap<String, String> im3 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String>m3 = new ObsMapHolderImpl<>(im3);
+
+		im1.put("key1", "m1k1");
+		im1.put("key2", "m1k2");
+
+		ObsMapHolderImpl<String, String> merged1 = ObsMapHolderImpl.merge(m1, m2, m3);
+		Assert.assertFalse(merged1.isDataReceived());
+
+		m1.dataReceived();
+		m2.dataReceived();
+		m3.dataReceived();
+
+		Assert.assertTrue(merged1.isDataReceived());
+		Assert.assertEquals(merged1.copy().get("key1"), "m1k1");
+		Assert.assertEquals(merged1.copy().get("key2"), "m1k2");
+
+		im2.put("key2", "m2k2");
+		m2.dataReceived();
+
+		Assert.assertTrue(merged1.isDataReceived());
+		Assert.assertEquals(merged1.copy().get("key1"), "m1k1");
+		Assert.assertEquals(merged1.copy().get("key2"), "m2k2");
+
+		ObsMapHolderImpl<String, String> merged2 = ObsMapHolderImpl.merge(m1, m2, m3);
+		Assert.assertTrue(merged2.isDataReceived());
+		Assert.assertEquals(merged2.copy().get("key1"), "m1k1");
+		Assert.assertEquals(merged2.copy().get("key2"), "m2k2");
+
+		ObsMapHolderImpl<String, String> merged3 = ObsMapHolderImpl.merge(m2, m1, m3);
+		Assert.assertTrue(merged3.isDataReceived());
+		Assert.assertEquals(merged3.copy().get("key1"), "m1k1");
+		Assert.assertEquals(merged3.copy().get("key2"), "m1k2");
+
+		im3.put("key3", "m3k3");
+		im3.put("key1", "m3k1");
+		m3.dataReceived();
+		im2.put("key2", "m2k2");
+		m2.dataReceived();
+		for (ObsMapHolderImpl<String, String> m : Arrays.asList(merged1, merged2, merged3)) {
+			Assert.assertTrue(m.isDataReceived());
+			Assert.assertEquals(m.copy().get("key1"), "m3k1");
+			Assert.assertEquals(m.copy().get("key2"), "m2k2");
+			Assert.assertEquals(m.copy().get("key3"), "m3k3");
+		}
+
 	}
 
 }

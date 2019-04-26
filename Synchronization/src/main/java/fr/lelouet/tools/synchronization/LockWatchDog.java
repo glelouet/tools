@@ -80,7 +80,9 @@ public class LockWatchDog {
 	/** for each thread, the set of locks it holds */
 	private final HashMap<Thread, IdentityHashMap<Object, Object>> threadsLocksHolding = new HashMap<>();
 
-	public static boolean skip = System.getProperties().contains("nowatchdog");
+	public static boolean skip =
+			System.getProperties().contains("nowatchdog");
+	// true;
 
 	public void tak(Object lock) {
 		if (skip) {
@@ -156,8 +158,7 @@ public class LockWatchDog {
 						}
 					} catch (Throwable e) {
 						AquireData acq = aquisitions.get(nextLock);
-						debug(" " + currentthread + " holds " + identityPrint(nextLock) + " on "
-								+ acq.takerTraces.get(acq.holder));
+						debug(" " + currentthread + " holds " + identityPrint(nextLock) + " on " + acq.takerTraces.get(acq.holder));
 						for (Entry<Thread, List<StackTraceElement>> entry : acq.takerTraces.entrySet()) {
 							debug("    " + entry.getKey());
 							for (int i = 0; i < entry.getValue().size() && i < 5; i++) {
@@ -202,9 +203,11 @@ public class LockWatchDog {
 				data.dates.clear();
 			}
 			IdentityHashMap<Object, Object> threadSets = threadsLocksHolding.get(th);
-			threadSets.remove(lock);
-			if (threadSets.isEmpty()) {
-				threadsLocksHolding.remove(th);
+			if (threadSets != null) {
+				threadSets.remove(lock);
+				if (threadSets.isEmpty()) {
+					threadsLocksHolding.remove(th);
+				}
 			}
 		}
 	}
@@ -215,8 +218,8 @@ public class LockWatchDog {
 		}
 		Thread th = Thread.currentThread();
 		synchronized (aquisitions) {
-			for(Entry<Thread, IdentityHashMap<Object, Object>> e : threadsLocksHolding.entrySet()) {
-				if(e.getValue().containsKey(lock)) {
+			for (Entry<Thread, IdentityHashMap<Object, Object>> e : threadsLocksHolding.entrySet()) {
+				if (e.getValue().containsKey(lock)) {
 					debug("lock " + identityPrint(lock) + " requested by " + th + " already hold by " + e.getKey());
 					AquireData acqa = aquisitions.get(lock);
 					if (acqa != null) {
@@ -251,13 +254,14 @@ public class LockWatchDog {
 			boolean nolock = true;
 			for (Entry<Object, AquireData> e : aquisitions.entrySet()) {
 				AquireData val = e.getValue();
-				if (val.takerTraces.size() == 0) {
+				Date firstdate = val.dates.stream().sorted((d1, d2) -> (int) Math.signum(d2.getTime() - d1.getTime()))
+						.findFirst().orElse(null);
+				long acquired = firstdate == null ? 0 : (now.getTime() - firstdate.getTime()) / 1000;
+				if (val.takerTraces.size() == 0 || acquired < periodLogSeconds) {
 					continue;
 				}
 				nolock = false;
 				debug("" + val.takerTraces.size());
-				Date firstdate = val.dates.stream().sorted((d1, d2) -> (int) Math.signum(d2.getTime() - d1.getTime()))
-						.findFirst().orElse(null);
 				debug("  acquired " + (now.getTime() - firstdate.getTime()) / 1000 + " s ago, hold by " + val.holder);
 				for (Entry<Thread, List<StackTraceElement>> l : val.takerTraces.entrySet()) {
 					debug("    " + l.getKey());

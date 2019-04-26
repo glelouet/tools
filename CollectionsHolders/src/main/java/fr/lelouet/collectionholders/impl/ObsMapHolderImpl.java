@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
@@ -57,14 +58,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	@Override
 	public Map<K, U> copy() {
 		waitData();
-		Map<K, U> ret;
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
-			ret = new HashMap<>(underlying);
-		}
-		LockWatchDog.BARKER.rel(underlying);
-		return ret;
+		return LockWatchDog.BARKER.syncExecute(underlying, () -> new HashMap<>(underlying));
 	}
 
 	@Override
@@ -75,15 +69,12 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 
 	@Override
 	public void follow(MapChangeListener<? super K, ? super U> listener) {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			ObservableMap<K, U> othermap = FXCollections.observableHashMap();
 			othermap.addListener(listener);
 			othermap.putAll(underlying);
 			underlying.addListener(listener);
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
 
 	@Override
@@ -98,7 +89,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 				receiveListeners = new ArrayList<>();
 			}
 			receiveListeners.add(callback);
-			if (dataReceivedLatch.getCount() == 0) {
+			if (isDataReceived()) {
 				callback.accept(underlying);
 			}
 		}
@@ -124,13 +115,18 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 
 	@Override
 	public void unfollow(MapChangeListener<? super K, ? super U> change) {
-		LockWatchDog.BARKER.tak(underlying);
-		synchronized (underlying) {
-			LockWatchDog.BARKER.hld(underlying);
+		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
-		}
-		LockWatchDog.BARKER.rel(underlying);
+		});
 	}
+
+	public boolean isDataReceived() {
+		return dataReceivedLatch.getCount() == 0;
+	}
+
+	//
+	// tools
+	//
 
 	/**
 	 * create a new observableMap that map each entry in the source to an entry in
@@ -204,6 +200,56 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 		list.addReceivedListener(l -> {
 			ret.dataReceived();
 		});
+		return ret;
+	}
+
+	/**
+	 * merge several maps together
+	 * <p>
+	 * The result map does not consider modifications from the merged map, only
+	 * rebuilds itself once all merged maps have received data, and whenever one
+	 * of them receives data afterwards. This is because otherwise the values of
+	 * the result could be corrupted when data is moved from one merged map to
+	 * another in an asynchronous way.
+	 * </p>
+	 * <p>
+	 * The listener remember the order the merged maps received data, so that a
+	 * more recent key-value will override an older one. typically if two maps m1
+	 * and m2 are merged in a map res, and key:v1 is stored in m1 while key:v2 is
+	 * stored in m2, if m1 then m2 received data, in the map res there will only
+	 * be key:m2.
+	 * </p>
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param maps
+	 * @return anew map that observes the merged maps and reacts to their
+	 *         modifications.
+	 */
+	@SafeVarargs
+	public static <K, V> ObsMapHolderImpl<K, V> merge(ObsMapHolder<K, V>... maps) {
+		ObservableMap<K, V> internal = FXCollections.observableHashMap();
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
+		if (maps != null && maps.length > 0) {
+			LinkedHashMap<ObsMapHolder<K, V>, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
+			for (ObsMapHolder<K, V> m : maps) {
+				m.addReceivedListener(map -> {
+					synchronized (alreadyreceived) {
+						alreadyreceived.remove(m);
+						alreadyreceived.put(m, map);
+						if (alreadyreceived.size() == maps.length) {
+							Map<K, V> newmap = new HashMap<>();
+							for (Map<K, V> madd : alreadyreceived.values()) {
+								newmap.putAll(madd);
+							}
+							internal.keySet().retainAll(newmap.keySet());
+							internal.putAll(newmap);
+							ret.dataReceived();
+						}
+					}
+				});
+			}
+		}
 		return ret;
 	}
 
