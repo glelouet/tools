@@ -16,12 +16,12 @@
 			<url>http://www.emn.fr/z-info/glelou10/repository/</url>
 		</repository>
 	</repositories>
-	<version>0.0.1</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<scm>
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>Communication-0.0.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 </project>
