@@ -18,12 +18,12 @@
 			<artifactId>InMemoryJavaCompiler</artifactId>
 		</dependency>
   </dependencies>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
 
 	<scm>
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>Compilation-0.0.1</tag>
 	</scm>
 </project>
