@@ -3,7 +3,7 @@
   <parent>
     <artifactId>tools</artifactId>
     <groupId>fr.lelouet</groupId>
-    <version>0.3.13-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <groupId>fr.lelouet.tools</groupId>
   <artifactId>Synchronization</artifactId>
@@ -28,4 +28,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<version>0.0.1-SNAPSHOT</version>
 </project>
