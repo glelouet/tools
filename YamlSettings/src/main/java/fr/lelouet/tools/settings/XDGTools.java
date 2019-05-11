@@ -25,19 +25,70 @@ public class XDGTools {
 		this(appName, System.getProperties());
 	}
 
-	public File findDataFile(String... subPath) {
-		return findDataFile(appName, subPath);
-	}
+	//
+	// data dir
+	//
 
-	protected static final String XDG_DATA_HOME = "XDG_DATA_HOME";
+
+	protected static final String XDG_DATA_HOME_KEY = "XDG_DATA_HOME";
 	protected static final String XDG_DATA_HOME_DEFAULT = ".local/share";
-	protected static final String XDG_DATA_DIRS = "XDG_DATA_DIRS";
+	protected static final String XDG_DATA_DIRS_KEY = "XDG_DATA_DIRS";
 	protected static final String XDG_DATA_DIRS_DEFAULT = "/usr/local/share/:/usr/share/";
 
-	protected File findDataFile(String appName, String... subPath) {
-		return findFile(XDG_DATA_HOME, getHome() + File.pathSeparator + XDG_DATA_HOME_DEFAULT, XDG_DATA_DIRS,
+	/**
+	 * find an existing data file for this app with given sub path
+	 *
+	 * @param subPath
+	 * @return an existing file, or null
+	 */
+	public File findDataFile(String... subPath) {
+		return findFile(XDG_DATA_HOME_KEY, getHome() + File.pathSeparator + XDG_DATA_HOME_DEFAULT, XDG_DATA_DIRS_KEY,
 				XDG_DATA_DIRS_DEFAULT, subPath);
 	}
+
+	/**
+	 * return a file where the given sub path SHOULD be stored.
+	 *
+	 * @param subPaths
+	 *          sub path into application specific data folders, eg
+	 *          ["option","interface","shortcuts.ini"]
+	 * @return a new File. The result does not depend on the existence of such a
+	 *         file, it may as well return to an absurd path if badly configured.
+	 */
+	public File dataFile(String... subPaths) {
+		return makeFile(XDG_DATA_HOME_KEY, XDG_DATA_HOME_DEFAULT, subPaths);
+	}
+
+	//
+	// config dir
+	//
+
+	protected static final String XDG_CONFIG_HOME_KEY = "XDG_CONFIG_HOME";
+	protected static final String XDG_CONFIG_HOME_DEFAULT = ".config";
+	protected static final String XDG_CONFIG_DIRS_KEY = "XDG_CONFIG_DIRS";
+	protected static final String XDG_CONFIG_DIRS_DEFAULT = "/etc/xdg";
+
+	public File findConfigFile(String... subPath) {
+		return findFile(XDG_CONFIG_HOME_KEY, getHome() + File.pathSeparator + XDG_CONFIG_HOME_DEFAULT, XDG_CONFIG_DIRS_KEY,
+				XDG_CONFIG_DIRS_DEFAULT, subPath);
+	}
+
+	/**
+	 * return a file where the given sub path SHOULD be stored.
+	 *
+	 * @param subPaths
+	 *          sub path into application specific config folders, eg
+	 *          ["option","interface","shortcuts.ini"]
+	 * @return a new File. The result does not depend on the existence of such a
+	 *         file, it may as well return to an absurd path if badly configured.
+	 */
+	public File configFile(String... subPaths) {
+		return makeFile(XDG_CONFIG_HOME_KEY, XDG_CONFIG_HOME_DEFAULT, subPaths);
+	}
+
+	//
+	// shared methods
+	//
 
 	protected String getHome() {
 		return properties.getProperty("HOME", "./");
@@ -81,6 +132,18 @@ public class XDGTools {
 				.filter(File::exists).findFirst().orElse(null);
 	}
 
+	protected File makeFile(String home_key, String home_default, String... subPaths) {
+		String beginPath = properties.getProperty(home_key, home_default);
+		String endpath = null;
+		if (subPaths != null) {
+			endpath = Stream.concat(Stream.of(appName), Stream.of(subPaths)).filter(str -> str != null && str.length() > 0)
+					.collect(Collectors.joining(File.separator));
+		} else {
+			endpath = appName == null ? "" : appName;
+		}
+		return new File(beginPath + File.separator + endpath);
+	}
+
 	/**
 	 * stream the possible file names that can be used to find a file.
 	 *
@@ -92,7 +155,7 @@ public class XDGTools {
 	 * @param subPaths
 	 * @return
 	 */
-	Stream<String> streamPossibleFile(String home_key, String home_default, String dir_key, String dir_default,
+	protected Stream<String> streamPossibleFile(String home_key, String home_default, String dir_key, String dir_default,
 			String... subPaths) {
 		if (home_key == null || home_default == null || dir_key == null || dir_default == null) {
 			throw new NullPointerException(Arrays.asList(home_key, home_default, dir_key, dir_default) + "");
