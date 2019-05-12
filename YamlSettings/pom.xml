@@ -37,4 +37,6 @@
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
+	<name>Yaml Settings</name>
+	<description>store application settings in yaml</description>
 </project>
