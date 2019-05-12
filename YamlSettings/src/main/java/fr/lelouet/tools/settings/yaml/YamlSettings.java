@@ -12,10 +12,8 @@ import fr.lelouet.tools.settings.xdg.XDGApp;
 
 public class YamlSettings extends ASettings {
 
-	public final XDGApp appStorage;
-
-	public YamlSettings() {
-		appStorage = new XDGApp(getAppName());
+	public XDGApp appStorage() {
+		return new XDGApp(getAppName());
 	}
 
 	/**
@@ -64,7 +62,7 @@ public class YamlSettings extends ASettings {
 
 	@Override
 	public File getStoreFile() {
-		File ret = appStorage.configFile("settings.yml");
+		File ret = appStorage().configFile("settings.yml");
 		return ret;
 	}
 
@@ -75,7 +73,7 @@ public class YamlSettings extends ASettings {
 	 * @return the first available file to read config from.
 	 */
 	public File findStoreFile() {
-		return appStorage.findConfigFile("settings.yml");
+		return appStorage().findConfigFile("settings.yml");
 	}
 
 }
