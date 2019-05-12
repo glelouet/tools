@@ -6,7 +6,7 @@ import javafx.util.Duration;
 /**
  * code to add to a {@link ISettings} to make it correct.
  */
-public class ASettings implements ISettings {
+public abstract class ASettings implements ISettings {
 
 	private transient PauseTransition storeLaterTransition = new PauseTransition(Duration.seconds(1));
 

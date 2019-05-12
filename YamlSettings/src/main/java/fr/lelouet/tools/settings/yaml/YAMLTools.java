@@ -1,4 +1,4 @@
-package fr.lelouet.tools.settings;
+package fr.lelouet.tools.settings.yaml;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;

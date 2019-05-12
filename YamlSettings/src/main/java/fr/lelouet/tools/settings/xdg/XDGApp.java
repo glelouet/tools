@@ -1,8 +1,8 @@
-package fr.lelouet.tools.settings;
+package fr.lelouet.tools.settings.xdg;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,18 +11,33 @@ import java.util.stream.Stream;
  *
  * @see https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
  */
-public class XDGTools {
+public class XDGApp {
 
 	public final String appName;
-	private final Properties properties;
+	private final Map<String, String> properties;
 
-	public XDGTools(String appName, Properties props) {
+	/**
+	 * called for tests only
+	 *
+	 * @param appName
+	 * @param map
+	 *          the properties to override system.getenv . This allow to test
+	 *          reaction.
+	 */
+	public XDGApp(String appName, Map<String, String> map) {
 		this.appName = appName;
-		properties = props;
+		properties = map;
 	}
 
-	public XDGTools(String appName) {
-		this(appName, System.getProperties());
+	/**
+	 * create a new application representation
+	 *
+	 * @param appName
+	 *          the name fo this app
+	 */
+	public XDGApp(String appName) {
+		this(appName, System.getenv());
+
 	}
 
 	//
@@ -56,7 +71,7 @@ public class XDGTools {
 	 *         file, it may as well return to an absurd path if badly configured.
 	 */
 	public File dataFile(String... subPaths) {
-		return makeFile(XDG_DATA_HOME_KEY, XDG_DATA_HOME_DEFAULT, subPaths);
+		return makeFile(XDG_DATA_HOME_KEY, getHome() + File.pathSeparator + XDG_DATA_HOME_DEFAULT, subPaths);
 	}
 
 	//
@@ -83,7 +98,65 @@ public class XDGTools {
 	 *         file, it may as well return to an absurd path if badly configured.
 	 */
 	public File configFile(String... subPaths) {
-		return makeFile(XDG_CONFIG_HOME_KEY, XDG_CONFIG_HOME_DEFAULT, subPaths);
+		return makeFile(XDG_CONFIG_HOME_KEY, getHome() + File.pathSeparator + XDG_CONFIG_HOME_DEFAULT, subPaths);
+	}
+
+	//
+	// cache
+	//
+
+	protected static final String XDG_CACHE_HOME_KEY = "XDG_CACHE_HOME";
+	protected static final String XDG_CACHE_HOME_DEFAULT = ".cache";
+
+	/**
+	 * find the cache file for this app
+	 *
+	 * @param subPaths
+	 *          path of the cache file relative to that app, eg
+	 *          ["img","sun","1215.png"] would find img/sun/1215.png
+	 * @return a new file relating to given path in the cache directory of that
+	 *         app.
+	 */
+	public File cacheFile(String... subPaths) {
+		return makeFile(XDG_CACHE_HOME_KEY, getHome() + File.pathSeparator + XDG_CACHE_HOME_DEFAULT, subPaths);
+	}
+
+	//
+	// runtime dir
+	//
+
+	protected static final String XDG_RUNTIME_DIR_KEY = "XDG_RUNTIME_DIR";
+
+	/**
+	 * get the runtime dir. If possible find the one set to
+	 * {@value #XDG_RUNTIME_DIR_KEY} , if not set try to use /run/usr/$USER, or
+	 * /run/usr/$UID , returning the first one that exists and is a dir. Otherwise
+	 * return null
+	 *
+	 * @return
+	 */
+	public File runtimeDir() {
+		String target = properties.get(XDG_RUNTIME_DIR_KEY);
+		if (target != null) {
+			return new File(target, appName);
+		}
+		String user = properties.get("USER");
+		if (user != null) {
+			target = File.separator + "run" + File.separator + "usr" + File.separator + user;
+			File ret = new File(target, appName);
+			if (ret.exists() && ret.isDirectory()) {
+				return ret;
+			}
+		}
+		String uid = properties.get("UID");
+		if (uid != null) {
+			target = File.separator + "run" + File.separator + "usr" + File.separator + uid;
+			File ret = new File(target, appName);
+			if (ret.exists() && ret.isDirectory()) {
+				return ret;
+			}
+		}
+		return null;
 	}
 
 	//
@@ -91,7 +164,7 @@ public class XDGTools {
 	//
 
 	protected String getHome() {
-		return properties.getProperty("HOME", "./");
+		return properties.getOrDefault("HOME", "./");
 	}
 
 	/**
@@ -133,7 +206,7 @@ public class XDGTools {
 	}
 
 	protected File makeFile(String home_key, String home_default, String... subPaths) {
-		String beginPath = properties.getProperty(home_key, home_default);
+		String beginPath = properties.getOrDefault(home_key, home_default);
 		String endpath = null;
 		if (subPaths != null) {
 			endpath = Stream.concat(Stream.of(appName), Stream.of(subPaths)).filter(str -> str != null && str.length() > 0)
@@ -141,6 +214,8 @@ public class XDGTools {
 		} else {
 			endpath = appName == null ? "" : appName;
 		}
+		// System.err.println("key=" + home_key + " default=" + home_default + "
+		// begin=" + beginPath + " ; end=" + endpath);
 		return new File(beginPath + File.separator + endpath);
 	}
 
@@ -168,8 +243,8 @@ public class XDGTools {
 			endpath = appName == null ? "" : appName;
 		}
 		String endpathFinal = endpath;
-		String dirs = properties.getProperty(dir_key, dir_default);
-		return Stream.concat(Stream.of(properties.getProperty(home_key, home_default)),
+		String dirs = properties.getOrDefault(dir_key, dir_default);
+		return Stream.concat(Stream.of(properties.getOrDefault(home_key, home_default)),
 				dirs != null ? Stream.of(dirs.split(":")) : Stream.empty()).map(str -> str + File.separator + endpathFinal);
 	}
 

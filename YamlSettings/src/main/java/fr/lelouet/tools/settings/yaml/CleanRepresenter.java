@@ -1,4 +1,4 @@
-package fr.lelouet.tools.settings;
+package fr.lelouet.tools.settings.yaml;
 
 import java.util.Arrays;
 import java.util.Collection;

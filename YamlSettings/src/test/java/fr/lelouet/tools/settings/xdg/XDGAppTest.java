@@ -1,21 +1,21 @@
-package fr.lelouet.tools.settings;
+package fr.lelouet.tools.settings.xdg;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class XDGToolsTest {
+public class XDGAppTest {
 
 	@Test
 	public void testStream() {
-		Properties p = new Properties();
-		XDGTools test = new XDGTools("app", p);
-		p.setProperty("homekey", "/home");
-		p.setProperty("dirkey", "/home2:/home3");
+		HashMap<String, String> p = new HashMap<>();
+		XDGApp test = new XDGApp("app", p);
+		p.put("homekey", "/home");
+		p.put("dirkey", "/home2:/home3");
 
 		List<String> filenames = test
 				.streamPossibleFile("homekey", "nohome", "dirkey", "nohome2:nohome3", "files", "file1.txt")

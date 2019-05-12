@@ -1,10 +1,6 @@
 package fr.lelouet.tools.settings;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,6 +13,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
+import fr.lelouet.tools.settings.yaml.CleanRepresenter;
+import fr.lelouet.tools.settings.yaml.YAMLTools;
 import javafx.beans.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -49,54 +47,14 @@ public interface ISettings {
 
 	/**
 	 *
-	 * @return the directory to store this in.
-	 */
-	public default File getStorageDir() {
-		String folderName = System.getenv("LOCALAPPDATA");
-		if (folderName != null) {
-			return new File(folderName);
-		}
-		return new File(new File(System.getProperty("user.home")), getAppName());
-	}
-
-	/**
-	 *
 	 * @return the file used to store this
 	 */
-	public default File getStorageFile() {
-		if (useTempDir()) {
-			try {
-				return new File(File.createTempFile("___", null).getParentFile(), getAppName() + "_settings.yml");
-			} catch (IOException e) {
-				throw new UnsupportedOperationException("catch this", e);
-			}
-		}
-		return new File(getStorageDir(), "settings.yml");
-	}
-
-	/**
-	 * default to false.
-	 *
-	 * @return true iff files must be created using the system's temporary file
-	 *         system
-	 *
-	 */
-	public default boolean useTempDir() {
-		return false;
-	}
+	public File getStoreFile();
 
 	/**
 	 * store this settings locally, overriding previous stored settings
 	 */
-	public default void store() {
-		File f = getStorageFile();
-		f.getParentFile().mkdirs();
-		try {
-			makeDumpYaml().dump(this, new FileWriter(f));
-		} catch (IOException e) {
-			throw new UnsupportedOperationException("catch this", e);
-		}
-	}
+	public void store();
 
 	/**
 	 * request to store this after a delay. This aims at reducing disk overhead.
@@ -107,40 +65,10 @@ public interface ISettings {
 	 * delete the file used to store this.
 	 */
 	public default void erase() {
-		File f = getStorageFile();
+		File f = getStoreFile();
 		if (f.exists()) {
 			f.delete();
 		}
-	}
-
-	/**
-	 * load stored settings if exists, or default settings
-	 *
-	 * @return
-	 * @throws FileNotFoundException
-	 */
-	public static <T extends ISettings> T load(Class<T> clazz) {
-		T inst = null;
-		try {
-			inst = clazz.getDeclaredConstructor().newInstance();
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e1) {
-			throw new UnsupportedOperationException("catch this", e1);
-		}
-		File f = inst.getStorageFile();
-		if (f.exists()) {
-			try {
-				T newInst = inst.makeLoadYaml().loadAs(new FileReader(f), clazz);
-				if (newInst != null) {
-					inst=newInst;
-				}
-			} catch (FileNotFoundException e) {
-				throw new UnsupportedOperationException("catch this", e);
-			}
-		} else {
-			System.err.println("can't load from " + f);
-		}
-		return inst;
 	}
 
 	/**
