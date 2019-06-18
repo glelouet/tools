@@ -292,20 +292,26 @@ public class LockWatchDog {
 
 	private HashMap<Thread, Date> monitorTime = new HashMap<>();
 
-	public void monitor(Runnable run) {
+	public void monitor(Runnable run) throws Exception {
 		Thread thread = Thread.currentThread();
 		Date date = new Date();
 		boolean added = false;
+		Exception ex = null;
 		try {
 			synchronized (monitorTime) {
 				added = monitorTime.putIfAbsent(thread, date) == null;
 			}
 			run.run();
+		} catch (Exception e) {
+			ex = e;
 		} finally {
 			if (added) {
 				synchronized (monitorTime) {
 					monitorTime.remove(thread);
 				}
+			}
+			if (ex != null) {
+				throw ex;
 			}
 		}
 	}
