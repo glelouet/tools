@@ -28,12 +28,12 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<version>0.0.2</version>
+	<version>0.0.3-SNAPSHOT</version>
 
 	<scm>
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>Synchronization-0.0.2</tag>
+		<tag>HEAD</tag>
 	</scm>
 </project>
