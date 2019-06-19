@@ -12,17 +12,17 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-yaml</artifactId>
-				<version>2.9.8</version>
+				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>2.9.8</version>
+				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.9.8</version>
+				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.swagger.parser.v3</groupId>
@@ -110,5 +110,6 @@
 	<name>Tools</name>
 	<properties>
 		<openjfx-version>12</openjfx-version>
+		<jackson-version>2.9.9</jackson-version>
 	</properties>
 </project>
