@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import fr.lelouet.collectionholders.interfaces.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
@@ -16,11 +19,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 
-public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
+public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
-	private ObservableMap<K, U> underlying;
+	private ObservableMap<K, V> underlying;
 
-	public ObsMapHolderImpl(ObservableMap<K, U> underlying) {
+	public ObsMapHolderImpl(ObservableMap<K, V> underlying) {
 		this(underlying, false);
 	}
 
@@ -35,7 +38,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	 *          not, call to synchronized method will wait until the data is
 	 *          received
 	 */
-	public ObsMapHolderImpl(ObservableMap<K, U> underlying, boolean datareceived) {
+	public ObsMapHolderImpl(ObservableMap<K, V> underlying, boolean datareceived) {
 		this.underlying = underlying;
 		if (datareceived) {
 			dataReceived();
@@ -44,7 +47,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 
 	private CountDownLatch dataReceivedLatch = new CountDownLatch(1);
 
-	private ArrayList<Consumer<Map<K, U>>> receiveListeners;
+	private ArrayList<Consumer<Map<K, V>>> receiveListeners;
 
 	@Override
 	public void waitData() {
@@ -56,21 +59,21 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	}
 
 	@Override
-	public Map<K, U> copy() {
+	public Map<K, V> copy() {
 		waitData();
 		return LockWatchDog.BARKER.syncExecute(underlying, () -> new HashMap<>(underlying));
 	}
 
 	@Override
-	public U get(K key) {
+	public V get(K key) {
 		waitData();
 		return underlying.get(key);
 	}
 
 	@Override
-	public void follow(MapChangeListener<? super K, ? super U> listener) {
+	public void follow(MapChangeListener<? super K, ? super V> listener) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			ObservableMap<K, U> othermap = FXCollections.observableHashMap();
+			ObservableMap<K, V> othermap = FXCollections.observableHashMap();
 			othermap.addListener(listener);
 			othermap.putAll(underlying);
 			underlying.addListener(listener);
@@ -83,7 +86,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	}
 
 	@Override
-	public void addReceivedListener(Consumer<Map<K, U>> callback) {
+	public void addReceivedListener(Consumer<Map<K, V>> callback) {
 		synchronized (underlying) {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
@@ -96,7 +99,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	}
 
 	@Override
-	public boolean remReceivedListener(Consumer<Map<K, U>> callback) {
+	public boolean remReceivedListener(Consumer<Map<K, V>> callback) {
 		synchronized (underlying) {
 			return receiveListeners.remove(callback);
 		}
@@ -106,15 +109,15 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	public void dataReceived() {
 		dataReceivedLatch.countDown();
 		if (receiveListeners != null) {
-			Map<K, U> consumed = underlying;
-			for (Consumer<Map<K, U>> r : receiveListeners) {
+			Map<K, V> consumed = underlying;
+			for (Consumer<Map<K, V>> r : receiveListeners) {
 				r.accept(consumed);
 			}
 		}
 	}
 
 	@Override
-	public void unfollow(MapChangeListener<? super K, ? super U> change) {
+	public void unfollow(MapChangeListener<? super K, ? super V> change) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
 		});
@@ -204,7 +207,7 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	}
 
 	/**
-	 * merge several maps together
+	 * merge several maps together in bulk method (only when data is received)
 	 * <p>
 	 * The result map does not consider modifications from the merged map, only
 	 * rebuilds itself once all merged maps have received data, and whenever one
@@ -212,45 +215,47 @@ public class ObsMapHolderImpl<K, U> implements ObsMapHolder<K, U> {
 	 * the result could be corrupted when data is moved from one merged map to
 	 * another in an asynchronous way.
 	 * </p>
-	 * <p>
-	 * The listener remember the order the merged maps received data, so that a
-	 * more recent key-value will override an older one. typically if two maps m1
-	 * and m2 are merged in a map res, and key:v1 is stored in m1 while key:v2 is
-	 * stored in m2, if m1 then m2 received data, in the map res there will only
-	 * be key:m2.
-	 * </p>
 	 *
 	 * @param <K>
 	 * @param <V>
 	 * @param maps
-	 * @return anew map that observes the merged maps and reacts to their
+	 * @return a new map that observes the merged maps and reacts to their
 	 *         modifications.
 	 */
+	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public static <K, V> ObsMapHolderImpl<K, V> merge(ObsMapHolder<K, V>... maps) {
+	public static <K, V> ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V> m1,
+			ObsMapHolder<K, V>... maps) {
+		ObsMapHolder<K, V>[] array = Stream.concat(Stream.of(m1), maps == null ? Stream.empty() : Stream.of(maps))
+				.filter(m -> m != null).toArray(ObsMapHolder[]::new);
+		if (array.length == 1) {
+			return array[0];
+		}
 		ObservableMap<K, V> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
-		if (maps != null && maps.length > 0) {
-			LinkedHashMap<ObsMapHolder<K, V>, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
-			for (ObsMapHolder<K, V> m : maps) {
-				m.addReceivedListener(map -> {
-					synchronized (alreadyreceived) {
-						alreadyreceived.remove(m);
-						alreadyreceived.put(m, map);
-						if (alreadyreceived.size() == maps.length) {
-							Map<K, V> newmap = new HashMap<>();
-							for (Map<K, V> madd : alreadyreceived.values()) {
-								newmap.putAll(madd);
-							}
-							internal.keySet().retainAll(newmap.keySet());
-							internal.putAll(newmap);
-							ret.dataReceived();
-						}
+		LinkedHashMap<ObsMapHolder<K, V>, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
+		for (ObsMapHolder<K, V> m : array) {
+			m.addReceivedListener(map -> {
+				synchronized (alreadyreceived) {
+					alreadyreceived.remove(m);
+					alreadyreceived.put(m, map);
+					if (alreadyreceived.size() == array.length) {
+						Map<K, V> newmap = alreadyreceived.values().stream().flatMap(m2 -> m2.entrySet().stream())
+								.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), merger));
+						internal.keySet().retainAll(newmap.keySet());
+						internal.putAll(newmap);
+						ret.dataReceived();
 					}
-				});
-			}
+				}
+			});
 		}
 		return ret;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps) {
+		return merge(merger, this, maps);
 	}
 
 }

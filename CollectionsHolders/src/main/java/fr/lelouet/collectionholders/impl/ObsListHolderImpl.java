@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -112,4 +115,31 @@ public class ObsListHolderImpl<U> implements ObsListHolder<U> {
 			underlying.removeListener(change);
 		});
 	}
+
+	public static <T> ObsListHolderImpl<T> filter(ObsListHolder<T> source, Predicate<? super T> predicate) {
+		ObservableList<T> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<T> ret = new ObsListHolderImpl<>(internal);
+		source.addReceivedListener(t -> {
+			internal.clear();
+			t.stream().filter(predicate).forEach(internal::add);
+			ret.dataReceived();
+		});
+		return ret;
+	}
+
+	@Override
+	public ObsListHolderImpl<U> filter(Predicate<? super U> predicate) {
+		return filter(this, predicate);
+	}
+
+	@Override
+	public <K> ObsMapHolder<K, U> map(Function<U, K> keyExtractor) {
+		return ObsMapHolderImpl.toMap(this, keyExtractor);
+	}
+
+	@Override
+	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
+		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
+	}
+
 }

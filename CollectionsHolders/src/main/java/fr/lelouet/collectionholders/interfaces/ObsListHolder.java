@@ -3,7 +3,10 @@ package fr.lelouet.collectionholders.interfaces;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import fr.lelouet.collectionholders.impl.ObsListHolderImpl;
 import javafx.beans.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -83,5 +86,43 @@ public interface ObsListHolder<U> {
 
 	/** return an observable to be notified when values are changed */
 	Observable asObservable();
+
+	/**
+	 * create a filtered list working on bulk process
+	 *
+	 * @param predicate
+	 *          the predicate to select the items
+	 * @return a new list
+	 */
+	ObsListHolderImpl<U> filter(Predicate<? super U> predicate);
+
+	/**
+	 * map this list to a new Map. In case of collision in the key function, only
+	 * the last added elements are mapped.
+	 *
+	 * @param <K>
+	 *          the key type of the map
+	 * @param keyExtractor
+	 *          the function to create a key from this list's values
+	 * @return a new map that contains this list's items, with the corresponding
+	 *         key.
+	 */
+	<K> ObsMapHolder<K, U> map(Function<U, K> keyExtractor);
+
+	/**
+	 * map this list to a new Map. In case of collision in the key function, only
+	 * the last added elements are mapped.
+	 *
+	 * @param <K>
+	 *          the key type of the map
+	 * @param <V>
+	 *          the value type of the map
+	 * @param keyExtractor
+	 *          function to transform an element in the key
+	 * @param valExtractor
+	 *          function to transform an element in the value
+	 * @return a new map.
+	 */
+	<K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor);
 
 }

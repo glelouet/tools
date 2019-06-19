@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -50,16 +51,17 @@ public class ObsMapHolderTest {
 	@Test
 	public void testMerge() {
 		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
-		ObsMapHolderImpl<String, String>m1 = new ObsMapHolderImpl<>(im1);
+		ObsMapHolderImpl<String, String> m1 = new ObsMapHolderImpl<>(im1);
 		ObservableMap<String, String> im2 = FXCollections.observableHashMap();
-		ObsMapHolderImpl<String, String>m2 = new ObsMapHolderImpl<>(im2);
+		ObsMapHolderImpl<String, String> m2 = new ObsMapHolderImpl<>(im2);
 		ObservableMap<String, String> im3 = FXCollections.observableHashMap();
-		ObsMapHolderImpl<String, String>m3 = new ObsMapHolderImpl<>(im3);
+		ObsMapHolderImpl<String, String> m3 = new ObsMapHolderImpl<>(im3);
 
 		im1.put("key1", "m1k1");
 		im1.put("key2", "m1k2");
 
-		ObsMapHolderImpl<String, String> merged1 = ObsMapHolderImpl.merge(m1, m2, m3);
+		ObsMapHolderImpl<String, String> merged1 = (ObsMapHolderImpl<String, String>) ObsMapHolderImpl.merge((v1, v2) -> v2,
+				m1, m2, m3);
 		Assert.assertFalse(merged1.isDataReceived());
 
 		m1.dataReceived();
@@ -77,12 +79,14 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(merged1.copy().get("key1"), "m1k1");
 		Assert.assertEquals(merged1.copy().get("key2"), "m2k2");
 
-		ObsMapHolderImpl<String, String> merged2 = ObsMapHolderImpl.merge(m1, m2, m3);
+		ObsMapHolderImpl<String, String> merged2 = (ObsMapHolderImpl<String, String>) ObsMapHolderImpl.merge((v1, v2) -> v2,
+				m1, m2, m3);
 		Assert.assertTrue(merged2.isDataReceived());
 		Assert.assertEquals(merged2.copy().get("key1"), "m1k1");
 		Assert.assertEquals(merged2.copy().get("key2"), "m2k2");
 
-		ObsMapHolderImpl<String, String> merged3 = ObsMapHolderImpl.merge(m2, m1, m3);
+		ObsMapHolderImpl<String, String> merged3 = (ObsMapHolderImpl<String, String>) ObsMapHolderImpl.merge((v1, v2) -> v2,
+				m2, m1, m3);
 		Assert.assertTrue(merged3.isDataReceived());
 		Assert.assertEquals(merged3.copy().get("key1"), "m1k1");
 		Assert.assertEquals(merged3.copy().get("key2"), "m1k2");
@@ -98,6 +102,37 @@ public class ObsMapHolderTest {
 			Assert.assertEquals(m.copy().get("key2"), "m2k2");
 			Assert.assertEquals(m.copy().get("key3"), "m3k3");
 		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMerge2() {
+
+		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> m1 = new ObsMapHolderImpl<>(im1);
+		ObservableMap<String, String> im2 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> m2 = new ObsMapHolderImpl<>(im2);
+
+		im1.put("a", "a");
+		im1.put("b", "a");
+		im2.put("b", "b");
+		im2.put("c", "b");
+
+		m2.dataReceived();
+		m1.dataReceived();
+
+		ObsMapHolder<String, String> merged = m1.merge((a, b) -> a + b, m2);
+
+		Assert.assertEquals(merged.get("a"), "a", "map is" + merged.copy());
+		Assert.assertEquals(merged.get("b"), "ab", "map is" + merged.copy());
+		Assert.assertEquals(merged.get("c"), "b", "map is" + merged.copy());
+
+		m1.dataReceived();
+
+		Assert.assertEquals(merged.get("a"), "a");
+		Assert.assertEquals(merged.get("b"), "ba");
+		Assert.assertEquals(merged.get("c"), "b");
 
 	}
 

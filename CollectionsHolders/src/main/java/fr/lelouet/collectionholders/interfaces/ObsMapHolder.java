@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces;
 
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
 import javafx.beans.Observable;
@@ -10,10 +11,10 @@ import javafx.collections.MapChangeListener;
  * Holder on an underlying observable map. All calls should be synchronized on
  * the underlying observable map.
  *
- * @param <U>
+ * @param <K>
  * @param <V>
  */
-public interface ObsMapHolder<U, V> {
+public interface ObsMapHolder<K, V> {
 
 	/**
 	 * wait for at least one data to be received, then returns a copy of the
@@ -21,7 +22,7 @@ public interface ObsMapHolder<U, V> {
 	 *
 	 * @return
 	 */
-	Map<U, V> copy();
+	Map<K, V> copy();
 
 	/**
 	 * synchronized call to the underlying map get, after the data is received.
@@ -29,7 +30,7 @@ public interface ObsMapHolder<U, V> {
 	 * @param key
 	 * @return
 	 */
-	V get(U key);
+	V get(K key);
 
 	/**
 	 * apply all existing values to the change listener, and register it as a
@@ -37,9 +38,9 @@ public interface ObsMapHolder<U, V> {
 	 *
 	 * @param change
 	 */
-	void follow(MapChangeListener<? super U, ? super V> change);
+	void follow(MapChangeListener<? super K, ? super V> change);
 
-	void unfollow(MapChangeListener<? super U, ? super V> change);
+	void unfollow(MapChangeListener<? super K, ? super V> change);
 
 	void waitData();
 
@@ -72,7 +73,7 @@ public interface ObsMapHolder<U, V> {
 	 * batches and rather recompute the whole data instead of manage all the small
 	 * modifications
 	 */
-	public void addReceivedListener(Consumer<Map<U, V>> callback);
+	public void addReceivedListener(Consumer<Map<K, V>> callback);
 
 	/**
 	 * remove a listener added through {@link #addReceivedListener(Runnable)}
@@ -80,8 +81,36 @@ public interface ObsMapHolder<U, V> {
 	 * @param callback
 	 * @return true if the callback was added.
 	 */
-	public boolean remReceivedListener(Consumer<Map<U, V>> callback);
+	public boolean remReceivedListener(Consumer<Map<K, V>> callback);
 
 	/** return an observable to be notified when values are changed */
 	Observable asObservable();
+
+	/**
+	 * merge this map with other. In case of collision, use the value from the map
+	 * which has received data the last. Operates in bulk mode.
+	 *
+	 * @param m1
+	 * @param maps
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public default ObsMapHolder<K, V> merge(ObsMapHolder<K, V>... maps) {
+		return merge((v1, v2) -> v2, maps);
+	}
+
+	/**
+	 * merge this map with several others
+	 *
+	 * @param merger
+	 *          the function to merge several values together when they have the
+	 *          same key
+	 * @param maps
+	 *          the maps to merge with this.
+	 * @return a new map if needed, containing all the merged key-val couples of
+	 *         this and the maps
+	 */
+	@SuppressWarnings("unchecked")
+	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps);
+
 }
