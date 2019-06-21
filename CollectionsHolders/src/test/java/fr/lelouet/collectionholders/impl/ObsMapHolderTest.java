@@ -10,6 +10,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -133,6 +135,45 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(merged.get("a"), "a");
 		Assert.assertEquals(merged.get("b"), "ba");
 		Assert.assertEquals(merged.get("c"), "b");
+
+	}
+
+	@Test
+	public void testAt() {
+
+		ObservableMap<String, String> imap = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
+
+		SimpleObjectProperty<String> ik1 = new SimpleObjectProperty<>();
+		ObsObjHolderImpl<String> k1 = new ObsObjHolderImpl<>(ik1);
+
+		String k2 = "k2";
+
+		SimpleObjectProperty<String> ik3 = new SimpleObjectProperty<>("k3");
+		ObsObjHolderImpl<String> k3 = new ObsObjHolderImpl<>(ik3);
+
+		ObsObjHolder<String> at1 = map.at(k1);
+		ObsObjHolder<String> at2 = map.at(k2);
+		ObsObjHolder<String> at3 = map.at(k3);
+
+		ik1.set("k1");
+
+		imap.put("k1", "v1");
+		imap.put("k2", "v2");
+		imap.put("k3", "v3");
+		map.dataReceived();
+
+		Assert.assertEquals(at1.get(), "v1");
+		Assert.assertEquals(at2.get(), "v2");
+		Assert.assertEquals(at3.get(), "v3");
+
+		ik3.set("k1");
+		imap.put("k1", "v1b");
+		map.dataReceived();
+
+		Assert.assertEquals(at1.get(), "v1b");
+		Assert.assertEquals(at2.get(), "v2");
+		Assert.assertEquals(at3.get(), "v1b");
 
 	}
 

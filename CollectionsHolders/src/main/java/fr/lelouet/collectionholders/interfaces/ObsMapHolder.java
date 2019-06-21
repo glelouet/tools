@@ -113,4 +113,20 @@ public interface ObsMapHolder<K, V> {
 	@SuppressWarnings("unchecked")
 	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps);
 
+	/**
+	 * create a new variable bound to the value mapped to an index
+	 * 
+	 * @param key
+	 * @return
+	 */
+	ObsObjHolder<V> at(K key);
+
+	/**
+	 * create a new variable bound to the value mapped to a variable index
+	 * 
+	 * @param key
+	 * @return
+	 */
+	ObsObjHolder<V> at(ObsObjHolder<K> key);
+
 }

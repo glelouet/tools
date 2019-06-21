@@ -1,9 +1,11 @@
 package fr.lelouet.collectionholders.impl;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import javafx.beans.Observable;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -14,6 +16,9 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 	public ObsObjHolderImpl(ObservableValue<U> underlying) {
 		this.underlying = underlying;
 		underlying.addListener(this::objchangelisten);
+		if (underlying.getValue() != null) {
+			objchangelisten(underlying, null, underlying.getValue());
+		}
 	}
 
 	CountDownLatch waitLatch = new CountDownLatch(1);
@@ -57,6 +62,14 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 		synchronized (underlying) {
 			underlying.removeListener(change);
 		}
+	}
+
+	@Override
+	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
+		SimpleObjectProperty<V> underlying = new SimpleObjectProperty<>();
+		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.apply(newValue)));
+		return ret;
 	}
 
 }

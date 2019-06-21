@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -13,8 +14,10 @@ import java.util.stream.Stream;
 
 import fr.lelouet.collectionholders.interfaces.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
@@ -226,7 +229,8 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	@SafeVarargs
 	public static <K, V> ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V> m1,
 			ObsMapHolder<K, V>... maps) {
-		ObsMapHolder<K, V>[] array = Stream.concat(Stream.of(m1), maps == null ? Stream.empty() : Stream.of(maps))
+		ObsMapHolder<K, V>[] array = Stream
+				.concat(m1 == null ? Stream.empty() : Stream.of(m1), maps == null ? Stream.empty() : Stream.of(maps))
 				.filter(m -> m != null).toArray(ObsMapHolder[]::new);
 		if (array.length == 1) {
 			return array[0];
@@ -256,6 +260,41 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	@SuppressWarnings("unchecked")
 	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps) {
 		return merge(merger, this, maps);
+	}
+
+	@Override
+	public ObsObjHolder<V> at(ObsObjHolder<K> key) {
+		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
+		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
+		HashSet<Object> received = new HashSet<>();
+		Runnable updateValue = () -> {
+			if (received.size() == 2) {
+				internal.set(get(key.get()));
+			}
+		};
+		addReceivedListener(t -> {
+			synchronized (received) {
+				received.add(this);
+				updateValue.run();
+			}
+		});
+		key.follow((observable, oldValue, newValue) -> {
+			synchronized (received) {
+				received.add(key);
+				updateValue.run();
+			}
+		});
+		return ret;
+	}
+
+	@Override
+	public ObsObjHolder<V> at(K key) {
+		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
+		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
+		addReceivedListener(t -> {
+			internal.set(t.get(key));
+		});
+		return ret;
 	}
 
 }
