@@ -47,46 +47,47 @@ public class ObsListHolderImplTest {
 	public void testMap() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
-		ObsMapHolder<Integer, String> map1 = test.map(s -> s.length());
-		ObsMapHolder<String, Integer> map2 = test.map(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2String = test.map(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2Size = test.map(s -> s, s -> s.length());
 
 		internal.addAll("a", "bb");
 		test.dataReceived();
 
-		ObsMapHolder<Integer, String> map1l = test.map(s -> s.length());
-		ObsMapHolder<String, Integer> map2l = test.map(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2StringLate = test.map(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2SizeLate = test.map(s -> s, s -> s.length());
 
-		Assert.assertEquals(map1.get(1), "a");
-		Assert.assertEquals(map1.get(2), "bb");
+		Assert.assertEquals(mapSize2String.get(1), "a");
+		Assert.assertEquals(mapSize2String.get(2), "bb");
 
-		Assert.assertEquals(map1l.get(1), "a");
-		Assert.assertEquals(map1l.get(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.get(1), "a");
+		Assert.assertEquals(mapSize2StringLate.get(2), "bb");
 
-		Assert.assertEquals(map2.get("a"), (Integer) 1);
-		Assert.assertEquals(map2.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get("bb"), (Integer) 2);
 
-		Assert.assertEquals(map2l.get("a"), (Integer) 1);
-		Assert.assertEquals(map2l.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get("bb"), (Integer) 2);
 
 		internal.addAll("c", "ddd");
+		test.dataReceived();
 
-		Assert.assertEquals(map1.get(1), "c");
-		Assert.assertEquals(map1.get(2), "bb");
-		Assert.assertEquals(map1.get(3), "ddd");
+		Assert.assertEquals(mapSize2String.get(1), "c");
+		Assert.assertEquals(mapSize2String.get(2), "bb");
+		Assert.assertEquals(mapSize2String.get(3), "ddd");
 
-		Assert.assertEquals(map1l.get(1), "c");
-		Assert.assertEquals(map1l.get(2), "bb");
-		Assert.assertEquals(map1l.get(3), "ddd");
+		Assert.assertEquals(mapSize2StringLate.get(1), "c");
+		Assert.assertEquals(mapSize2StringLate.get(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.get(3), "ddd");
 
-		Assert.assertEquals(map2.get("a"), (Integer) 1);
-		Assert.assertEquals(map2.get("bb"), (Integer) 2);
-		Assert.assertEquals(map2.get("c"), (Integer) 1);
-		Assert.assertEquals(map2.get("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2Size.get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.get("c"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get("ddd"), (Integer) 3);
 
-		Assert.assertEquals(map2l.get("a"), (Integer) 1);
-		Assert.assertEquals(map2l.get("bb"), (Integer) 2);
-		Assert.assertEquals(map2l.get("c"), (Integer) 1);
-		Assert.assertEquals(map2l.get("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2SizeLate.get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.get("c"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get("ddd"), (Integer) 3);
 	}
 
 	@Test(dependsOnMethods = "testCreation")
@@ -105,6 +106,7 @@ public class ObsListHolderImplTest {
 
 		internal.addAll("dddd");
 		test.dataReceived();
+
 		Assert.assertEquals(filtered.copy(), Arrays.asList("bb", "ccc", "dddd"));
 		Assert.assertEquals(filtered2.copy(), Arrays.asList("bb", "ccc", "dddd"));
 

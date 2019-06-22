@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
@@ -20,6 +21,7 @@ import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
@@ -168,13 +170,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 * @param keyExtractor
 	 * @return
 	 */
-	public static <K, V> ObsMapHolderImpl<K, V> toMap(ObsListHolder<V> list, Function<V, K> keyExtractor) {
+	public static <K, V> ObsMapHolderImpl<K, V> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor) {
 		return toMap(list, keyExtractor, o -> o);
 	}
 
 	/**
 	 * transforms an observable list into a map, by extracting the key from the
-	 * new elements and remapping them to a new type.
+	 * new elements and remaping them to a new type.
 	 *
 	 * @param list
 	 * @param keyExtractor
@@ -183,27 +185,14 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 *          function to create the new values of the map
 	 * @return
 	 */
-	public static <K, V, L> ObsMapHolderImpl<K, L> toMap(ObsListHolder<V> list, Function<V, K> keyExtractor,
+	public static <K, V, L> ObsMapHolderImpl<K, L> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor,
 			Function<V, L> remapper) {
 		ObservableMap<K, L> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
-		list.follow(c -> {
-			while (c.next()) {
-				synchronized (internal) {
-					if (c.wasRemoved()) {
-						for (V removed : c.getRemoved()) {
-							internal.remove(keyExtractor.apply(removed));
-						}
-					}
-					if (c.wasAdded()) {
-						for (V added : c.getAddedSubList()) {
-							internal.put(keyExtractor.apply(added), remapper.apply(added));
-						}
-					}
-				}
-			}
-		});
 		list.addReceivedListener(l -> {
+			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, (a, b) -> b));
+			internal.keySet().retainAll(newmap.keySet());
+			internal.putAll(newmap);
 			ret.dataReceived();
 		});
 		return ret;
@@ -295,6 +284,46 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			internal.set(t.get(key));
 		});
 		return ret;
+	}
+
+	private ObsListHolder<K> keys = null;
+
+	public ObsListHolder<K> keys() {
+		if (keys == null) {
+			synchronized (this) {
+				if (keys == null) {
+					ObservableList<K> internal = FXCollections.observableArrayList();
+					ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
+					addReceivedListener(m -> {
+						internal.clear();
+						internal.addAll(m.keySet());
+						ret.dataReceived();
+					});
+					keys = ret;
+				}
+			}
+		}
+		return keys;
+	}
+
+	private ObsListHolder<V> values = null;
+
+	public ObsListHolder<V> values() {
+		if (values == null) {
+			synchronized (this) {
+				if (values == null) {
+					ObservableList<V> internal = FXCollections.observableArrayList();
+					ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
+					addReceivedListener(m -> {
+						internal.clear();
+						internal.addAll(m.values());
+						ret.dataReceived();
+					});
+					values = ret;
+				}
+			}
+		}
+		return values;
 	}
 
 }
