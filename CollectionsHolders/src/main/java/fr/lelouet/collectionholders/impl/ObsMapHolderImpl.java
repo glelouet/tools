@@ -290,6 +290,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	private ObsSetHolder<K> keys = null;
 
+	@Override
 	public ObsSetHolder<K> keys() {
 		if (keys == null) {
 			synchronized (this) {
@@ -310,6 +311,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	private ObsListHolder<V> values = null;
 
+	@Override
 	public ObsCollectionHolder<V, ?, ?> values() {
 		if (values == null) {
 			synchronized (this) {

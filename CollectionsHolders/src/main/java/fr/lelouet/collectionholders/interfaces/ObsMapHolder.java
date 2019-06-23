@@ -129,4 +129,17 @@ public interface ObsMapHolder<K, V> {
 	 */
 	ObsObjHolder<V> at(ObsObjHolder<K> key);
 
+	/**
+	 *
+	 * @return a set that contains all keys used in the internal collection.
+	 */
+	ObsSetHolder<K> keys();
+
+	/**
+	 *
+	 * @return a collection holder that contains all the values contained in the
+	 *         internal collections
+	 */
+	ObsCollectionHolder<V, ?, ?> values();
+
 }
