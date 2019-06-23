@@ -9,8 +9,10 @@ import java.util.stream.Stream;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.ObsSetHolder;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -174,6 +176,28 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(at1.get(), "v1b");
 		Assert.assertEquals(at2.get(), "v2");
 		Assert.assertEquals(at3.get(), "v1b");
+
+	}
+
+	@Test
+	public void testKeyValue() {
+		ObservableMap<String, String> imap = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
+
+		imap.put("a", "va");
+
+		ObsSetHolder<String> keys = map.keys();
+		ObsCollectionHolder<String, ?, ?> values = map.values();
+
+		imap.put("b", "vb");
+
+		map.dataReceived();
+
+		Assert.assertTrue(keys.contains("a").get());
+		Assert.assertTrue(keys.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("b"))).get());
+		Assert.assertEquals((int) keys.size().get(), 2);
+
+		Assert.assertEquals((int) values.size().get(), 2);
 
 	}
 
