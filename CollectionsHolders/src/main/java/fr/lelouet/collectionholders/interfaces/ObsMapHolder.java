@@ -115,7 +115,7 @@ public interface ObsMapHolder<K, V> {
 
 	/**
 	 * create a new variable bound to the value mapped to an index
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
@@ -123,7 +123,7 @@ public interface ObsMapHolder<K, V> {
 
 	/**
 	 * create a new variable bound to the value mapped to a variable index
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */

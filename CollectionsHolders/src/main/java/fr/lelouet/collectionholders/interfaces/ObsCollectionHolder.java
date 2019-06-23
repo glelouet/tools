@@ -19,6 +19,7 @@ import javafx.beans.Observable;
  *          ListEventListener&lt;U&gt;)
  */
 public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
+
 	/**
 	 * wait for at least one element to be added, then return a copy of the
 	 * underlying list.
@@ -27,7 +28,22 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 */
 	C copy();
 
+	/**
+	 * iterate over all the elements in the collections, after it's been set, and
+	 * apply a consumer on each
+	 *
+	 * @param cons
+	 */
 	public void apply(Consumer<U> cons);
+
+	/**
+	 *
+	 * get the variable for this collection's size.
+	 *
+	 * @return an internally cached variable constrained to the size of the
+	 *         internal collection last time it received data.
+	 */
+	public ObsObjHolder<Integer> size();
 
 	/**
 	 * apply all existing values to the change listener, and register it as a
@@ -62,6 +78,21 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return true if the callback was added.
 	 */
 	public boolean remReceivedListener(Consumer<C> callback);
+
+	/**
+	 * register a runnable to be run once {@link #dataReceived()} is called. The
+	 * call is made in a new thread.
+	 *
+	 * @param callback
+	 *          the function to call once data is available. if data is already
+	 *          available, this callback will be called at once.
+	 */
+	public default void onWaitEnd(Runnable callback) {
+		new Thread(() -> {
+			waitData();
+			callback.run();
+		}).start();
+	}
 
 	/**
 	 * return an observable to be notified when values are changed. Typically

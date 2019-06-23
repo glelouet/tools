@@ -16,6 +16,7 @@ import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
@@ -23,6 +24,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
 
 public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
@@ -286,14 +288,14 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return ret;
 	}
 
-	private ObsListHolder<K> keys = null;
+	private ObsSetHolder<K> keys = null;
 
-	public ObsListHolder<K> keys() {
+	public ObsSetHolder<K> keys() {
 		if (keys == null) {
 			synchronized (this) {
 				if (keys == null) {
-					ObservableList<K> internal = FXCollections.observableArrayList();
-					ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
+					ObservableSet<K> internal = FXCollections.observableSet(new HashSet<>());
+					ObsSetHolderImpl<K> ret = new ObsSetHolderImpl<>(internal);
 					addReceivedListener(m -> {
 						internal.clear();
 						internal.addAll(m.keySet());
@@ -308,7 +310,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	private ObsListHolder<V> values = null;
 
-	public ObsListHolder<V> values() {
+	public ObsCollectionHolder<V, ?, ?> values() {
 		if (values == null) {
 			synchronized (this) {
 				if (values == null) {

@@ -6,7 +6,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
+import javafx.beans.property.SimpleObjectProperty;
 
 public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L>
 implements ObsCollectionHolder<U, C, L> {
@@ -38,6 +40,23 @@ implements ObsCollectionHolder<U, C, L> {
 				cons.accept(u);
 			}
 		});
+	}
+
+	private ObsObjHolderImpl<Integer> size = null;
+
+	@Override
+	public ObsObjHolder<Integer> size() {
+		if (size == null) {
+			synchronized (this) {
+				if (size == null) {
+					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
+					ObsObjHolderImpl<Integer> ret = new ObsObjHolderImpl<>(internal);
+					addReceivedListener(c -> internal.set(c.size()));
+					size = ret;
+				}
+			}
+		}
+		return size;
 	}
 
 	@Override
