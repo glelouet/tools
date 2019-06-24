@@ -1,12 +1,13 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
-import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
+import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -42,15 +43,15 @@ implements ObsCollectionHolder<U, C, L> {
 		});
 	}
 
-	private ObsObjHolderImpl<Integer> size = null;
+	private ObsIntHolderImpl size = null;
 
 	@Override
-	public ObsObjHolder<Integer> size() {
+	public ObsIntHolder size() {
 		if (size == null) {
 			synchronized (this) {
 				if (size == null) {
 					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
-					ObsObjHolderImpl<Integer> ret = new ObsObjHolderImpl<>(internal);
+					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
 					addReceivedListener(c -> internal.set(c.size()));
 					size = ret;
 				}

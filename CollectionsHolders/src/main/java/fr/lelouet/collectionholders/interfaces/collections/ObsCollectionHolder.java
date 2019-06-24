@@ -1,10 +1,11 @@
-package fr.lelouet.collectionholders.interfaces;
+package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.Observable;
 
 /**
@@ -43,7 +44,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return an internally cached variable constrained to the size of the
 	 *         internal collection last time it received data.
 	 */
-	public ObsObjHolder<Integer> size();
+	public ObsIntHolder size();
 
 	/**
 	 * apply all existing values to the change listener, and register it as a

@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.interfaces;
+package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
 import java.util.function.BiConsumer;

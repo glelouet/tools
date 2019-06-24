@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import fr.lelouet.collectionholders.interfaces.ObsListHolder;
-import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;

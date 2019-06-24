@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,11 +12,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
-import fr.lelouet.collectionholders.interfaces.ObsListHolder;
-import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
-import fr.lelouet.collectionholders.interfaces.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;

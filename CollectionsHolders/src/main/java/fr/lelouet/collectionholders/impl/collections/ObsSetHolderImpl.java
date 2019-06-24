@@ -1,13 +1,14 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
-import fr.lelouet.collectionholders.interfaces.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;

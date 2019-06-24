@@ -1,9 +1,10 @@
-package fr.lelouet.collectionholders.interfaces;
+package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import javafx.beans.Observable;
 import javafx.collections.MapChangeListener;
 

@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,10 +9,12 @@ import java.util.stream.Stream;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.collectionholders.interfaces.ObsCollectionHolder;
-import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.collections.ObsMapHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
-import fr.lelouet.collectionholders.interfaces.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;

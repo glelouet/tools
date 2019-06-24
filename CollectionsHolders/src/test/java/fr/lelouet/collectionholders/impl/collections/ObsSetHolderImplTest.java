@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -6,6 +6,8 @@ import java.util.HashSet;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.collections.ObsSetHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;

@@ -1,4 +1,4 @@
-package fr.lelouet.collectionholders.impl;
+package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,8 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.collectionholders.interfaces.ObsMapHolder;
+import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
