@@ -3,8 +3,10 @@ package fr.lelouet.collectionholders.interfaces.collections;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.Observable;
 import javafx.collections.MapChangeListener;
 
@@ -32,6 +34,17 @@ public interface ObsMapHolder<K, V> {
 	 * @return
 	 */
 	V get(K key);
+
+	V getOrDefault(K key, V defaultValue);
+
+	/**
+	 *
+	 * get the variable for this size.
+	 *
+	 * @return an internally cached variable constrained to the size of the
+	 *         internal map last time it received data.
+	 */
+	public ObsIntHolder size();
 
 	/**
 	 * apply all existing values to the change listener, and register it as a
@@ -142,5 +155,7 @@ public interface ObsMapHolder<K, V> {
 	 *         internal collections
 	 */
 	ObsCollectionHolder<V, ?, ?> values();
+
+	ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter);
 
 }

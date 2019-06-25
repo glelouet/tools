@@ -5,11 +5,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 
@@ -74,11 +78,27 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	/** join two obsobjholder on the same type. */
-	public static <T, U extends ObsObjHolder<T>> U join(U a, U b, Function<ObservableValue<T>, U> creator,
-			BiFunction<T, T, T> joiner) {
-		SimpleObjectProperty<T> internal = new SimpleObjectProperty<>();
-		U ret = creator.apply(internal);
+	/**
+	 * join two observable object holder into a third one
+	 *
+	 * @param <U>
+	 *          type of the first object hold
+	 * @param <V>
+	 *          type of second object hold
+	 * @param <W>
+	 *          joined type
+	 * @param <C>
+	 *          collection type to hold the joined value
+	 * @param a
+	 * @param b
+	 * @param creator
+	 * @param joiner
+	 * @return
+	 */
+	public static <U, V, W, C extends ObsObjHolder<W>> C join(ObsObjHolder<U> a, ObsObjHolder<V> b,
+			Function<ObservableValue<W>, C> creator, BiFunction<U, V, W> joiner) {
+		SimpleObjectProperty<W> internal = new SimpleObjectProperty<>();
+		C ret = creator.apply(internal);
 		HashSet<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() == 2) {
@@ -120,6 +140,22 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 		C ret = creator.apply(internal);
 		from.follow((observable, oldValue, newValue) -> {
 			internal.set(mapper.apply(newValue));
+		});
+		return ret;
+	}
+
+	@Override
+	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
+		ObservableList<V> internal = FXCollections.observableArrayList();
+		ObsListHolder<V> ret = new ObsListHolderImpl<>(internal);
+		follow((observable, oldValue, newValue) -> {
+			internal.clear();
+			if (newValue != null) {
+				for (V v : generator.apply(newValue)) {
+					internal.add(v);
+				}
+			}
+			ret.dataReceived();
 		});
 		return ret;
 	}

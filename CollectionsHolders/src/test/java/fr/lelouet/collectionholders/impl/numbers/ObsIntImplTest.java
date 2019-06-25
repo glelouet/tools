@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.impl.numbers;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class ObsIntImplTest {
@@ -22,6 +23,14 @@ public class ObsIntImplTest {
 		Assert.assertEquals((int) twenty.sub(four).get(), 16);
 		Assert.assertEquals((int) twenty.mult(four).get(), 80);
 		Assert.assertEquals((int) twenty.div(four).get(), 5);
+
+		// test predicate
+		ObsBoolHolder even = twenty.test(i -> i % 2 == 0);
+		ObsBoolHolder odd = even.not();
+
+		Assert.assertTrue(even.get());
+		Assert.assertFalse(odd.get());
+
 	}
 
 }

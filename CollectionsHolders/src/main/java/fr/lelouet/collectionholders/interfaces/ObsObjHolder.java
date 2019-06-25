@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces;
 
 import java.util.function.Function;
 
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 
@@ -23,7 +24,7 @@ public interface ObsObjHolder<U> {
 
 	/**
 	 * remove a listener on this value
-	 * 
+	 *
 	 * @param change
 	 */
 	void unfollow(ChangeListener<U> change);
@@ -43,4 +44,13 @@ public interface ObsObjHolder<U> {
 	 * @return a new object.
 	 */
 	<V> ObsObjHolder<V> map(Function<U, V> mapper);
+
+	/**
+	 * generate an observable list from thie item hold
+	 * 
+	 * @param <V>
+	 * @param generator
+	 * @return
+	 */
+	<V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator);
 }

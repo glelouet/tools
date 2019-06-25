@@ -9,15 +9,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
@@ -76,6 +79,12 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	public V get(K key) {
 		waitData();
 		return underlying.get(key);
+	}
+
+	@Override
+	public V getOrDefault(K key, V defaultValue) {
+		waitData();
+		return underlying.getOrDefault(key, defaultValue);
 	}
 
 	@Override
@@ -289,6 +298,23 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return ret;
 	}
 
+	private ObsIntHolderImpl size = null;
+
+	@Override
+	public ObsIntHolder size() {
+		if (size == null) {
+			synchronized (this) {
+				if (size == null) {
+					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
+					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
+					addReceivedListener(c -> internal.set(c.size()));
+					size = ret;
+				}
+			}
+		}
+		return size;
+	}
+
 	private ObsSetHolder<K> keys = null;
 
 	@Override
@@ -329,6 +355,34 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			}
 		}
 		return values;
+	}
+
+	@Override
+	public ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter) {
+		ObservableMap<K, V> internal = FXCollections.observableHashMap();
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
+		follow(change -> {
+			if (change.wasRemoved()) {
+				internal.remove(change.getKey());
+			}
+			if (change.wasAdded()) {
+				if (keyFilter != null) {
+					if (!keyFilter.test(change.getKey())) {
+						return;
+					}
+				}
+				if (valueFilter != null) {
+					if (!valueFilter.test(change.getValueAdded())) {
+						return;
+					}
+				}
+				internal.put(change.getKey(), change.getValueAdded());
+			}
+		});
+		addReceivedListener(m -> {
+			ret.dataReceived();
+		});
+		return ret;
 	}
 
 }
