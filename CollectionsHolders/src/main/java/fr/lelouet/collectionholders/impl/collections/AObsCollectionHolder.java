@@ -3,13 +3,17 @@ package fr.lelouet.collectionholders.impl.collections;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L>
 implements ObsCollectionHolder<U, C, L> {
@@ -80,6 +84,10 @@ implements ObsCollectionHolder<U, C, L> {
 		}
 	}
 
+	/**
+	 * called by the data fetcher when data has been received. This specifies that
+	 * the items stored are consistent and can be used as a bulk.
+	 */
 	@Override
 	public void dataReceived() {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
@@ -91,6 +99,36 @@ implements ObsCollectionHolder<U, C, L> {
 				}
 			}
 		});
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand) {
+		ObservableList<O> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<O> ret = new ObsListHolderImpl<>(internal);
+		Collection<U>[] leftCol = new Collection[1];
+		Collection<V>[] rightCol = new Collection[1];
+
+		Runnable update = () -> {
+			if (leftCol[0] != null && rightCol[0] != null) {
+				internal.clear();
+				for (U u : leftCol[0]) {
+					for (V v : rightCol[0]) {
+						internal.add(operand.apply(u, v));
+					}
+				}
+				ret.dataReceived();
+			}
+		};
+		addReceivedListener(o -> {
+			leftCol[0] = o;
+			update.run();
+		});
+		right.addReceivedListener(o -> {
+			rightCol[0] = o;
+			update.run();
+		});
+		return ret;
 	}
 
 }

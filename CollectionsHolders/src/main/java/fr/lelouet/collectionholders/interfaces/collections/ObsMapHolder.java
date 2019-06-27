@@ -128,18 +128,18 @@ public interface ObsMapHolder<K, V> {
 	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps);
 
 	/**
-	 * create a new variable bound to the value mapped to an index
+	 * create a new variable bound to the value mapped to a key
 	 *
 	 * @param key
-	 * @return
+	 * @return a new variable
 	 */
 	ObsObjHolder<V> at(K key);
 
 	/**
-	 * create a new variable bound to the value mapped to a variable index
+	 * create a new variable bound to the value mapped to a key variable
 	 *
 	 * @param key
-	 * @return
+	 * @return a new variable
 	 */
 	ObsObjHolder<V> at(ObsObjHolder<K> key);
 
@@ -156,6 +156,19 @@ public interface ObsMapHolder<K, V> {
 	 */
 	ObsCollectionHolder<V, ?, ?> values();
 
+	/**
+	 * create a filtered map of this. The (key, val) couples are duplicated in the
+	 * returned map unless keyfilter is not null and this predicate does not
+	 * accept the key, or valuefilter is not null that predicate does not accept
+	 * the value.
+	 *
+	 * @param keyFilter
+	 *          a predicate to filter the keys, or null to accept all keys
+	 * @param valueFilter
+	 *          a predicate to filter the values, or null to accept all values
+	 * @return a new obsmapholder, or this is both keyfilter and valuefilter are
+	 *         null
+	 */
 	ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter);
 
 }

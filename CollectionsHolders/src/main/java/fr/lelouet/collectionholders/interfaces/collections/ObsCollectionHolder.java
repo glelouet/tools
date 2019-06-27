@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Collection;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -138,5 +139,27 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return a new map.
 	 */
 	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor);
+
+	/**
+	 *
+	 * @return a set containing all the elements of this collection in a single
+	 *         occurrence.
+	 */
+	public ObsSetHolder<U> distinct();
+
+	/**
+	 * make the product List of this collection elements with another one
+	 * 
+	 * @param <V>
+	 * @param <O>
+	 *          the elemnts of the returned list
+	 * @param right
+	 *          the other collection
+	 * @param operand
+	 *          the operation to apply to each couple (left, right) from this
+	 *          collection × the other collection
+	 * @return a new list
+	 */
+	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand);
 
 }

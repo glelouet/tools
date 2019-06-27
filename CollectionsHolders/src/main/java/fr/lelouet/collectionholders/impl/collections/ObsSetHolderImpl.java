@@ -110,4 +110,9 @@ implements ObsSetHolder<U> {
 		return ret;
 	}
 
+	@Override
+	public ObsSetHolder<U> distinct() {
+		return this;
+	}
+
 }

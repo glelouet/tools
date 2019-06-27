@@ -7,8 +7,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
-import fr.lelouet.collectionholders.impl.collections.ObsSetHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -62,6 +62,19 @@ public class ObsSetHolderImplTest {
 		Assert.assertEquals((int) filtered.size().get(), 2);
 		Assert.assertTrue(filtered.contains("aa").get());
 		Assert.assertTrue(filtered.contains("ab").get());
+	}
+
+	@Test
+	public void testFollow() {
+
+		ObservableSet<String> internal = FXCollections.observableSet(new HashSet<>());
+		ObsSetHolderImpl<String> test = new ObsSetHolderImpl<>(internal);
+
+		internal.addAll(Arrays.asList("a", "bb", "ccc"));
+		test.dataReceived();
+
+		ObsMapHolder<String, Integer> sizes = test.map(s -> s, s -> s.length());
+		Assert.assertEquals((int) sizes.get("a"), 1);
 	}
 
 }

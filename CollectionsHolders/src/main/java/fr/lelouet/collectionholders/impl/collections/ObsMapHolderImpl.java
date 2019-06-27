@@ -359,6 +359,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	@Override
 	public ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter) {
+		if (keyFilter == null && valueFilter == null) {
+			return this;
+		}
 		ObservableMap<K, V> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
 		follow(change -> {

@@ -7,7 +7,7 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
+import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -110,6 +110,21 @@ public class ObsListHolderImplTest {
 
 		Assert.assertEquals(filtered.copy(), Arrays.asList("bb", "ccc", "dddd"));
 		Assert.assertEquals(filtered2.copy(), Arrays.asList("bb", "ccc", "dddd"));
+	}
 
+	@Test
+	public void testProdList() {
+		ObservableList<String> internal1 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
+		internal1.addAll("a", "b");
+		test1.dataReceived();
+
+		ObservableList<String> internal2 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>(internal2);
+		internal2.addAll("1", "2");
+		test2.dataReceived();
+
+		ObsListHolder<Object> prod = test1.prodList(test2, (s1, s2) -> s1 + s2);
+		Assert.assertEquals(prod.copy(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
 }

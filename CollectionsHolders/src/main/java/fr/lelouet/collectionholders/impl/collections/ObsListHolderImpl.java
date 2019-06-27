@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -8,11 +9,13 @@ import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 
 public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>>
 implements ObsListHolder<U> {
@@ -75,6 +78,27 @@ implements ObsListHolder<U> {
 	@Override
 	public ObsListHolderImpl<U> filter(Predicate<? super U> predicate) {
 		return filter(this, predicate);
+	}
+
+	private ObsSetHolder<U> distinct = null;
+
+	@Override
+	public ObsSetHolder<U> distinct() {
+		if (distinct == null) {
+			synchronized (this) {
+				if (distinct == null) {
+					ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
+					ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
+					addReceivedListener(l -> {
+						internal.retainAll(l);
+						internal.addAll(l);
+						ret.dataReceived();
+					});
+					distinct = ret;
+				}
+			}
+		}
+		return distinct;
 	}
 
 	@Override

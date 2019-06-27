@@ -147,7 +147,7 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 	@Override
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
 		ObservableList<V> internal = FXCollections.observableArrayList();
-		ObsListHolder<V> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
 		follow((observable, oldValue, newValue) -> {
 			internal.clear();
 			if (newValue != null) {
