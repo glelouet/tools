@@ -43,4 +43,49 @@ public class ObsDoubleHolderImpl extends NotNullObsObjHolderImpl<Double> impleme
 		}
 		return floor;
 	}
+
+	@Override
+	public Double add(Double a, Double b) {
+		return a + b;
+	}
+
+	@Override
+	public Double sub(Double a, Double b) {
+		return a - b;
+	}
+
+	@Override
+	public Double div(Double a, Double b) {
+		return a / b;
+	}
+
+	@Override
+	public Double mult(Double a, Double b) {
+		return a * b;
+	}
+
+	@Override
+	public boolean gt(Double a, Double b) {
+		return a > b;
+	}
+
+	@Override
+	public boolean ge(Double a, Double b) {
+		return a >= b;
+	}
+
+	@Override
+	public boolean lt(Double a, Double b) {
+		return a < b;
+	}
+
+	@Override
+	public boolean le(Double a, Double b) {
+		return a <= b;
+	}
+
+	@Override
+	public boolean eq(Double a, Double b) {
+		return a == b;
+	}
 }
