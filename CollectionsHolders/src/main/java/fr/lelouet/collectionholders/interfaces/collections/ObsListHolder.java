@@ -38,6 +38,11 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListCh
 	 */
 	void apply(BiConsumer<Integer, U> cons);
 
+	/**
+	 *
+	 * @return a cached list containing the reverse order of this one. If the list
+	 *         does not already exist, creates a new one whose reverse is this
+	 */
 	ObsListHolder<U> reverse();
 
 	@Override
