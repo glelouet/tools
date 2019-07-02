@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -109,6 +110,30 @@ implements ObsListHolder<U> {
 	@Override
 	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
 		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
+	}
+
+	private ObsListHolderImpl<U> reverse = null;
+
+	@Override
+	public ObsListHolderImpl<U> reverse() {
+		if (reverse == null) {
+			synchronized (this) {
+				if (reverse == null) {
+					ObservableList<U> internal = FXCollections.observableArrayList();
+					ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+					addReceivedListener(o -> {
+						ArrayList<U> modified = new ArrayList<>(o);
+						Collections.reverse(modified);
+						internal.clear();
+						internal.addAll(modified);
+						ret.dataReceived();
+					});
+					ret.reverse = this;
+					reverse = ret;
+				}
+			}
+		}
+		return reverse;
 	}
 
 }

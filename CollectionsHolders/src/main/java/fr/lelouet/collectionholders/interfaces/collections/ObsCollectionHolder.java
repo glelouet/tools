@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -148,8 +149,15 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	public ObsSetHolder<U> distinct();
 
 	/**
+	 * @param comparator
+	 *          to compare elements one to another
+	 * @return a list containing the elements of this, sorted using comparator
+	 */
+	public ObsListHolder<U> sorted(Comparator<U> comparator);
+
+	/**
 	 * make the product List of this collection elements with another one
-	 * 
+	 *
 	 * @param <V>
 	 * @param <O>
 	 *          the elemnts of the returned list

@@ -127,4 +127,27 @@ public class ObsListHolderImplTest {
 		ObsListHolder<Object> prod = test1.prodList(test2, (s1, s2) -> s1 + s2);
 		Assert.assertEquals(prod.copy(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
+
+	@Test
+	public void testSort() {
+		ObservableList<String> internal1 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
+		internal1.addAll("d", "a", "c", "b");
+		test1.dataReceived();
+
+		ObsListHolder<String> sorted = test1.sorted(String::compareTo);
+		Assert.assertEquals(sorted.copy(), Arrays.asList("a", "b", "c", "d"));
+	}
+
+	@Test
+	public void testReverse() {
+		ObservableList<String> internal1 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
+		internal1.addAll("a", "b", "c", "d");
+		test1.dataReceived();
+
+		ObsListHolder<String> reversed = test1.reverse();
+		Assert.assertEquals(reversed.copy(), Arrays.asList("d", "c", "b", "a"));
+
+	}
 }

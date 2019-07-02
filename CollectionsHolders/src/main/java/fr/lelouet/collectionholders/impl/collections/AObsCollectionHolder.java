@@ -2,6 +2,8 @@ package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -99,6 +101,20 @@ implements ObsCollectionHolder<U, C, L> {
 				}
 			}
 		});
+	}
+
+	@Override
+	public ObsListHolder<U> sorted(Comparator<U> comparator) {
+		ObservableList<U> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		addReceivedListener(o -> {
+			ArrayList<U> modified = new  ArrayList<>(o);
+			Collections.sort(modified, comparator);
+			internal.clear();
+			internal.addAll(modified);
+			ret.dataReceived();
+		});
+		return ret;
 	}
 
 	@SuppressWarnings("unchecked")
