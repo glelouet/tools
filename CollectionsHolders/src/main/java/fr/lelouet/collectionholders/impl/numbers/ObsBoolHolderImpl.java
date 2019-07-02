@@ -11,11 +11,6 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 		super(underlying);
 	}
 
-	private ObsBoolHolderImpl(ObservableValue<Boolean> underlying, ObsBoolHolder not) {
-		super(underlying);
-		this.not = not;
-	}
-
 	@Override
 	public ObsBoolHolder create(ObservableValue<Boolean> var) {
 		return new ObsBoolHolderImpl(var);
@@ -28,7 +23,9 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 		if (not == null) {
 			synchronized (this) {
 				if (not == null) {
-					not = ObsObjHolderImpl.map(this, var -> new ObsBoolHolderImpl(var, this), (a) -> !a);
+					ObsBoolHolderImpl other = ObsObjHolderImpl.map(this, var -> new ObsBoolHolderImpl(var), (a) -> !a);
+					other.not = this;
+					not = other;
 				}
 			}
 		}
