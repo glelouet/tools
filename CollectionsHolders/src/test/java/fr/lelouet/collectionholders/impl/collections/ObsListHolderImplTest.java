@@ -10,6 +10,8 @@ import org.testng.annotations.Test;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -158,10 +160,31 @@ public class ObsListHolderImplTest {
 		internal1.addAll("d", "a", "c", "b");
 		test1.dataReceived();
 
-		ObsObjHolder<String> sorted1 = test1.reduce(String::concat, "");
-		Assert.assertEquals(sorted1.get(), "dacb");
+		ObsObjHolder<String> concat = test1.reduce(String::concat, "");
+		Assert.assertEquals(concat.get(), "dacb");
 
-		ObsObjHolder<Integer> sorted2 = test1.reduce(s -> s.length(), Integer::sum, 0);
-		Assert.assertEquals((int) sorted2.get(), 4);
+		ObsObjHolder<Integer> size = test1.reduce(s -> s.length(), Integer::sum, 0);
+		Assert.assertEquals((int) size.get(), 4);
+
+		ObsIntHolder size2 = test1.reduceInt(l -> l.stream().mapToInt(String::length).sum());
+		Assert.assertEquals((int) size2.get(), 4);
+
+		/**
+		 * each string in the list is a vector in a new dimension. compute distance
+		 * 2 on the list of vectors
+		 */
+		ObsDoubleHolder dist = test1
+				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
+		Assert.assertEquals(dist.get(), 2.0);
+
+		ObservableList<String> internal2 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>(internal2);
+
+		// same but with 4 strings of size 2 (so distance is sqrt(4*2²)=2*2 = 4
+		ObsDoubleHolder dist2 = test2
+				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
+		internal2.addAll("aa", "bb", "cc", "dd");
+		test2.dataReceived();
+		Assert.assertEquals(dist2.get(), 4.0);
 	}
 }

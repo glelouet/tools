@@ -7,9 +7,12 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.Observable;
 
@@ -181,11 +184,28 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @param <V>
 	 *          type of returned holder
 	 * @param collectionReducer
-	 *          function that is applied to the colleciton whenever data is
+	 *          function that is applied to the collection whenever data is
 	 *          received
 	 * @return a new variable containing the reduced value when data is received.
 	 */
 	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer);
+
+	/**
+	 *
+	 * @param collectionReducer
+	 *          function that is applied to the collection whenever data is
+	 *          received
+	 * @return a new variable containing the reduced value when data is received.
+	 */
+	public ObsIntHolder reduceInt(ToIntFunction<C> collectionReducer);
+
+	/**
+	 * @param collectionReducer
+	 *          function that is applied to the collection whenever data is
+	 *          received
+	 * @return a new variable containing the reduced value when data is received.
+	 */
+	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer);
 
 	/**
 	 *

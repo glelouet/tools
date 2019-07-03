@@ -8,12 +8,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.property.SimpleObjectProperty;
@@ -155,6 +159,22 @@ implements ObsCollectionHolder<U, C, L> {
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolder<V> ret = new ObsObjHolderImpl<>(internal);
 		addReceivedListener(l -> internal.set(collectionReducer.apply(l)));
+		return ret;
+	}
+
+	@Override
+	public ObsIntHolderImpl reduceInt(ToIntFunction<C> collectionReducer) {
+		SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
+		ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
+		addReceivedListener(l -> internal.set(collectionReducer.applyAsInt(l)));
+		return ret;
+	}
+
+	@Override
+	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer) {
+		SimpleObjectProperty<Double> internal = new SimpleObjectProperty<>();
+		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl(internal);
+		addReceivedListener(l -> internal.set(collectionReducer.applyAsDouble(l)));
 		return ret;
 	}
 
