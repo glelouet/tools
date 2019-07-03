@@ -6,10 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
@@ -153,18 +151,10 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
-	public <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral) {
+	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer) {
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolder<V> ret = new ObsObjHolderImpl<>(internal);
-		addReceivedListener(l -> internal.set(l.stream().map(mapper).collect(Collectors.reducing(neutral, joiner))));
-		return ret;
-	}
-
-	@Override
-	public ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral) {
-		SimpleObjectProperty<U> internal = new SimpleObjectProperty<>();
-		ObsObjHolder<U> ret = new ObsObjHolderImpl<>(internal);
-		addReceivedListener(l -> internal.set(l.stream().collect(Collectors.reducing(neutral, joiner))));
+		addReceivedListener(l -> internal.set(collectionReducer.apply(l)));
 		return ret;
 	}
 

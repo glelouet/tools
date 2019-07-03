@@ -7,6 +7,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
@@ -157,7 +158,9 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 *          is returned.
 	 * @return a new variable V, only modified when this receives data.
 	 */
-	public <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral);
+	public default <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral) {
+		return reduce(l -> l.stream().map(mapper).collect(Collectors.reducing(neutral, joiner)));
+	}
 
 	/**
 	 * join the items in this using a joiner
@@ -169,7 +172,20 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 *          is returned.
 	 * @return a new variable U, only modified when this receives data.
 	 */
-	public ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral);
+	public default ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral) {
+		return reduce(l -> l.stream().collect(Collectors.reducing(neutral, joiner)));
+	}
+
+	/**
+	 *
+	 * @param <V>
+	 *          type of returned holder
+	 * @param collectionReducer
+	 *          function that is applied to the colleciton whenever data is
+	 *          received
+	 * @return a new variable containing the reduced value when data is received.
+	 */
+	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer);
 
 	/**
 	 *
