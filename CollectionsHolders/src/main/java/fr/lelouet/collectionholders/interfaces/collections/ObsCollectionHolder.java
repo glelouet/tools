@@ -3,10 +3,12 @@ package fr.lelouet.collectionholders.interfaces.collections;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.Observable;
 
@@ -140,6 +142,34 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return a new map.
 	 */
 	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor);
+
+	/**
+	 * join the items in this using a mapper and a joiner
+	 *
+	 * @param <V>
+	 *          Conversion class
+	 * @param mapper
+	 *          converter. cannot be null
+	 * @param joiner
+	 *          joins mapped items into one.
+	 * @param neutral
+	 *          the neutral value for joining. if not data is present, this value
+	 *          is returned.
+	 * @return a new variable V, only modified when this receives data.
+	 */
+	public <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral);
+
+	/**
+	 * join the items in this using a joiner
+	 *
+	 * @param joiner
+	 *          joins items into one.
+	 * @param neutral
+	 *          the neutral value for joining. if not data is present, this value
+	 *          is returned.
+	 * @return a new variable U, only modified when this receives data.
+	 */
+	public ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral);
 
 	/**
 	 *

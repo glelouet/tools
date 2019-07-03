@@ -7,6 +7,7 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import javafx.collections.FXCollections;
@@ -148,6 +149,19 @@ public class ObsListHolderImplTest {
 
 		ObsListHolder<String> reversed = test1.reverse();
 		Assert.assertEquals(reversed.copy(), Arrays.asList("d", "c", "b", "a"));
+	}
 
+	@Test
+	public void testReduce() {
+		ObservableList<String> internal1 = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
+		internal1.addAll("d", "a", "c", "b");
+		test1.dataReceived();
+
+		ObsObjHolder<String> sorted1 = test1.reduce(String::concat, "");
+		Assert.assertEquals(sorted1.get(), "dacb");
+
+		ObsObjHolder<Integer> sorted2 = test1.reduce(s -> s.length(), Integer::sum, 0);
+		Assert.assertEquals((int) sorted2.get(), 4);
 	}
 }
