@@ -4,12 +4,28 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import javafx.beans.binding.NumberBinding;
 import javafx.beans.value.ObservableValue;
 
+/**
+ * common methods for double and int observable holders
+ *
+ * @param U
+ *          the class of the number to hold
+ * @param S
+ *          self class
+ *
+ */
 public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, S>> extends ObsObjHolder<U> {
 
+	/**
+	 * internal function to create a copy (useful for binding modification, eg
+	 * sum)
+	 *
+	 * @param var
+	 * @return
+	 */
 	public S create(ObservableValue<U> var);
 
 	public U add(U a, U b);
@@ -70,13 +86,26 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 		return add(add).mult(mult);
 	}
 
-	public default ObsBoolHolder test(Predicate<U> test) {
-		return ObsObjHolderImpl.map(this, ObsBoolHolderImpl::new, a -> test.test(a));
-	}
+	/**
+	 * create a variable containing a test over this variable value
+	 * 
+	 * @param test
+	 *          test over the value
+	 * @return a new variable
+	 */
+	public ObsBoolHolder test(Predicate<U> test);
 
-	public default ObsBoolHolder test(BiPredicate<U, U> test, S b) {
-		return ObsObjHolderImpl.join(this, b, ObsBoolHolderImpl::new, (u, v) -> test.test(u, v));
-	}
+	/**
+	 * create a variable containing a test over this variable's, and another's,
+	 * values
+	 * 
+	 * @param test
+	 *          test over the two values
+	 * @param b
+	 *          the other variable
+	 * @return a new variable
+	 */
+	public ObsBoolHolder test(BiPredicate<U, U> test, S b);
 
 	public default ObsBoolHolder gt(S other) {
 		return test(this::gt, other);
@@ -97,5 +126,12 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	public default ObsBoolHolder eq(S other) {
 		return test(this::eq, other);
 	}
+
+	/**
+	 * create and cache a binding on the number contained.
+	 *
+	 * @return always the same internal binding.
+	 */
+	public NumberBinding asObservableNumber();
 
 }

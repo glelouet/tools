@@ -1,11 +1,12 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ObservableValue;
 
-public class ObsDoubleHolderImpl extends NotNullObsObjHolderImpl<Double> implements ObsDoubleHolder {
+public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleHolder> implements ObsDoubleHolder {
 
 	public ObsDoubleHolderImpl(ObservableValue<Double> underlying) {
 		super(underlying);
@@ -87,5 +88,19 @@ public class ObsDoubleHolderImpl extends NotNullObsObjHolderImpl<Double> impleme
 	@Override
 	public boolean eq(Double a, Double b) {
 		return a == b;
+	}
+
+	DoubleBinding observableNumber = null;
+
+	@Override
+	public DoubleBinding asObservableNumber() {
+		if (observableNumber == null) {
+			synchronized (this) {
+				if (observableNumber == null) {
+					observableNumber = Bindings.createDoubleBinding(() -> underlying.getValue(), underlying);
+				}
+			}
+		}
+		return observableNumber;
 	}
 }

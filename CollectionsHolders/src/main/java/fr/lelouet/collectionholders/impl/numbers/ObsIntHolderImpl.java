@@ -1,10 +1,11 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
 import javafx.beans.value.ObservableValue;
 
-public class ObsIntHolderImpl extends NotNullObsObjHolderImpl<Integer> implements ObsIntHolder {
+public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder> implements ObsIntHolder {
 
 	public ObsIntHolderImpl(ObservableValue<Integer> underlying) {
 		super(underlying);
@@ -58,6 +59,20 @@ public class ObsIntHolderImpl extends NotNullObsObjHolderImpl<Integer> implement
 	@Override
 	public boolean eq(Integer a, Integer b) {
 		return a == b;
+	}
+
+	IntegerBinding observableNumber = null;
+
+	@Override
+	public IntegerBinding asObservableNumber() {
+		if (observableNumber == null) {
+			synchronized (this) {
+				if (observableNumber == null) {
+					observableNumber = Bindings.createIntegerBinding(() -> underlying.getValue(), underlying);
+				}
+			}
+		}
+		return observableNumber;
 	}
 
 }

@@ -8,7 +8,6 @@ import java.util.function.Function;
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -17,7 +16,7 @@ import javafx.collections.ObservableList;
 
 public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 
-	private ObservableValue<U> underlying;
+	protected ObservableValue<U> underlying;
 
 	public ObsObjHolderImpl(ObservableValue<U> underlying) {
 		this.underlying = underlying;
@@ -59,7 +58,7 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 	}
 
 	@Override
-	public Observable asObservable() {
+	public ObservableValue<U> asObservable() {
 		return underlying;
 	}
 
