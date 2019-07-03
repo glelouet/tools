@@ -10,15 +10,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -175,6 +178,14 @@ implements ObsCollectionHolder<U, C, L> {
 		SimpleObjectProperty<Double> internal = new SimpleObjectProperty<>();
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl(internal);
 		addReceivedListener(l -> internal.set(collectionReducer.applyAsDouble(l)));
+		return ret;
+	}
+
+	@Override
+	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer) {
+		SimpleObjectProperty<Long> internal = new SimpleObjectProperty<>();
+		ObsLongHolderImpl ret = new ObsLongHolderImpl(internal);
+		addReceivedListener(l -> internal.set(collectionReducer.applyAsLong(l)));
 		return ret;
 	}
 

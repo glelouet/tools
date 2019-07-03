@@ -9,11 +9,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.beans.Observable;
 
 /**
@@ -206,6 +208,14 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return a new variable containing the reduced value when data is received.
 	 */
 	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer);
+
+	/**
+	 * @param collectionReducer
+	 *          function that is applied to the collection whenever data is
+	 *          received
+	 * @return a new variable containing the reduced value when data is received.
+	 */
+	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer);
 
 	/**
 	 *
