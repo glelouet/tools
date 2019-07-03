@@ -222,6 +222,8 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 *
 	 * @param <K>
 	 * @param <V>
+	 * @param m1
+	 *          another map holder
 	 * @param maps
 	 * @return a new map that observes the merged maps and reacts to their
 	 *         modifications.

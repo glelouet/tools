@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
@@ -80,9 +80,9 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public ObsObjHolder<Boolean> contains(U value) {
+	public ObsBoolHolderImpl contains(U value) {
 		SimpleObjectProperty<Boolean> internal = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<Boolean> ret = new ObsObjHolderImpl<>(internal);
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl(internal);
 		addReceivedListener(t -> {
 			internal.set(t.contains(value));
 		});
@@ -90,9 +90,9 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public ObsObjHolder<Boolean> contains(ObsObjHolder<U> value) {
+	public ObsBoolHolderImpl contains(ObsObjHolder<U> value) {
 		SimpleObjectProperty<Boolean> internal = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<Boolean> ret = new ObsObjHolderImpl<>(internal);
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl(internal);
 		Set<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() >= 2) {

@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.interfaces.collections;
 import java.util.Set;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.collections.SetChangeListener;
 
 public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChangeListener<? super U>> {
@@ -15,7 +16,7 @@ public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChang
 	 *          a value
 	 * @return a new variable
 	 */
-	public ObsObjHolder<Boolean> contains(U value);
+	public ObsBoolHolder contains(U value);
 
 	/**
 	 * create a variable which is set to true whenever this contains the value
@@ -26,6 +27,6 @@ public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChang
 	 *          a value variable
 	 * @return a new variable
 	 */
-	public ObsObjHolder<Boolean> contains(ObsObjHolder<U> value);
+	public ObsBoolHolder contains(ObsObjHolder<U> value);
 
 }
