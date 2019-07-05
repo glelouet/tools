@@ -13,15 +13,15 @@ import javafx.collections.ObservableList;
  * an {@link ObsListHolder} is a layer over a {@link ObservableList}. It
  * provides methods to
  * <ul>
- * <li>{@link #follow(ListChangeListener)} and
- * {@link #unfollow(ListChangeListener)} the events in the underlying list.
+ * <li>{@link #followItems(ListChangeListener)} and
+ * {@link #unfollowItems(ListChangeListener)} the events in the underlying list.
  * Already processed events are processed again, so existing items will trigger
  * an event</li>
- * <li>{@link #copy()} the internal data or {@link #apply(BiConsumer)} a
+ * <li>{@link #get()} the internal data or {@link #apply(BiConsumer)} a
  * consumer.</li>
  * <li>{@link #waitData() wait} for data to be acquired at least once. Typically
- * a call to {@link #copy()} or to {@link #apply(BiConsumer)} results in a call
- * to this method, but {@link #follow(ListChangeListener)} does not, so a result
+ * a call to {@link #get()} or to {@link #apply(BiConsumer)} results in a call
+ * to this method, but {@link #followItems(ListChangeListener)} does not, so a result
  * produced by using follow should be used after a call to this method.</li>
  * </ul>
  * <p>

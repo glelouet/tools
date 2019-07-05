@@ -25,8 +25,8 @@ public class ObsListHolderImplTest {
 		List<String>[] last = new List[1];
 		ArrayList<ListChangeListener.Change<? extends String>> modifs = new ArrayList<>();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
-		test.addReceivedListener(o -> last[0] = o);
-		test.follow(l -> modifs.add(l));
+		test.follow((obj, old, o) -> last[0] = o);
+		test.followItems(l -> modifs.add(l));
 
 		Assert.assertNull(last[0]);
 		Assert.assertEquals(modifs.size(), 0);
@@ -37,13 +37,13 @@ public class ObsListHolderImplTest {
 		test.dataReceived();
 		Assert.assertNotNull(last[0]);
 		Assert.assertEquals(modifs.size(), 1);
-		Assert.assertEquals(test.copy(), Arrays.asList("a", "b"));
+		Assert.assertEquals(test.get(), Arrays.asList("a", "b"));
 
 		internal.addAll("a", "b");
 		test.dataReceived();
 		Assert.assertNotNull(last[0]);
 		Assert.assertEquals(modifs.size(), 2);
-		Assert.assertEquals(test.copy(), Arrays.asList("a", "b", "a", "b"));
+		Assert.assertEquals(test.get(), Arrays.asList("a", "b", "a", "b"));
 
 	}
 
@@ -51,14 +51,14 @@ public class ObsListHolderImplTest {
 	public void testMap() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
-		ObsMapHolder<Integer, String> mapSize2String = test.map(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2Size = test.map(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2String = test.mapItems(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2Size = test.mapItems(s -> s, s -> s.length());
 
 		internal.addAll("a", "bb");
 		test.dataReceived();
 
-		ObsMapHolder<Integer, String> mapSize2StringLate = test.map(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2SizeLate = test.map(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2StringLate = test.mapItems(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2SizeLate = test.mapItems(s -> s, s -> s.length());
 
 		Assert.assertEquals(mapSize2String.get(1), "a");
 		Assert.assertEquals(mapSize2String.get(2), "bb");
@@ -103,16 +103,16 @@ public class ObsListHolderImplTest {
 		internal.addAll("a", "bb", "ccc");
 		test.dataReceived();
 
-		Assert.assertEquals(filtered.copy(), Arrays.asList("bb", "ccc"));
+		Assert.assertEquals(filtered.get(), Arrays.asList("bb", "ccc"));
 
 		ObsListHolderImpl<String> filtered2 = test.filter(s -> s.length() > 1);
-		Assert.assertEquals(filtered2.copy(), Arrays.asList("bb", "ccc"));
+		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc"));
 
 		internal.addAll("dddd");
 		test.dataReceived();
 
-		Assert.assertEquals(filtered.copy(), Arrays.asList("bb", "ccc", "dddd"));
-		Assert.assertEquals(filtered2.copy(), Arrays.asList("bb", "ccc", "dddd"));
+		Assert.assertEquals(filtered.get(), Arrays.asList("bb", "ccc", "dddd"));
+		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc", "dddd"));
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class ObsListHolderImplTest {
 		test2.dataReceived();
 
 		ObsListHolder<Object> prod = test1.prodList(test2, (s1, s2) -> s1 + s2);
-		Assert.assertEquals(prod.copy(), Arrays.asList("a1", "a2", "b1", "b2"));
+		Assert.assertEquals(prod.get(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class ObsListHolderImplTest {
 		test1.dataReceived();
 
 		ObsListHolder<String> sorted = test1.sorted(String::compareTo);
-		Assert.assertEquals(sorted.copy(), Arrays.asList("a", "b", "c", "d"));
+		Assert.assertEquals(sorted.get(), Arrays.asList("a", "b", "c", "d"));
 	}
 
 	@Test
@@ -150,7 +150,7 @@ public class ObsListHolderImplTest {
 		test1.dataReceived();
 
 		ObsListHolder<String> reversed = test1.reverse();
-		Assert.assertEquals(reversed.copy(), Arrays.asList("d", "c", "b", "a"));
+		Assert.assertEquals(reversed.get(), Arrays.asList("d", "c", "b", "a"));
 	}
 
 	@Test

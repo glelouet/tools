@@ -73,7 +73,7 @@ public class ObsSetHolderImplTest {
 		internal.addAll(Arrays.asList("a", "bb", "ccc"));
 		test.dataReceived();
 
-		ObsMapHolder<String, Integer> sizes = test.map(s -> s, s -> s.length());
+		ObsMapHolder<String, Integer> sizes = test.mapItems(s -> s, s -> s.length());
 		Assert.assertEquals((int) sizes.get("a"), 1);
 	}
 

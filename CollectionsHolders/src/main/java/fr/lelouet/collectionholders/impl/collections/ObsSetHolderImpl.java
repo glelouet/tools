@@ -24,7 +24,7 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public Set<U> copy() {
+	public Set<U> get() {
 		waitData();
 		return LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			return new HashSet<>(underlying);
@@ -32,7 +32,7 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public void follow(SetChangeListener<? super U> listener) {
+	public void followItems(SetChangeListener<? super U> listener) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			ObservableSet<U> otherset = FXCollections.observableSet(new HashSet<>());
 			otherset.addListener(listener);
@@ -42,7 +42,7 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public void unfollow(SetChangeListener<? super U> change) {
+	public void unfollowItems(SetChangeListener<? super U> change) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
 		});
@@ -56,7 +56,7 @@ implements ObsSetHolder<U> {
 	public static <T> ObsSetHolderImpl<T> filter(ObsSetHolder<T> source, Predicate<? super T> predicate) {
 		ObservableSet<T> internal = FXCollections.observableSet(new HashSet<>());
 		ObsSetHolderImpl<T> ret = new ObsSetHolderImpl<>(internal);
-		source.addReceivedListener(t -> {
+		source.follow((obj, old, t) -> {
 			internal.clear();
 			t.stream().filter(predicate).forEach(internal::add);
 			ret.dataReceived();
@@ -70,12 +70,12 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public <K> ObsMapHolder<K, U> map(Function<U, K> keyExtractor) {
+	public <K> ObsMapHolder<K, U> mapItems(Function<U, K> keyExtractor) {
 		return ObsMapHolderImpl.toMap(this, keyExtractor);
 	}
 
 	@Override
-	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
+	public <K, V> ObsMapHolder<K, V> mapItems(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
 		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
 	}
 
@@ -83,7 +83,7 @@ implements ObsSetHolder<U> {
 	public ObsBoolHolderImpl contains(U value) {
 		SimpleObjectProperty<Boolean> internal = new SimpleObjectProperty<>();
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl(internal);
-		addReceivedListener(t -> {
+		follow((obj, old, t) -> {
 			internal.set(t.contains(value));
 		});
 		return ret;
@@ -99,7 +99,7 @@ implements ObsSetHolder<U> {
 				internal.set(underlying.contains(value.get()));
 			}
 		};
-		addReceivedListener(t -> {
+		follow((obj, old, t) -> {
 			received.add(this);
 			update.run();
 		});

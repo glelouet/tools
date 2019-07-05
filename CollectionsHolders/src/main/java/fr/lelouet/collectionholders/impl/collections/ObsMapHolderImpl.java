@@ -201,7 +201,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			Function<V, L> remapper) {
 		ObservableMap<K, L> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
-		list.addReceivedListener(l -> {
+		list.follow((obj, old, l) -> {
 			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, (a, b) -> b));
 			internal.keySet().retainAll(newmap.keySet());
 			internal.putAll(newmap);

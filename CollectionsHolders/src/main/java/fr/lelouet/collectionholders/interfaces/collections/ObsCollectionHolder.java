@@ -17,6 +17,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
 
 /**
  * common interface for set and list.
@@ -37,7 +38,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 *
 	 * @return
 	 */
-	C copy();
+	C get();
 
 	/**
 	 * iterate over all the elements in the collections, after it's been set, and
@@ -62,9 +63,9 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 *
 	 * @param listener
 	 */
-	void follow(L listener);
+	void followItems(L listener);
 
-	void unfollow(L change);
+	void unfollowItems(L change);
 
 	void waitData();
 
@@ -80,15 +81,15 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * batches and rather recompute the whole data instead of manage all the small
 	 * modifications
 	 */
-	public void addReceivedListener(Consumer<C> callback);
+	public void follow(ChangeListener<C> callback);
 
 	/**
-	 * remove a listener added through {@link #addReceivedListener(Runnable)}
+	 * remove a listener added through {@link #follow(Runnable)}
 	 *
 	 * @param callback
 	 * @return true if the callback was added.
 	 */
-	public boolean remReceivedListener(Consumer<C> callback);
+	public boolean unfollow(ChangeListener<C> callback);
 
 	/**
 	 * register a runnable to be run once {@link #dataReceived()} is called. The
@@ -131,7 +132,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 * @return a new map that contains this list's items, with the corresponding
 	 *         key.
 	 */
-	public <K> ObsMapHolder<K, U> map(Function<U, K> keyExtractor);
+	public <K> ObsMapHolder<K, U> mapItems(Function<U, K> keyExtractor);
 
 	/**
 	 * map the items in this into a new Map. In case of collision in the key
@@ -147,7 +148,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 	 *          function to transform an element in the value
 	 * @return a new map.
 	 */
-	public <K, V> ObsMapHolder<K, V> map(Function<U, K> keyExtractor, Function<U, V> valExtractor);
+	public <K, V> ObsMapHolder<K, V> mapItems(Function<U, K> keyExtractor, Function<U, V> valExtractor);
 
 	/**
 	 * join the items in this using a mapper and a joiner

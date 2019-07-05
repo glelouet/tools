@@ -24,6 +24,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -38,7 +39,7 @@ implements ObsCollectionHolder<U, C, L> {
 
 	CountDownLatch waitLatch = new CountDownLatch(1);
 
-	private ArrayList<Consumer<C>> receiveListeners;
+	private ArrayList<ChangeListener<C>> receiveListeners;
 
 	@Override
 	public void waitData() {
@@ -68,7 +69,7 @@ implements ObsCollectionHolder<U, C, L> {
 				if (size == null) {
 					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
 					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
-					addReceivedListener(c -> internal.set(c.size()));
+					follow((a, b, c) -> internal.set(c.size()));
 					size = ret;
 				}
 			}
@@ -77,20 +78,20 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
-	public void addReceivedListener(Consumer<C> callback) {
+	public void follow(ChangeListener<C> callback) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
 			}
 			receiveListeners.add(callback);
 			if (waitLatch.getCount() == 0) {
-				callback.accept(underlying);
+				callback.changed(null, null, underlying);
 			}
 		});
 	}
 
 	@Override
-	public boolean remReceivedListener(Consumer<C> callback) {
+	public boolean unfollow(ChangeListener<C> callback) {
 		synchronized (underlying) {
 			return receiveListeners.remove(callback);
 		}
@@ -106,8 +107,8 @@ implements ObsCollectionHolder<U, C, L> {
 			waitLatch.countDown();
 			if (receiveListeners != null) {
 				C consumed = underlying;
-				for (Consumer<C> r : receiveListeners) {
-					r.accept(consumed);
+				for (ChangeListener<C> r : receiveListeners) {
+					r.changed(null, null, consumed);
 				}
 			}
 		});
@@ -117,7 +118,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public ObsListHolder<U> sorted(Comparator<U> comparator) {
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
-		addReceivedListener(o -> {
+		follow((a, b, o) -> {
 			ArrayList<U> modified = new  ArrayList<>(o);
 			Collections.sort(modified, comparator);
 			internal.clear();
@@ -146,11 +147,11 @@ implements ObsCollectionHolder<U, C, L> {
 				ret.dataReceived();
 			}
 		};
-		addReceivedListener(o -> {
+		follow((a, old, o) -> {
 			leftCol[0] = o;
 			update.run();
 		});
-		right.addReceivedListener(o -> {
+		right.follow((a, b, o) -> {
 			rightCol[0] = o;
 			update.run();
 		});
@@ -161,7 +162,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer) {
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolder<V> ret = new ObsObjHolderImpl<>(internal);
-		addReceivedListener(l -> internal.set(collectionReducer.apply(l)));
+		follow((a, b, l) -> internal.set(collectionReducer.apply(l)));
 		return ret;
 	}
 
@@ -169,7 +170,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public ObsIntHolderImpl reduceInt(ToIntFunction<C> collectionReducer) {
 		SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
 		ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
-		addReceivedListener(l -> internal.set(collectionReducer.applyAsInt(l)));
+		follow((a, b, l) -> internal.set(collectionReducer.applyAsInt(l)));
 		return ret;
 	}
 
@@ -177,7 +178,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer) {
 		SimpleObjectProperty<Double> internal = new SimpleObjectProperty<>();
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl(internal);
-		addReceivedListener(l -> internal.set(collectionReducer.applyAsDouble(l)));
+		follow((a, b, l) -> internal.set(collectionReducer.applyAsDouble(l)));
 		return ret;
 	}
 
@@ -185,7 +186,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer) {
 		SimpleObjectProperty<Long> internal = new SimpleObjectProperty<>();
 		ObsLongHolderImpl ret = new ObsLongHolderImpl(internal);
-		addReceivedListener(l -> internal.set(collectionReducer.applyAsLong(l)));
+		follow((a, b, l) -> internal.set(collectionReducer.applyAsLong(l)));
 		return ret;
 	}
 
