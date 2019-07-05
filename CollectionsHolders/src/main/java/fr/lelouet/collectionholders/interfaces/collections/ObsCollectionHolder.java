@@ -16,8 +16,6 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.Observable;
-import javafx.beans.value.ChangeListener;
 
 /**
  * common interface for set and list.
@@ -30,15 +28,8 @@ import javafx.beans.value.ChangeListener;
  *          Listener type passed to observe the internal data (eg
  *          ListEventListener&lt;U&gt;)
  */
-public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
+public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsObjHolder<C> {
 
-	/**
-	 * wait for at least one element to be added, then return a copy of the
-	 * underlying list.
-	 *
-	 * @return
-	 */
-	C get();
 
 	/**
 	 * iterate over all the elements in the collections, after it's been set, and
@@ -67,29 +58,11 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 
 	void unfollowItems(L change);
 
-	void waitData();
-
 	/**
 	 * called by the data fetcher when data has been received. This specifies that
 	 * the items stored are consistent and can be used as a bulk.
 	 */
 	void dataReceived();
-
-	/**
-	 * add a callback that will be called every time the map received a
-	 * dataReceived call. This is useful when you know the modifications are in
-	 * batches and rather recompute the whole data instead of manage all the small
-	 * modifications
-	 */
-	public void follow(ChangeListener<C> callback);
-
-	/**
-	 * remove a listener added through {@link #follow(Runnable)}
-	 *
-	 * @param callback
-	 * @return true if the callback was added.
-	 */
-	public boolean unfollow(ChangeListener<C> callback);
 
 	/**
 	 * register a runnable to be run once {@link #dataReceived()} is called. The
@@ -105,12 +78,6 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> {
 			callback.run();
 		}).start();
 	}
-
-	/**
-	 * return an observable to be notified when values are changed. Typically
-	 * returns the underlying observable collection
-	 */
-	Observable asObservable();
 
 	/**
 	 * create a filtered collection working on bulk process

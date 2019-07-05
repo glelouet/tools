@@ -3,8 +3,8 @@ package fr.lelouet.collectionholders.interfaces;
 import java.util.function.Function;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 
 /**
  * holder on a single object. call should be synchronized.
@@ -32,7 +32,7 @@ public interface ObsObjHolder<U> {
 	void waitData();
 
 	/** return an observable to be notified when values are changed */
-	ObservableValue<U> asObservable();
+	Observable asObservable();
 
 	/**
 	 * create a new obsObjHolder that contains this value, mapped

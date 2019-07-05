@@ -91,9 +91,9 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
-	public boolean unfollow(ChangeListener<C> callback) {
+	public void unfollow(ChangeListener<C> callback) {
 		synchronized (underlying) {
-			return receiveListeners.remove(callback);
+			receiveListeners.remove(callback);
 		}
 	}
 
@@ -187,6 +187,30 @@ implements ObsCollectionHolder<U, C, L> {
 		SimpleObjectProperty<Long> internal = new SimpleObjectProperty<>();
 		ObsLongHolderImpl ret = new ObsLongHolderImpl(internal);
 		follow((a, b, l) -> internal.set(collectionReducer.applyAsLong(l)));
+		return ret;
+	}
+
+	@Override
+	public <V> ObsObjHolder<V> map(Function<C, V> mapper) {
+		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
+		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
+		follow((a, b, l) -> internal.set(mapper.apply(l)));
+		return ret;
+	}
+
+	@Override
+	public <V> ObsListHolder<V> toList(Function<C, Iterable<V>> generator) {
+		ObservableList<V> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
+		follow((observable, oldValue, newValue) -> {
+			internal.clear();
+			if (newValue != null) {
+				for (V v : generator.apply(newValue)) {
+					internal.add(v);
+				}
+			}
+			ret.dataReceived();
+		});
 		return ret;
 	}
 
