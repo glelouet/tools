@@ -70,7 +70,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public Map<K, V> copy() {
+	public Map<K, V> get() {
 		waitData();
 		return LockWatchDog.BARKER.syncExecute(underlying, () -> new HashMap<>(underlying));
 	}
@@ -88,7 +88,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public void follow(MapChangeListener<? super K, ? super V> listener) {
+	public void followEntries(MapChangeListener<? super K, ? super V> listener) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			ObservableMap<K, V> othermap = FXCollections.observableHashMap();
 			othermap.addListener(listener);
@@ -103,7 +103,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public void addReceivedListener(Consumer<Map<K, V>> callback) {
+	public void follow(Consumer<Map<K, V>> callback) {
 		synchronized (underlying) {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
@@ -116,7 +116,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public boolean remReceivedListener(Consumer<Map<K, V>> callback) {
+	public boolean unfollow(Consumer<Map<K, V>> callback) {
 		synchronized (underlying) {
 			return receiveListeners.remove(callback);
 		}
@@ -134,7 +134,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public void unfollow(MapChangeListener<? super K, ? super V> change) {
+	public void unfollowEntries(MapChangeListener<? super K, ? super V> change) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
 		});
@@ -159,7 +159,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	public static <K, S, T> ObsMapHolderImpl<K, T> map(ObsMapHolder<K, S> source, Function<S, T> mapping) {
 		ObservableMap<K, T> containedTarget = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, T> ret = new ObsMapHolderImpl<>(containedTarget);
-		source.follow(c -> {
+		source.followEntries(c -> {
 			if (c.wasRemoved() && !c.wasAdded()) {
 				synchronized (containedTarget) {
 					containedTarget.remove(c.getKey());
@@ -170,7 +170,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				}
 			}
 		});
-		source.addReceivedListener(l -> ret.dataReceived());
+		source.follow(l -> ret.dataReceived());
 		return ret;
 	}
 
@@ -242,7 +242,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
 		LinkedHashMap<ObsMapHolder<K, V>, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
 		for (ObsMapHolder<K, V> m : array) {
-			m.addReceivedListener(map -> {
+			m.follow(map -> {
 				synchronized (alreadyreceived) {
 					alreadyreceived.remove(m);
 					alreadyreceived.put(m, map);
@@ -275,7 +275,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				internal.set(get(key.get()));
 			}
 		};
-		addReceivedListener(t -> {
+		follow(t -> {
 			synchronized (received) {
 				received.add(this);
 				updateValue.run();
@@ -294,7 +294,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	public ObsObjHolder<V> at(K key) {
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
-		addReceivedListener(t -> {
+		follow(t -> {
 			internal.set(t.get(key));
 		});
 		return ret;
@@ -309,7 +309,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				if (size == null) {
 					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
 					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
-					addReceivedListener(c -> internal.set(c.size()));
+					follow(c -> internal.set(c.size()));
 					size = ret;
 				}
 			}
@@ -326,7 +326,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				if (keys == null) {
 					ObservableSet<K> internal = FXCollections.observableSet(new HashSet<>());
 					ObsSetHolderImpl<K> ret = new ObsSetHolderImpl<>(internal);
-					addReceivedListener(m -> {
+					follow(m -> {
 						internal.clear();
 						internal.addAll(m.keySet());
 						ret.dataReceived();
@@ -347,7 +347,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				if (values == null) {
 					ObservableList<V> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
-					addReceivedListener(m -> {
+					follow(m -> {
 						internal.clear();
 						internal.addAll(m.values());
 						ret.dataReceived();
@@ -366,7 +366,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		}
 		ObservableMap<K, V> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
-		follow(change -> {
+		followEntries(change -> {
 			if (change.wasRemoved()) {
 				internal.remove(change.getKey());
 			}
@@ -384,7 +384,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				internal.put(change.getKey(), change.getValueAdded());
 			}
 		});
-		addReceivedListener(m -> {
+		follow(m -> {
 			ret.dataReceived();
 		});
 		return ret;

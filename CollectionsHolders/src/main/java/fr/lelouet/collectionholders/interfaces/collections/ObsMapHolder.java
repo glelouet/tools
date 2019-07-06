@@ -25,7 +25,7 @@ public interface ObsMapHolder<K, V> {
 	 *
 	 * @return
 	 */
-	Map<K, V> copy();
+	Map<K, V> get();
 
 	/**
 	 * synchronized call to the underlying map get, after the data is received.
@@ -36,6 +36,22 @@ public interface ObsMapHolder<K, V> {
 	V get(K key);
 
 	V getOrDefault(K key, V defaultValue);
+
+	/**
+	 * create a new variable bound to the value mapped to a key
+	 *
+	 * @param key
+	 * @return a new variable
+	 */
+	ObsObjHolder<V> at(K key);
+
+	/**
+	 * create a new variable bound to the value mapped to a key variable
+	 *
+	 * @param key
+	 * @return a new variable
+	 */
+	ObsObjHolder<V> at(ObsObjHolder<K> key);
 
 	/**
 	 *
@@ -52,9 +68,9 @@ public interface ObsMapHolder<K, V> {
 	 *
 	 * @param change
 	 */
-	void follow(MapChangeListener<? super K, ? super V> change);
+	void followEntries(MapChangeListener<? super K, ? super V> change);
 
-	void unfollow(MapChangeListener<? super K, ? super V> change);
+	void unfollowEntries(MapChangeListener<? super K, ? super V> change);
 
 	void waitData();
 
@@ -87,15 +103,15 @@ public interface ObsMapHolder<K, V> {
 	 * batches and rather recompute the whole data instead of manage all the small
 	 * modifications
 	 */
-	public void addReceivedListener(Consumer<Map<K, V>> callback);
+	public void follow(Consumer<Map<K, V>> callback);
 
 	/**
-	 * remove a listener added through {@link #addReceivedListener(Runnable)}
+	 * remove a listener added through {@link #follow(Runnable)}
 	 *
 	 * @param callback
 	 * @return true if the callback was added.
 	 */
-	public boolean remReceivedListener(Consumer<Map<K, V>> callback);
+	public boolean unfollow(Consumer<Map<K, V>> callback);
 
 	/** return an observable to be notified when values are changed */
 	Observable asObservable();
@@ -126,22 +142,6 @@ public interface ObsMapHolder<K, V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public ObsMapHolder<K, V> merge(BinaryOperator<V> merger, ObsMapHolder<K, V>... maps);
-
-	/**
-	 * create a new variable bound to the value mapped to a key
-	 *
-	 * @param key
-	 * @return a new variable
-	 */
-	ObsObjHolder<V> at(K key);
-
-	/**
-	 * create a new variable bound to the value mapped to a key variable
-	 *
-	 * @param key
-	 * @return a new variable
-	 */
-	ObsObjHolder<V> at(ObsObjHolder<K> key);
 
 	/**
 	 *
