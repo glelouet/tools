@@ -8,17 +8,20 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
@@ -60,17 +63,14 @@ implements ObsCollectionHolder<U, C, L> {
 		});
 	}
 
-	private ObsIntHolderImpl size = null;
+	private ObsIntHolder size = null;
 
 	@Override
 	public ObsIntHolder size() {
 		if (size == null) {
 			synchronized (this) {
 				if (size == null) {
-					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
-					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
-					follow((a, b, c) -> internal.set(c.size()));
-					size = ret;
+					size = mapInt(c -> c.size());
 				}
 			}
 		}
@@ -195,6 +195,38 @@ implements ObsCollectionHolder<U, C, L> {
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
 		follow((a, b, l) -> internal.set(mapper.apply(l)));
+		return ret;
+	}
+
+	@Override
+	public ObsBoolHolder test(Predicate<C> test) {
+		SimpleObjectProperty<Boolean> underlying = new SimpleObjectProperty<>();
+		ObsBoolHolder ret = new ObsBoolHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(test.test(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsIntHolder mapInt(ToIntFunction<C> mapper) {
+		SimpleObjectProperty<Integer> underlying = new SimpleObjectProperty<>();
+		ObsIntHolder ret = new ObsIntHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsInt(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsLongHolder mapLong(ToLongFunction<C> mapper) {
+		SimpleObjectProperty<Long> underlying = new SimpleObjectProperty<>();
+		ObsLongHolder ret = new ObsLongHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsLong(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsDoubleHolder mapDouble(ToDoubleFunction<C> mapper) {
+		SimpleObjectProperty<Double> underlying = new SimpleObjectProperty<>();
+		ObsDoubleHolder ret = new ObsDoubleHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsDouble(newValue)));
 		return ret;
 	}
 

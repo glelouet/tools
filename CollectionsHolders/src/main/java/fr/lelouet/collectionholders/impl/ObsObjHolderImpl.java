@@ -4,10 +4,22 @@ import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -74,6 +86,38 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 		SimpleObjectProperty<V> underlying = new SimpleObjectProperty<>();
 		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(underlying);
 		follow((observable, oldValue, newValue) -> underlying.set(mapper.apply(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsBoolHolder test(Predicate<U> test) {
+		SimpleObjectProperty<Boolean> underlying = new SimpleObjectProperty<>();
+		ObsBoolHolder ret = new ObsBoolHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(test.test(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
+		SimpleObjectProperty<Integer> underlying = new SimpleObjectProperty<>();
+		ObsIntHolder ret = new ObsIntHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsInt(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsLongHolder mapLong(ToLongFunction<U> mapper) {
+		SimpleObjectProperty<Long> underlying = new SimpleObjectProperty<>();
+		ObsLongHolder ret = new ObsLongHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsLong(newValue)));
+		return ret;
+	}
+
+	@Override
+	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
+		SimpleObjectProperty<Double> underlying = new SimpleObjectProperty<>();
+		ObsDoubleHolder ret = new ObsDoubleHolderImpl(underlying);
+		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsDouble(newValue)));
 		return ret;
 	}
 

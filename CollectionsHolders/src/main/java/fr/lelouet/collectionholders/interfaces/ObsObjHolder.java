@@ -1,8 +1,16 @@
 package fr.lelouet.collectionholders.interfaces;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 
@@ -44,6 +52,14 @@ public interface ObsObjHolder<U> {
 	 * @return a new object.
 	 */
 	<V> ObsObjHolder<V> map(Function<U, V> mapper);
+
+	ObsIntHolder mapInt(ToIntFunction<U> mapper);
+
+	ObsLongHolder mapLong(ToLongFunction<U> mapper);
+
+	ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper);
+
+	ObsBoolHolder test(Predicate<U> test);
 
 	/**
 	 * generate an observable list from thie item hold
