@@ -51,14 +51,14 @@ public class ObsListHolderImplTest {
 	public void testMap() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
-		ObsMapHolder<Integer, String> mapSize2String = test.mapItems(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2Size = test.mapItems(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2String = test.toMap(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2Size = test.toMap(s -> s, s -> s.length());
 
 		internal.addAll("a", "bb");
 		test.dataReceived();
 
-		ObsMapHolder<Integer, String> mapSize2StringLate = test.mapItems(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2SizeLate = test.mapItems(s -> s, s -> s.length());
+		ObsMapHolder<Integer, String> mapSize2StringLate = test.toMap(s -> s.length());
+		ObsMapHolder<String, Integer> mapString2SizeLate = test.toMap(s -> s, s -> s.length());
 
 		Assert.assertEquals(mapSize2String.get(1), "a");
 		Assert.assertEquals(mapSize2String.get(2), "bb");

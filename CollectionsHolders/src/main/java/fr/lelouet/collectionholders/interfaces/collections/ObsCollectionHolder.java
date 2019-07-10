@@ -89,6 +89,15 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	public ObsCollectionHolder<U, C, L> filter(Predicate<? super U> predicate);
 
 	/**
+	 * map each item in this to a new item in another collection
+	 *
+	 * @param <K>
+	 * @param <D>
+	 * @return
+	 */
+	public <K> ObsCollectionHolder<K, ?, ?> mapItems(Function<U, K> mapper);
+
+	/**
 	 * map this collection to a new Map. In case of collision in the key function,
 	 * only the last added elements are mapped.
 	 *
@@ -99,7 +108,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @return a new map that contains this list's items, with the corresponding
 	 *         key.
 	 */
-	public <K> ObsMapHolder<K, U> mapItems(Function<U, K> keyExtractor);
+	public <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor);
 
 	/**
 	 * map the items in this into a new Map. In case of collision in the key
@@ -115,7 +124,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *          function to transform an element in the value
 	 * @return a new map.
 	 */
-	public <K, V> ObsMapHolder<K, V> mapItems(Function<U, K> keyExtractor, Function<U, V> valExtractor);
+	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor);
 
 	/**
 	 * join the items in this using a mapper and a joiner

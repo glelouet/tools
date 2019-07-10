@@ -115,6 +115,20 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
+	public <K> ObsCollectionHolder<K, ?, ?> mapItems(Function<U, K> mapper) {
+		ObservableList<K> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
+		follow((a, b, o) -> {
+			internal.clear();
+			for (U u : o) {
+				internal.add(mapper.apply(u));
+			}
+			ret.dataReceived();
+		});
+		return ret;
+	}
+
+	@Override
 	public ObsListHolder<U> sorted(Comparator<U> comparator) {
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);

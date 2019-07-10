@@ -70,12 +70,12 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public <K> ObsMapHolder<K, U> mapItems(Function<U, K> keyExtractor) {
+	public <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor) {
 		return ObsMapHolderImpl.toMap(this, keyExtractor);
 	}
 
 	@Override
-	public <K, V> ObsMapHolder<K, V> mapItems(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
+	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
 		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
 	}
 
