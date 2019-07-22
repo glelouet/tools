@@ -66,6 +66,7 @@ public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder
 	@Override
 	public IntegerBinding asObservableNumber() {
 		if (observableNumber == null) {
+			waitData();
 			synchronized (this) {
 				if (observableNumber == null) {
 					observableNumber = Bindings.createIntegerBinding(() -> underlying.getValue(), underlying);

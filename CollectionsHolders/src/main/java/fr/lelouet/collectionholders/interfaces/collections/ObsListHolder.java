@@ -36,7 +36,7 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListCh
 	 *
 	 * @param cons
 	 */
-	void apply(BiConsumer<Integer, U> cons);
+	public void apply(BiConsumer<Integer, U> cons);
 
 	/**
 	 *

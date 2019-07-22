@@ -66,6 +66,7 @@ public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder>
 	@Override
 	public LongBinding asObservableNumber() {
 		if (observableNumber == null) {
+			waitData();
 			synchronized (this) {
 				if (observableNumber == null) {
 					observableNumber = Bindings.createLongBinding(() -> underlying.getValue(), underlying);

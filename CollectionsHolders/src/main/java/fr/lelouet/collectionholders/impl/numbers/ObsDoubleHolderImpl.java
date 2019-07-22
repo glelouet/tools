@@ -95,6 +95,7 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 	@Override
 	public DoubleBinding asObservableNumber() {
 		if (observableNumber == null) {
+			waitData();
 			synchronized (this) {
 				if (observableNumber == null) {
 					observableNumber = Bindings.createDoubleBinding(() -> underlying.getValue(), underlying);
