@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
-import javafx.beans.binding.NumberBinding;
 import javafx.beans.value.ObservableValue;
 
 /**
@@ -88,17 +87,18 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 
 	/**
 	 * create a variable containing a test over this variable value
-	 * 
+	 *
 	 * @param test
 	 *          test over the value
 	 * @return a new variable
 	 */
+	@Override
 	public ObsBoolHolder test(Predicate<U> test);
 
 	/**
 	 * create a variable containing a test over this variable's, and another's,
 	 * values
-	 * 
+	 *
 	 * @param test
 	 *          test over the two values
 	 * @param b
@@ -127,11 +127,6 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 		return test(this::eq, other);
 	}
 
-	/**
-	 * create and cache a binding on the number contained.
-	 *
-	 * @return always the same internal binding.
-	 */
-	public NumberBinding asObservableNumber();
+	public ObservableValue<? extends Number> asObservableNumber();
 
 }

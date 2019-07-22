@@ -1,6 +1,6 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
-import javafx.beans.binding.DoubleBinding;
+import javafx.beans.value.ObservableDoubleValue;
 
 public interface ObsDoubleHolder extends ObsNumberHolder<Double, ObsDoubleHolder> {
 
@@ -9,5 +9,5 @@ public interface ObsDoubleHolder extends ObsNumberHolder<Double, ObsDoubleHolder
 	public ObsIntHolder floor();
 
 	@Override
-	DoubleBinding asObservableNumber();
+	public ObservableDoubleValue asObservableNumber();
 }

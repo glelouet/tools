@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces.numbers;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 
 public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
@@ -33,5 +34,7 @@ public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 	}
 
 	public ObsBoolHolder not();
+
+	public ObservableBooleanValue asObservableBool();
 
 }

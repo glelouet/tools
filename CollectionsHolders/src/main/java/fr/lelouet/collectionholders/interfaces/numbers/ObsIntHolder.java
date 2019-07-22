@@ -1,10 +1,10 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
-import javafx.beans.binding.IntegerBinding;
+import javafx.beans.value.ObservableIntegerValue;
 
 public interface ObsIntHolder extends ObsNumberHolder<Integer, ObsIntHolder> {
 
 	@Override
-	IntegerBinding asObservableNumber();
+	public ObservableIntegerValue asObservableNumber();
 
 }

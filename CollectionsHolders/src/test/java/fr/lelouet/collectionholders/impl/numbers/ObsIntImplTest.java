@@ -33,4 +33,13 @@ public class ObsIntImplTest {
 
 	}
 
+	@Test
+	public void testCombine() {
+		Assert.assertEquals(
+				new ObsIntHolderImpl(new SimpleObjectProperty<>(5)).add(new ObsIntHolderImpl(new SimpleObjectProperty<>(4)))
+				.add(1).sub(new ObsIntHolderImpl(new SimpleObjectProperty<>(5)))
+				.sub(new ObsIntHolderImpl(new SimpleObjectProperty<>(5))).get(),
+				(Integer) 0);
+	}
+
 }

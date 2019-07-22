@@ -1,8 +1,8 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.IntegerBinding;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ObservableIntegerValue;
 import javafx.beans.value.ObservableValue;
 
 public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder> implements ObsIntHolder {
@@ -61,19 +61,20 @@ public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder
 		return a == b;
 	}
 
-	IntegerBinding observableNumber = null;
+	private SimpleIntegerProperty obs = null;
 
 	@Override
-	public IntegerBinding asObservableNumber() {
-		if (observableNumber == null) {
+	public ObservableIntegerValue asObservableNumber() {
+		if (obs == null) {
 			waitData();
 			synchronized (this) {
-				if (observableNumber == null) {
-					observableNumber = Bindings.createIntegerBinding(() -> underlying.getValue(), underlying);
+				if (obs == null) {
+					obs = new SimpleIntegerProperty();
+					obs.bind(underlying);
 				}
 			}
 		}
-		return observableNumber;
+		return obs;
 	}
 
 }

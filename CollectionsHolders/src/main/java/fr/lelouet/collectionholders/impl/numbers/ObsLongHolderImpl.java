@@ -1,8 +1,8 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.LongBinding;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.value.ObservableLongValue;
 import javafx.beans.value.ObservableValue;
 
 public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder> implements ObsLongHolder {
@@ -61,18 +61,19 @@ public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder>
 		return a == b;
 	}
 
-	LongBinding observableNumber = null;
+	private SimpleLongProperty obs = null;
 
 	@Override
-	public LongBinding asObservableNumber() {
-		if (observableNumber == null) {
+	public ObservableLongValue asObservableNumber() {
+		if (obs == null) {
 			waitData();
 			synchronized (this) {
-				if (observableNumber == null) {
-					observableNumber = Bindings.createLongBinding(() -> underlying.getValue(), underlying);
+				if (obs == null) {
+					obs = new SimpleLongProperty();
+					obs.bind(underlying);
 				}
 			}
 		}
-		return observableNumber;
+		return obs;
 	}
 }

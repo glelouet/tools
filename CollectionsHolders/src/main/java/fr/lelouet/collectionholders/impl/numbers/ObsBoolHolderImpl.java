@@ -3,6 +3,8 @@ package fr.lelouet.collectionholders.impl.numbers;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 
 public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implements ObsBoolHolder {
@@ -30,6 +32,22 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 			}
 		}
 		return not;
+	}
+
+	private SimpleBooleanProperty obs = null;
+
+	@Override
+	public ObservableBooleanValue asObservableBool() {
+		if (obs == null) {
+			waitData();
+			synchronized (this) {
+				if (obs == null) {
+					obs = new SimpleBooleanProperty();
+					obs.bind(underlying);
+				}
+			}
+		}
+		return obs;
 	}
 
 }

@@ -26,4 +26,10 @@ extends NotNullObsObjHolderImpl<U> implements ObsNumberHolder<U, S> {
 		return ObsObjHolderImpl.join(this, b, ObsBoolHolderImpl::new, (u, v) -> test.test(u, v));
 	}
 
+	@Override
+	public ObservableValue<? extends Number> asObservableNumber() {
+		waitData();
+		return underlying;
+	}
+
 }
