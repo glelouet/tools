@@ -41,12 +41,12 @@
 	</dependencies>
 
 	<groupId>fr.lelouet.tools</groupId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 
 	<scm>
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>CollectionsHolders-0.1.1</tag>
 	</scm>
 </project>
