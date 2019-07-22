@@ -10,7 +10,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
-import fr.lelouet.collectionholders.impl.collections.ObsMapHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
@@ -156,9 +155,9 @@ public class ObsMapHolderTest {
 		SimpleObjectProperty<String> ik3 = new SimpleObjectProperty<>("k3");
 		ObsObjHolderImpl<String> k3 = new ObsObjHolderImpl<>(ik3);
 
-		ObsObjHolder<String> at1 = map.at(k1);
-		ObsObjHolder<String> at2 = map.at(k2);
-		ObsObjHolder<String> at3 = map.at(k3);
+		ObsObjHolder<String> at1 = map.at(k1, "");
+		ObsObjHolder<String> at2 = map.at(k2, "");
+		ObsObjHolder<String> at3 = map.at(k3, "");
 
 		ik1.set("k1");
 

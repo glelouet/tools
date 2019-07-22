@@ -266,13 +266,16 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public ObsObjHolder<V> at(ObsObjHolder<K> key) {
+	public ObsObjHolder<V> at(ObsObjHolder<K> key, V defaultValue) {
+		if (defaultValue == null) {
+			throw new NullPointerException();
+		}
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
 		HashSet<Object> received = new HashSet<>();
 		Runnable updateValue = () -> {
 			if (received.size() == 2) {
-				internal.set(get(key.get()));
+				internal.set(getOrDefault(key.get(), defaultValue));
 			}
 		};
 		follow(t -> {
@@ -291,11 +294,14 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public ObsObjHolder<V> at(K key) {
+	public ObsObjHolder<V> at(K key, V defaultValue) {
+		if (defaultValue == null) {
+			throw new NullPointerException();
+		}
 		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
 		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
 		follow(t -> {
-			internal.set(t.get(key));
+			internal.set(t.getOrDefault(key, defaultValue));
 		});
 		return ret;
 	}

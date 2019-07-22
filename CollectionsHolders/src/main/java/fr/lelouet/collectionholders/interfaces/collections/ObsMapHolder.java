@@ -41,17 +41,25 @@ public interface ObsMapHolder<K, V> {
 	 * create a new variable bound to the value mapped to a key
 	 *
 	 * @param key
+	 * @param defaultValue
+	 *          the value to be used in case the key is not present. Not null,
+	 *          otherwise the returned holder would not be notified the value has
+	 *          been set.
 	 * @return a new variable
 	 */
-	ObsObjHolder<V> at(K key);
+	ObsObjHolder<V> at(K key, V defaultValue);
 
 	/**
 	 * create a new variable bound to the value mapped to a key variable
 	 *
 	 * @param key
+	 * @param devaultValue
+	 *          the value to be used in case the key is not present. Not null,
+	 *          otherwise the returned holder would not be notified the value has
+	 *          been set.
 	 * @return a new variable
 	 */
-	ObsObjHolder<V> at(ObsObjHolder<K> key);
+	ObsObjHolder<V> at(ObsObjHolder<K> key, V devaultValue);
 
 	/**
 	 *
