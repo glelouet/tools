@@ -11,7 +11,6 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 
 /**
@@ -36,11 +35,6 @@ public interface ObsObjHolder<U> {
 	 * @param change
 	 */
 	void unfollow(ChangeListener<U> change);
-
-	void waitData();
-
-	/** return an observable to be notified when values are changed */
-	Observable asObservable();
 
 	/**
 	 * create a new obsObjHolder that contains this value, mapped

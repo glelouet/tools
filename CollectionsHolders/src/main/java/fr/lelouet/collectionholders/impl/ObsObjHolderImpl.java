@@ -40,7 +40,6 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 
 	CountDownLatch waitLatch = new CountDownLatch(1);
 
-	@Override
 	public void waitData() {
 		try {
 			waitLatch.await();
@@ -67,11 +66,6 @@ public class ObsObjHolderImpl<U> implements ObsObjHolder<U> {
 			}
 			underlying.addListener(change);
 		}
-	}
-
-	@Override
-	public ObservableValue<U> asObservable() {
-		return underlying;
 	}
 
 	@Override

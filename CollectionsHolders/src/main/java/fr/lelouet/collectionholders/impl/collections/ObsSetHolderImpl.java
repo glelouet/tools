@@ -10,7 +10,6 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -46,11 +45,6 @@ implements ObsSetHolder<U> {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			underlying.removeListener(change);
 		});
-	}
-
-	@Override
-	public Observable asObservable() {
-		return underlying;
 	}
 
 	public static <T> ObsSetHolderImpl<T> filter(ObsSetHolder<T> source, Predicate<? super T> predicate) {

@@ -44,7 +44,6 @@ implements ObsCollectionHolder<U, C, L> {
 
 	private ArrayList<ChangeListener<C>> receiveListeners;
 
-	@Override
 	public void waitData() {
 		try {
 			waitLatch.await();

@@ -12,7 +12,6 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -51,11 +50,6 @@ implements ObsListHolder<U> {
 			otherlist.addAll(underlying);
 			underlying.addListener(listener);
 		});
-	}
-
-	@Override
-	public Observable asObservable() {
-		return underlying;
 	}
 
 	@Override
