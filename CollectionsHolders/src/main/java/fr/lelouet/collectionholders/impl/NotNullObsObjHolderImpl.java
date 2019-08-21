@@ -7,7 +7,7 @@ import javafx.beans.value.ObservableValue;
  *
  * @param <U>
  */
-public class NotNullObsObjHolderImpl<U> extends ObsObjHolderImpl<U> {
+public class NotNullObsObjHolderImpl<U> extends ObsObjHolderBack<U> {
 
 	public NotNullObsObjHolderImpl(ObservableValue<U> underlying) {
 		super(underlying);

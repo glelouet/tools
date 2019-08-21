@@ -13,7 +13,7 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
@@ -172,9 +172,8 @@ implements ObsCollectionHolder<U, C, L> {
 
 	@Override
 	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer) {
-		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
-		ObsObjHolder<V> ret = new ObsObjHolderImpl<>(internal);
-		follow((a, b, l) -> internal.set(collectionReducer.apply(l)));
+		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
+		follow((l) -> ret.set(collectionReducer.apply(l)));
 		return ret;
 	}
 
@@ -204,9 +203,8 @@ implements ObsCollectionHolder<U, C, L> {
 
 	@Override
 	public <V> ObsObjHolder<V> map(Function<C, V> mapper) {
-		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
-		follow((a, b, l) -> internal.set(mapper.apply(l)));
+		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
+		follow((l) -> ret.set(mapper.apply(l)));
 		return ret;
 	}
 

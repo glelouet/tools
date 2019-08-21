@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
@@ -270,12 +270,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		if (defaultValue == null) {
 			throw new NullPointerException();
 		}
-		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
+		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		HashSet<Object> received = new HashSet<>();
 		Runnable updateValue = () -> {
 			if (received.size() == 2) {
-				internal.set(getOrDefault(key.get(), defaultValue));
+				ret.set(getOrDefault(key.get(), defaultValue));
 			}
 		};
 		follow(t -> {
@@ -298,10 +297,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		if (defaultValue == null) {
 			throw new NullPointerException();
 		}
-		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<V> ret = new ObsObjHolderImpl<>(internal);
+		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		follow(t -> {
-			internal.set(t.getOrDefault(key, defaultValue));
+			ret.set(t.getOrDefault(key, defaultValue));
 		});
 		return ret;
 	}

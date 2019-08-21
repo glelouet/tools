@@ -1,6 +1,6 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableDoubleValue;
@@ -24,7 +24,7 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 		if (ceil == null) {
 			synchronized (this) {
 				if (ceil == null) {
-					ceil = ObsObjHolderImpl.map(this, ObsIntHolderImpl::new, a -> (int) Math.ceil(a));
+					ceil = AObsObjHolder.map(this, ObsIntHolderImpl::new, a -> (int) Math.ceil(a));
 				}
 			}
 		}
@@ -38,7 +38,7 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 		if (floor == null) {
 			synchronized (this) {
 				if (floor == null) {
-					floor = ObsObjHolderImpl.map(this, ObsIntHolderImpl::new, a -> (int) Math.floor(a));
+					floor = AObsObjHolder.map(this, ObsIntHolderImpl::new, a -> (int) Math.floor(a));
 				}
 			}
 		}

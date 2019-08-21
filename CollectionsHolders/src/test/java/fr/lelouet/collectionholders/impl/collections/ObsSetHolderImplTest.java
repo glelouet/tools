@@ -6,10 +6,9 @@ import java.util.HashSet;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
@@ -22,8 +21,8 @@ public class ObsSetHolderImplTest {
 
 		ObsObjHolder<Boolean> a1 = test.contains("a");
 		ObsObjHolder<Boolean> c1 = test.contains("c");
-		ObsObjHolder<Boolean> av1 = test.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("a")));
-		ObsObjHolder<Boolean> cv1 = test.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("c")));
+		ObsObjHolder<Boolean> av1 = test.contains(new ObsObjHolderSimple<>("a"));
+		ObsObjHolder<Boolean> cv1 = test.contains(new ObsObjHolderSimple<>("c"));
 
 		internal.add("a");
 		internal.add("b");
@@ -31,8 +30,8 @@ public class ObsSetHolderImplTest {
 
 		ObsObjHolder<Boolean> a2 = test.contains("a");
 		ObsObjHolder<Boolean> c2 = test.contains("c");
-		ObsObjHolder<Boolean> av2 = test.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("a")));
-		ObsObjHolder<Boolean> cv2 = test.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("c")));
+		ObsObjHolder<Boolean> av2 = test.contains(new ObsObjHolderSimple<>("a"));
+		ObsObjHolder<Boolean> cv2 = test.contains(new ObsObjHolderSimple<>("c"));
 
 		for (ObsObjHolder<Boolean> a : Arrays.asList(a1, a2, av1, av2)) {
 			Assert.assertTrue(a.get());

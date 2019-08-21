@@ -14,7 +14,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> {
 	public ObsObjHolderSimple() {
 	}
 
-	ObsObjHolderSimple(U item) {
+	public ObsObjHolderSimple(U item) {
 		set(item);
 	}
 

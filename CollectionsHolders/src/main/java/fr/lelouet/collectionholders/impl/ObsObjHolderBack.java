@@ -10,11 +10,11 @@ import javafx.beans.value.ObservableValue;
  *
  * @param <U>
  */
-public class ObsObjHolderImpl<U> extends AObsObjHolder<U> {
+public class ObsObjHolderBack<U> extends AObsObjHolder<U> {
 
 	protected ObservableValue<U> underlying;
 
-	public ObsObjHolderImpl(ObservableValue<U> underlying) {
+	public ObsObjHolderBack(ObservableValue<U> underlying) {
 		this.underlying = underlying;
 		underlying.addListener(this::objchangelisten);
 		if (underlying.getValue() != null) {

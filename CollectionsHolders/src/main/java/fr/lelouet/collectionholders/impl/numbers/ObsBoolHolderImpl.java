@@ -1,7 +1,7 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
+import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
@@ -25,7 +25,7 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 		if (not == null) {
 			synchronized (this) {
 				if (not == null) {
-					ObsBoolHolderImpl other = ObsObjHolderImpl.map(this, var -> new ObsBoolHolderImpl(var), (a) -> !a);
+					ObsBoolHolderImpl other = AObsObjHolder.map(this, var -> new ObsBoolHolderImpl(var), (a) -> !a);
 					other.not = this;
 					not = other;
 				}

@@ -3,7 +3,7 @@ package fr.lelouet.collectionholders.interfaces.numbers;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import javafx.beans.value.ObservableValue;
 
@@ -46,19 +46,19 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	public boolean eq(U a, U b);
 
 	public default S add(S other) {
-		return ObsObjHolderImpl.join(this, other, this::create, this::add);
+		return AObsObjHolder.join(this, other, this::create, this::add);
 	}
 
 	public default S sub(S other) {
-		return ObsObjHolderImpl.join(this, other, this::create, this::sub);
+		return AObsObjHolder.join(this, other, this::create, this::sub);
 	}
 
 	public default S mult(S other) {
-		return ObsObjHolderImpl.join(this, other, this::create, this::mult);
+		return AObsObjHolder.join(this, other, this::create, this::mult);
 	}
 
 	public default S div(S other) {
-		return ObsObjHolderImpl.join(this, other, this::create, this::div);
+		return AObsObjHolder.join(this, other, this::create, this::div);
 	}
 
 	public default S scale(S mult, S add) {
@@ -66,19 +66,19 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	}
 
 	public default S add(U b) {
-		return ObsObjHolderImpl.map(this, this::create, a -> add(a, b));
+		return AObsObjHolder.map(this, this::create, a -> add(a, b));
 	}
 
 	public default S sub(U b) {
-		return ObsObjHolderImpl.map(this, this::create, a -> sub(a, b));
+		return AObsObjHolder.map(this, this::create, a -> sub(a, b));
 	}
 
 	public default S mult(U b) {
-		return ObsObjHolderImpl.map(this, this::create, a -> mult(a, b));
+		return AObsObjHolder.map(this, this::create, a -> mult(a, b));
 	}
 
 	public default S div(U b) {
-		return ObsObjHolderImpl.map(this, this::create, a -> div(a, b));
+		return AObsObjHolder.map(this, this::create, a -> div(a, b));
 	}
 
 	public default S scale(U mult, U add) {

@@ -9,12 +9,11 @@ import java.util.stream.Stream;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.collectionholders.impl.ObsObjHolderImpl;
+import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -147,19 +146,15 @@ public class ObsMapHolderTest {
 		ObservableMap<String, String> imap = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
 
-		SimpleObjectProperty<String> ik1 = new SimpleObjectProperty<>();
-		ObsObjHolderImpl<String> k1 = new ObsObjHolderImpl<>(ik1);
-
+		ObsObjHolderSimple<String> k1 = new ObsObjHolderSimple<>();
 		String k2 = "k2";
-
-		SimpleObjectProperty<String> ik3 = new SimpleObjectProperty<>("k3");
-		ObsObjHolderImpl<String> k3 = new ObsObjHolderImpl<>(ik3);
+		ObsObjHolderSimple<String> k3 = new ObsObjHolderSimple<>();
 
 		ObsObjHolder<String> at1 = map.at(k1, "");
 		ObsObjHolder<String> at2 = map.at(k2, "");
 		ObsObjHolder<String> at3 = map.at(k3, "");
 
-		ik1.set("k1");
+		k1.set("k1");
 
 		imap.put("k1", "v1");
 		imap.put("k2", "v2");
@@ -170,7 +165,7 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(at2.get(), "v2");
 		Assert.assertEquals(at3.get(), "v3");
 
-		ik3.set("k1");
+		k3.set("k1");
 		imap.put("k1", "v1b");
 		map.dataReceived();
 
@@ -195,7 +190,7 @@ public class ObsMapHolderTest {
 		map.dataReceived();
 
 		Assert.assertTrue(keys.contains("a").get());
-		Assert.assertTrue(keys.contains(new ObsObjHolderImpl<>(new SimpleObjectProperty<>("b"))).get());
+		Assert.assertTrue(keys.contains(new ObsObjHolderSimple<>("b")).get());
 		Assert.assertEquals((int) keys.size().get(), 2);
 
 		Assert.assertEquals((int) values.size().get(), 2);
