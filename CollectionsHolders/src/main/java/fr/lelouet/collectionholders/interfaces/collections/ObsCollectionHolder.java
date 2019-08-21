@@ -59,12 +59,6 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	void unfollowItems(L change);
 
 	/**
-	 * called by the data fetcher when data has been received. This specifies that
-	 * the items stored are consistent and can be used as a bulk.
-	 */
-	void dataReceived();
-
-	/**
 	 * register a runnable to be run once {@link #dataReceived()} is called. The
 	 * call is made in a new thread.
 	 *

@@ -101,7 +101,6 @@ implements ObsCollectionHolder<U, C, L> {
 	 * called by the data fetcher when data has been received. This specifies that
 	 * the items stored are consistent and can be used as a bulk.
 	 */
-	@Override
 	public void dataReceived() {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			waitLatch.countDown();
