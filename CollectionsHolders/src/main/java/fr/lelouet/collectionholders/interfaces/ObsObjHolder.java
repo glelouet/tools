@@ -1,5 +1,6 @@
 package fr.lelouet.collectionholders.interfaces;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
@@ -34,7 +35,15 @@ public interface ObsObjHolder<U> {
 	 *
 	 * @param change
 	 */
-	void unfollow(ChangeListener<U> change);
+	public void unfollow(ChangeListener<U> change);
+
+	public default void follow(Consumer<U> cons) {
+		follow((o, a, b) -> cons.accept(b));
+	}
+
+	public default void unfollow(Consumer<U> cons) {
+		// default can't do.
+	}
 
 	/**
 	 * create a new obsObjHolder that contains this value, mapped

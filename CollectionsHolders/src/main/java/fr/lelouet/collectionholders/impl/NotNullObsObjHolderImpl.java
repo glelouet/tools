@@ -4,7 +4,7 @@ import javafx.beans.value.ObservableValue;
 
 /**
  * Object holders that throw an exception when set to null
- * 
+ *
  * @param <U>
  */
 public class NotNullObsObjHolderImpl<U> extends ObsObjHolderImpl<U> {
