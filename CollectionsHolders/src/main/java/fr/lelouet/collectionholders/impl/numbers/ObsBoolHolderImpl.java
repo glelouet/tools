@@ -5,17 +5,15 @@ import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
-import javafx.beans.value.ObservableValue;
 
 public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implements ObsBoolHolder {
 
-	public ObsBoolHolderImpl(ObservableValue<Boolean> underlying) {
-		super(underlying);
+	public ObsBoolHolderImpl() {
 	}
 
-	@Override
-	public ObsBoolHolder create(ObservableValue<Boolean> var) {
-		return new ObsBoolHolderImpl(var);
+	public ObsBoolHolderImpl(boolean value) {
+		this();
+		set(value);
 	}
 
 	ObsBoolHolder not = null;
@@ -25,7 +23,7 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 		if (not == null) {
 			synchronized (this) {
 				if (not == null) {
-					ObsBoolHolderImpl other = AObsObjHolder.map(this, var -> new ObsBoolHolderImpl(var), (a) -> !a);
+					ObsBoolHolderImpl other = AObsObjHolder.map(this, ObsBoolHolderImpl::new, (a) -> !a);
 					other.not = this;
 					not = other;
 				}
@@ -43,11 +41,17 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 			synchronized (this) {
 				if (obs == null) {
 					obs = new SimpleBooleanProperty();
-					obs.bind(underlying);
+					follow(obs::set);
 				}
 			}
 		}
 		return obs;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ObsBoolHolderImpl create() {
+		return new ObsBoolHolderImpl();
 	}
 
 }

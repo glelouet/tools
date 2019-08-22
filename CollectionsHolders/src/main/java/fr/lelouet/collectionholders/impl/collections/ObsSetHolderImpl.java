@@ -10,7 +10,6 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -75,22 +74,20 @@ implements ObsSetHolder<U> {
 
 	@Override
 	public ObsBoolHolderImpl contains(U value) {
-		SimpleObjectProperty<Boolean> internal = new SimpleObjectProperty<>();
-		ObsBoolHolderImpl ret = new ObsBoolHolderImpl(internal);
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
 		follow((obj, old, t) -> {
-			internal.set(t.contains(value));
+			ret.set(t.contains(value));
 		});
 		return ret;
 	}
 
 	@Override
 	public ObsBoolHolderImpl contains(ObsObjHolder<U> value) {
-		SimpleObjectProperty<Boolean> internal = new SimpleObjectProperty<>();
-		ObsBoolHolderImpl ret = new ObsBoolHolderImpl(internal);
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
 		Set<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() >= 2) {
-				internal.set(underlying.contains(value.get()));
+				ret.set(underlying.contains(value.get()));
 			}
 		};
 		follow((obj, old, t) -> {

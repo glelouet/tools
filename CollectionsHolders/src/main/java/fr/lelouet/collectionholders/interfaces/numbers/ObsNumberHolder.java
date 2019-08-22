@@ -5,18 +5,20 @@ import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import javafx.beans.value.ObservableValue;
 
 /**
  * common methods for double and int observable holders
  *
- * @param U
+ * @param Contained
  *          the class of the number to hold
- * @param S
+ * @param SelfClass
  *          self class
  *
  */
-public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, S>> extends ObsObjHolder<U> {
+public interface ObsNumberHolder<Contained extends Number, SelfClass extends ObsNumberHolder<Contained, SelfClass>>
+extends ObsObjHolder<Contained> {
 
 	/**
 	 * internal function to create a copy (useful for binding modification, eg
@@ -25,63 +27,63 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	 * @param var
 	 * @return
 	 */
-	public S create(ObservableValue<U> var);
+	public <RWClass extends ObsNumberHolder<Contained, SelfClass> & RWObsObjHolder<Contained>> RWClass create();
 
-	public U add(U a, U b);
+	public Contained add(Contained a, Contained b);
 
-	public U sub(U a, U b);
+	public Contained sub(Contained a, Contained b);
 
-	public U div(U a, U b);
+	public Contained div(Contained a, Contained b);
 
-	public U mult(U a, U b);
+	public Contained mult(Contained a, Contained b);
 
-	public boolean gt(U a, U b);
+	public boolean gt(Contained a, Contained b);
 
-	public boolean ge(U a, U b);
+	public boolean ge(Contained a, Contained b);
 
-	public boolean lt(U a, U b);
+	public boolean lt(Contained a, Contained b);
 
-	public boolean le(U a, U b);
+	public boolean le(Contained a, Contained b);
 
-	public boolean eq(U a, U b);
+	public boolean eq(Contained a, Contained b);
 
-	public default S add(S other) {
+	public default SelfClass add(SelfClass other) {
 		return AObsObjHolder.join(this, other, this::create, this::add);
 	}
 
-	public default S sub(S other) {
+	public default SelfClass sub(SelfClass other) {
 		return AObsObjHolder.join(this, other, this::create, this::sub);
 	}
 
-	public default S mult(S other) {
+	public default SelfClass mult(SelfClass other) {
 		return AObsObjHolder.join(this, other, this::create, this::mult);
 	}
 
-	public default S div(S other) {
+	public default SelfClass div(SelfClass other) {
 		return AObsObjHolder.join(this, other, this::create, this::div);
 	}
 
-	public default S scale(S mult, S add) {
+	public default SelfClass scale(SelfClass mult, SelfClass add) {
 		return add(add).mult(mult);
 	}
 
-	public default S add(U b) {
+	public default SelfClass add(Contained b) {
 		return AObsObjHolder.map(this, this::create, a -> add(a, b));
 	}
 
-	public default S sub(U b) {
+	public default SelfClass sub(Contained b) {
 		return AObsObjHolder.map(this, this::create, a -> sub(a, b));
 	}
 
-	public default S mult(U b) {
+	public default SelfClass mult(Contained b) {
 		return AObsObjHolder.map(this, this::create, a -> mult(a, b));
 	}
 
-	public default S div(U b) {
+	public default SelfClass div(Contained b) {
 		return AObsObjHolder.map(this, this::create, a -> div(a, b));
 	}
 
-	public default S scale(U mult, U add) {
+	public default SelfClass scale(Contained mult, Contained add) {
 		return add(add).mult(mult);
 	}
 
@@ -93,7 +95,7 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	 * @return a new variable
 	 */
 	@Override
-	public ObsBoolHolder test(Predicate<U> test);
+	public ObsBoolHolder test(Predicate<Contained> test);
 
 	/**
 	 * create a variable containing a test over this variable's, and another's,
@@ -105,25 +107,25 @@ public interface ObsNumberHolder<U extends Number, S extends ObsNumberHolder<U, 
 	 *          the other variable
 	 * @return a new variable
 	 */
-	public ObsBoolHolder test(BiPredicate<U, U> test, S b);
+	public ObsBoolHolder test(BiPredicate<Contained, Contained> test, SelfClass b);
 
-	public default ObsBoolHolder gt(S other) {
+	public default ObsBoolHolder gt(SelfClass other) {
 		return test(this::gt, other);
 	}
 
-	public default ObsBoolHolder ge(S other) {
+	public default ObsBoolHolder ge(SelfClass other) {
 		return test(this::ge, other);
 	}
 
-	public default ObsBoolHolder lt(S other) {
+	public default ObsBoolHolder lt(SelfClass other) {
 		return test(this::lt, other);
 	}
 
-	public default ObsBoolHolder lte(S other) {
+	public default ObsBoolHolder lte(SelfClass other) {
 		return test(this::le, other);
 	}
 
-	public default ObsBoolHolder eq(S other) {
+	public default ObsBoolHolder eq(SelfClass other) {
 		return test(this::eq, other);
 	}
 

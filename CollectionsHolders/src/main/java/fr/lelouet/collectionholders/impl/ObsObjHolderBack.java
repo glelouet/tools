@@ -59,4 +59,10 @@ public class ObsObjHolderBack<U> extends AObsObjHolder<U> {
 		}
 	}
 
+	// TODO remove this class
+	@Override
+	public void set(U item) {
+		// do nothing. will remove.
+	}
+
 }

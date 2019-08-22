@@ -4,17 +4,21 @@ import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableDoubleValue;
-import javafx.beans.value.ObservableValue;
 
 public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleHolder> implements ObsDoubleHolder {
 
-	public ObsDoubleHolderImpl(ObservableValue<Double> underlying) {
-		super(underlying);
+	public ObsDoubleHolderImpl() {
 	}
 
+	public ObsDoubleHolderImpl(double value) {
+		this();
+		set(value);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public ObsDoubleHolderImpl create(ObservableValue<Double> var) {
-		return new ObsDoubleHolderImpl(var);
+	public ObsDoubleHolderImpl create() {
+		return new ObsDoubleHolderImpl();
 	}
 
 	private ObsIntHolderImpl ceil = null;
@@ -99,7 +103,7 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 			synchronized (this) {
 				if (obs == null) {
 					obs = new SimpleDoubleProperty();
-					obs.bind(underlying);
+					follow(obs::set);
 				}
 			}
 		}

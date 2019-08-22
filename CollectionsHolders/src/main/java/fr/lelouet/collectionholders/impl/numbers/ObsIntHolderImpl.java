@@ -3,17 +3,21 @@ package fr.lelouet.collectionholders.impl.numbers;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableIntegerValue;
-import javafx.beans.value.ObservableValue;
 
 public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder> implements ObsIntHolder {
 
-	public ObsIntHolderImpl(ObservableValue<Integer> underlying) {
-		super(underlying);
+	public ObsIntHolderImpl() {
 	}
 
+	public ObsIntHolderImpl(int value) {
+		this();
+		set(value);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public ObsIntHolder create(ObservableValue<Integer> var) {
-		return new ObsIntHolderImpl(var);
+	public ObsIntHolderImpl create() {
+		return new ObsIntHolderImpl();
 	}
 
 	@Override
@@ -70,7 +74,7 @@ public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder
 			synchronized (this) {
 				if (obs == null) {
 					obs = new SimpleIntegerProperty();
-					obs.bind(underlying);
+					follow(obs::set);
 				}
 			}
 		}

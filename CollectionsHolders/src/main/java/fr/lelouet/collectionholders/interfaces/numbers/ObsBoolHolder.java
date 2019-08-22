@@ -2,12 +2,12 @@ package fr.lelouet.collectionholders.interfaces.numbers;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import javafx.beans.value.ObservableBooleanValue;
-import javafx.beans.value.ObservableValue;
 
 public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 
-	public ObsBoolHolder create(ObservableValue<Boolean> var);
+	public <RWClass extends ObsBoolHolder & RWObsObjHolder<Boolean>> RWClass create();
 
 	public default ObsBoolHolder or(ObsBoolHolder other) {
 		return AObsObjHolder.join(this, other, this::create, (a, b) -> a || b);

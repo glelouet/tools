@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -14,17 +15,16 @@ import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
+public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 
 	@Override
 	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
@@ -35,33 +35,29 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
 	@Override
 	public ObsBoolHolder test(Predicate<U> test) {
-		SimpleObjectProperty<Boolean> underlying = new SimpleObjectProperty<>();
-		ObsBoolHolder ret = new ObsBoolHolderImpl(underlying);
-		follow((observable, oldValue, newValue) -> underlying.set(test.test(newValue)));
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
+		follow((newValue) -> ret.set(test.test(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
-		SimpleObjectProperty<Integer> underlying = new SimpleObjectProperty<>();
-		ObsIntHolder ret = new ObsIntHolderImpl(underlying);
-		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsInt(newValue)));
+		ObsIntHolderImpl ret = new ObsIntHolderImpl();
+		follow(newValue -> ret.set(mapper.applyAsInt(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsLongHolder mapLong(ToLongFunction<U> mapper) {
-		SimpleObjectProperty<Long> underlying = new SimpleObjectProperty<>();
-		ObsLongHolder ret = new ObsLongHolderImpl(underlying);
-		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsLong(newValue)));
+		ObsLongHolderImpl ret = new ObsLongHolderImpl();
+		follow((newValue) -> ret.set(mapper.applyAsLong(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
-		SimpleObjectProperty<Double> underlying = new SimpleObjectProperty<>();
-		ObsDoubleHolder ret = new ObsDoubleHolderImpl(underlying);
-		follow((observable, oldValue, newValue) -> underlying.set(mapper.applyAsDouble(newValue)));
+		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
+		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)));
 		return ret;
 	}
 
@@ -88,11 +84,11 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	/**
 	 * join two observable object holder into a third one
 	 *
-	 * @param <U>
+	 * @param <AType>
 	 *          type of the first object hold
-	 * @param <V>
+	 * @param <Btype>
 	 *          type of second object hold
-	 * @param <W>
+	 * @param <ResType>
 	 *          joined type
 	 * @param <C>
 	 *          collection type to hold the joined value
@@ -102,14 +98,14 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 * @param joiner
 	 * @return
 	 */
-	public static <U, V, W, C extends ObsObjHolder<W>> C join(ObsObjHolder<U> a, ObsObjHolder<V> b,
-			Function<ObservableValue<W>, C> creator, BiFunction<U, V, W> joiner) {
-		SimpleObjectProperty<W> internal = new SimpleObjectProperty<>();
-		C ret = creator.apply(internal);
+	public static <AType, Btype, ResType, C extends RWObsObjHolder<ResType>> C join(ObsObjHolder<AType> a,
+			ObsObjHolder<Btype> b,
+			Supplier<C> creator, BiFunction<AType, Btype, ResType> joiner) {
+		C ret = creator.get();
 		HashSet<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() == 2) {
-				internal.set(joiner.apply(a.get(), b.get()));
+				ret.set(joiner.apply(a.get(), b.get()));
 			}
 		};
 		a.follow((observable, oldValue, newValue) -> {
@@ -141,12 +137,11 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 *          the function to translate a U into a V
 	 * @return a new constrained variable.
 	 */
-	public static <U, V, C extends ObsObjHolder<V>> C map(ObsObjHolder<U> from, Function<ObservableValue<V>, C> creator,
+	public static <U, V, C extends RWObsObjHolder<V>> C map(ObsObjHolder<U> from, Supplier<C> creator,
 			Function<U, V> mapper) {
-		SimpleObjectProperty<V> internal = new SimpleObjectProperty<>();
-		C ret = creator.apply(internal);
+		C ret = creator.get();
 		from.follow((observable, oldValue, newValue) -> {
-			internal.set(mapper.apply(newValue));
+			ret.set(mapper.apply(newValue));
 		});
 		return ret;
 	}

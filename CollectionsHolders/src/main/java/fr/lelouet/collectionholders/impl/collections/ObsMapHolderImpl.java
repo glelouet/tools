@@ -23,7 +23,6 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
@@ -311,9 +310,8 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		if (size == null) {
 			synchronized (this) {
 				if (size == null) {
-					SimpleObjectProperty<Integer> internal = new SimpleObjectProperty<>();
-					ObsIntHolderImpl ret = new ObsIntHolderImpl(internal);
-					follow(c -> internal.set(c.size()));
+					ObsIntHolderImpl ret = new ObsIntHolderImpl();
+					follow(c -> ret.set(c.size()));
 					size = ret;
 				}
 			}
