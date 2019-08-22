@@ -12,7 +12,6 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.value.ChangeListener;
 
 /**
  * holder on a single object. call should be synchronized.
@@ -24,26 +23,9 @@ public interface ObsObjHolder<U> {
 	/** return the internal object once it's retrieved */
 	public U get();
 
-	/**
-	 * add a listener on this value. The listener is called at once if the value
-	 * is already set, and will be called whenever the value is set later on.
-	 */
-	public void follow(ChangeListener<U> cons);
+	public void follow(Consumer<U> cons);
 
-	/**
-	 * remove a listener on this value
-	 *
-	 * @param change
-	 */
-	public void unfollow(ChangeListener<U> change);
-
-	public default void follow(Consumer<U> cons) {
-		follow((o, a, b) -> cons.accept(b));
-	}
-
-	public default void unfollow(Consumer<U> cons) {
-		// default can't do.
-	}
+	public void unfollow(Consumer<U> cons);
 
 	/**
 	 * create a new obsObjHolder that contains this value, mapped

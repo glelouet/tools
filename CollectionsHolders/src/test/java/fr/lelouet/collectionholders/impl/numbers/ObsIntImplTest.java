@@ -7,7 +7,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
 public class ObsIntImplTest {
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testCreation() {
 		ObsIntHolderImpl twenty = new ObsIntHolderImpl(20);
 		Assert.assertEquals((int) twenty.add(4).get(), 24);
@@ -32,7 +32,7 @@ public class ObsIntImplTest {
 
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testCombine() {
 		Assert.assertEquals(new ObsIntHolderImpl(5).add(new ObsIntHolderImpl(4)).add(1).sub(new ObsIntHolderImpl(5))
 				.sub(new ObsIntHolderImpl(5)).get(), (Integer) 0);

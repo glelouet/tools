@@ -19,7 +19,7 @@ import javafx.collections.ObservableMap;
 
 public class ObsMapHolderTest {
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testMap() {
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source, true);
@@ -34,7 +34,7 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(mapped.get().get("c"), "+cc");
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testMapreceived() {
 		int[] count = new int[] { 0 };
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
@@ -52,7 +52,7 @@ public class ObsMapHolderTest {
 		Stream.of('a', 'b', 'c').parallel().mapToInt(c -> Character.digit(c, 10)).min().orElseGet(() -> Integer.MAX_VALUE);
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testMerge() {
 		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> m1 = new ObsMapHolderImpl<>(im1);
@@ -110,7 +110,7 @@ public class ObsMapHolderTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test(timeOut = 5000)
 	public void testMerge2() {
 
 		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
@@ -140,7 +140,7 @@ public class ObsMapHolderTest {
 
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testAt() {
 
 		ObservableMap<String, String> imap = FXCollections.observableHashMap();
@@ -148,7 +148,7 @@ public class ObsMapHolderTest {
 
 		ObsObjHolderSimple<String> k1 = new ObsObjHolderSimple<>();
 		String k2 = "k2";
-		ObsObjHolderSimple<String> k3 = new ObsObjHolderSimple<>();
+		ObsObjHolderSimple<String> k3 = new ObsObjHolderSimple<>("k3");
 
 		ObsObjHolder<String> at1 = map.at(k1, "");
 		ObsObjHolder<String> at2 = map.at(k2, "");
@@ -159,6 +159,7 @@ public class ObsMapHolderTest {
 		imap.put("k1", "v1");
 		imap.put("k2", "v2");
 		imap.put("k3", "v3");
+
 		map.dataReceived();
 
 		Assert.assertEquals(at1.get(), "v1");
@@ -175,7 +176,7 @@ public class ObsMapHolderTest {
 
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testKeyValue() {
 		ObservableMap<String, String> imap = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);

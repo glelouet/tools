@@ -65,7 +65,7 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
 		ObservableList<V> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
-		follow((observable, oldValue, newValue) -> {
+		follow((newValue) -> {
 			internal.clear();
 			if (newValue != null) {
 				for (V v : generator.apply(newValue)) {
@@ -99,8 +99,7 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 	 * @return
 	 */
 	public static <AType, Btype, ResType, C extends RWObsObjHolder<ResType>> C join(ObsObjHolder<AType> a,
-			ObsObjHolder<Btype> b,
-			Supplier<C> creator, BiFunction<AType, Btype, ResType> joiner) {
+			ObsObjHolder<Btype> b, Supplier<C> creator, BiFunction<AType, Btype, ResType> joiner) {
 		C ret = creator.get();
 		HashSet<Object> received = new HashSet<>();
 		Runnable update = () -> {
@@ -108,11 +107,11 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 				ret.set(joiner.apply(a.get(), b.get()));
 			}
 		};
-		a.follow((observable, oldValue, newValue) -> {
+		a.follow((newValue) -> {
 			received.add(a);
 			update.run();
 		});
-		b.follow((observable, oldValue, newValue) -> {
+		b.follow((newValue) -> {
 			received.add(b);
 			update.run();
 		});
@@ -140,7 +139,7 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 	public static <U, V, C extends RWObsObjHolder<V>> C map(ObsObjHolder<U> from, Supplier<C> creator,
 			Function<U, V> mapper) {
 		C ret = creator.get();
-		from.follow((observable, oldValue, newValue) -> {
+		from.follow((newValue) -> {
 			ret.set(mapper.apply(newValue));
 		});
 		return ret;

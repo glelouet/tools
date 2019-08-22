@@ -62,7 +62,7 @@ implements ObsListHolder<U> {
 	public static <T> ObsListHolderImpl<T> filter(ObsListHolder<T> source, Predicate<? super T> predicate) {
 		ObservableList<T> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<T> ret = new ObsListHolderImpl<>(internal);
-		source.follow((a, b, t) -> {
+		source.follow((t) -> {
 			internal.clear();
 			t.stream().filter(predicate).forEach(internal::add);
 			ret.dataReceived();
@@ -84,7 +84,7 @@ implements ObsListHolder<U> {
 				if (distinct == null) {
 					ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
 					ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
-					follow((a, b, l) -> {
+					follow((l) -> {
 						internal.retainAll(l);
 						internal.addAll(l);
 						ret.dataReceived();
@@ -115,7 +115,7 @@ implements ObsListHolder<U> {
 				if (reverse == null) {
 					ObservableList<U> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
-					follow((a, b, o) -> {
+					follow((o) -> {
 						ArrayList<U> modified = new ArrayList<>(o);
 						Collections.reverse(modified);
 						internal.clear();

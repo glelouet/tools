@@ -18,14 +18,14 @@ import javafx.collections.ObservableList;
 
 public class ObsListHolderImplTest {
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testCreation() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		@SuppressWarnings("unchecked")
 		List<String>[] last = new List[1];
 		ArrayList<ListChangeListener.Change<? extends String>> modifs = new ArrayList<>();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
-		test.follow((obj, old, o) -> last[0] = o);
+		test.follow(o -> last[0] = o);
 		test.followItems(l -> modifs.add(l));
 
 		Assert.assertNull(last[0]);
@@ -47,7 +47,7 @@ public class ObsListHolderImplTest {
 
 	}
 
-	@Test(dependsOnMethods = "testCreation")
+	@Test(dependsOnMethods = "testCreation", timeOut = 5000)
 	public void testMap() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
@@ -94,7 +94,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(mapString2SizeLate.get("ddd"), (Integer) 3);
 	}
 
-	@Test(dependsOnMethods = "testCreation")
+	@Test(dependsOnMethods = "testCreation", timeOut = 5000)
 	public void testFilter() {
 		ObservableList<String> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
@@ -115,7 +115,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc", "dddd"));
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testProdList() {
 		ObservableList<String> internal1 = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
@@ -131,7 +131,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(prod.get(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testSort() {
 		ObservableList<String> internal1 = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
@@ -142,7 +142,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(sorted.get(), Arrays.asList("a", "b", "c", "d"));
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testReverse() {
 		ObservableList<String> internal1 = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
@@ -153,7 +153,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(reversed.get(), Arrays.asList("d", "c", "b", "a"));
 	}
 
-	@Test
+	@Test(timeOut = 5000)
 	public void testReduce() {
 		ObservableList<String> internal1 = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);

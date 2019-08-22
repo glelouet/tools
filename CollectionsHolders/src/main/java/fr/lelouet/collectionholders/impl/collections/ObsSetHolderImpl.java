@@ -49,7 +49,7 @@ implements ObsSetHolder<U> {
 	public static <T> ObsSetHolderImpl<T> filter(ObsSetHolder<T> source, Predicate<? super T> predicate) {
 		ObservableSet<T> internal = FXCollections.observableSet(new HashSet<>());
 		ObsSetHolderImpl<T> ret = new ObsSetHolderImpl<>(internal);
-		source.follow((obj, old, t) -> {
+		source.follow((t) -> {
 			internal.clear();
 			t.stream().filter(predicate).forEach(internal::add);
 			ret.dataReceived();
@@ -75,7 +75,7 @@ implements ObsSetHolder<U> {
 	@Override
 	public ObsBoolHolderImpl contains(U value) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		follow((obj, old, t) -> {
+		follow((t) -> {
 			ret.set(t.contains(value));
 		});
 		return ret;
@@ -90,11 +90,11 @@ implements ObsSetHolder<U> {
 				ret.set(underlying.contains(value.get()));
 			}
 		};
-		follow((obj, old, t) -> {
+		follow((t) -> {
 			received.add(this);
 			update.run();
 		});
-		value.follow((observable, oldValue, newValue) -> {
+		value.follow((newValue) -> {
 			received.add(value);
 			update.run();
 		});

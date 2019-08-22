@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -42,7 +43,7 @@ public class ObsObjHolderBack<U> extends AObsObjHolder<U> {
 		waitLatch.countDown();
 	}
 
-	@Override
+
 	public void follow(ChangeListener<U> change) {
 		synchronized (underlying) {
 			if (waitLatch.getCount() <= 0) {
@@ -52,7 +53,7 @@ public class ObsObjHolderBack<U> extends AObsObjHolder<U> {
 		}
 	}
 
-	@Override
+
 	public void unfollow(ChangeListener<U> change) {
 		synchronized (underlying) {
 			underlying.removeListener(change);
@@ -63,6 +64,18 @@ public class ObsObjHolderBack<U> extends AObsObjHolder<U> {
 	@Override
 	public void set(U item) {
 		// do nothing. will remove.
+	}
+
+	@Override
+	public void follow(Consumer<U> cons) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void unfollow(Consumer<U> cons) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

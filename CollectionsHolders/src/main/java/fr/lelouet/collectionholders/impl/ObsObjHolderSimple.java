@@ -4,8 +4,6 @@ import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-import javafx.beans.value.ChangeListener;
-
 /**
  * an implementation that contains the item to return and the list of listeners;
  */
@@ -51,22 +49,13 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> {
 		followers.remove(cons);
 	}
 
+	@Override
 	public synchronized void set(U newitem) {
 		item = newitem;
 		for (Consumer<U> cons : followers) {
 			cons.accept(newitem);
 		}
 		waitLatch.countDown();
-	}
-
-	@Override
-	public void follow(ChangeListener<U> cons) {
-		follow(o -> cons.changed(null, null, o));
-	}
-
-	@Override
-	public void unfollow(ChangeListener<U> change) {
-		// can't do
 	}
 
 }

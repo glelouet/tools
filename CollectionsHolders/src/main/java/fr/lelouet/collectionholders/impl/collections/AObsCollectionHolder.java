@@ -26,7 +26,6 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -40,9 +39,6 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	CountDownLatch waitLatch = new CountDownLatch(1);
-
-	private ArrayList<ChangeListener<C>> receiveListeners;
-
 	public void waitData() {
 		try {
 			waitLatch.await();
@@ -75,25 +71,28 @@ implements ObsCollectionHolder<U, C, L> {
 		return size;
 	}
 
+	private ArrayList<Consumer<C>> receiveListeners;
+
 	@Override
-	public void follow(ChangeListener<C> callback) {
+	public void follow(Consumer<C> callback) {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
 			}
 			receiveListeners.add(callback);
 			if (waitLatch.getCount() == 0) {
-				callback.changed(null, null, underlying);
+				callback.accept(underlying);
 			}
 		});
 	}
 
 	@Override
-	public void unfollow(ChangeListener<C> callback) {
+	public void unfollow(Consumer<C> callback) {
 		synchronized (underlying) {
 			receiveListeners.remove(callback);
 		}
 	}
+
 
 	/**
 	 * called by the data fetcher when data has been received. This specifies that
@@ -104,8 +103,8 @@ implements ObsCollectionHolder<U, C, L> {
 			waitLatch.countDown();
 			if (receiveListeners != null) {
 				C consumed = underlying;
-				for (ChangeListener<C> r : receiveListeners) {
-					r.changed(null, null, consumed);
+				for (Consumer<C> r : receiveListeners) {
+					r.accept(consumed);
 				}
 			}
 		});
@@ -115,7 +114,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public <K> ObsCollectionHolder<K, ?, ?> mapItems(Function<U, K> mapper) {
 		ObservableList<K> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
-		follow((a, b, o) -> {
+		follow((o) -> {
 			internal.clear();
 			for (U u : o) {
 				internal.add(mapper.apply(u));
@@ -129,7 +128,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public ObsListHolder<U> sorted(Comparator<U> comparator) {
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
-		follow((a, b, o) -> {
+		follow((o) -> {
 			ArrayList<U> modified = new  ArrayList<>(o);
 			Collections.sort(modified, comparator);
 			internal.clear();
@@ -158,11 +157,11 @@ implements ObsCollectionHolder<U, C, L> {
 				ret.dataReceived();
 			}
 		};
-		follow((a, old, o) -> {
+		follow((o) -> {
 			leftCol[0] = o;
 			update.run();
 		});
-		right.follow((a, b, o) -> {
+		right.follow((o) -> {
 			rightCol[0] = o;
 			update.run();
 		});
@@ -179,21 +178,21 @@ implements ObsCollectionHolder<U, C, L> {
 	@Override
 	public ObsIntHolderImpl reduceInt(ToIntFunction<C> collectionReducer) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow((a, b, l) -> ret.set(collectionReducer.applyAsInt(l)));
+		follow((l) -> ret.set(collectionReducer.applyAsInt(l)));
 		return ret;
 	}
 
 	@Override
 	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow((a, b, l) -> ret.set(collectionReducer.applyAsDouble(l)));
+		follow((l) -> ret.set(collectionReducer.applyAsDouble(l)));
 		return ret;
 	}
 
 	@Override
 	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer) {
 		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow((a, b, l) -> ret.set(collectionReducer.applyAsLong(l)));
+		follow((l) -> ret.set(collectionReducer.applyAsLong(l)));
 		return ret;
 	}
 
@@ -207,28 +206,28 @@ implements ObsCollectionHolder<U, C, L> {
 	@Override
 	public ObsBoolHolder test(Predicate<C> test) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		follow((observable, oldValue, newValue) -> ret.set(test.test(newValue)));
+		follow((newValue) -> ret.set(test.test(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<C> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow((observable, oldValue, newValue) -> ret.set(mapper.applyAsInt(newValue)));
+		follow((newValue) -> ret.set(mapper.applyAsInt(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsLongHolder mapLong(ToLongFunction<C> mapper) {
 		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow((observable, oldValue, newValue) -> ret.set(mapper.applyAsLong(newValue)));
+		follow((newValue) -> ret.set(mapper.applyAsLong(newValue)));
 		return ret;
 	}
 
 	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<C> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow((observable, oldValue, newValue) -> ret.set(mapper.applyAsDouble(newValue)));
+		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)));
 		return ret;
 	}
 
@@ -236,7 +235,7 @@ implements ObsCollectionHolder<U, C, L> {
 	public <V> ObsListHolder<V> toList(Function<C, Iterable<V>> generator) {
 		ObservableList<V> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
-		follow((observable, oldValue, newValue) -> {
+		follow((newValue) -> {
 			internal.clear();
 			if (newValue != null) {
 				for (V v : generator.apply(newValue)) {
