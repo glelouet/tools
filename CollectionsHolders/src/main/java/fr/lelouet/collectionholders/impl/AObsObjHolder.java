@@ -43,7 +43,9 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow(newValue -> ret.set(mapper.applyAsInt(newValue)));
+		follow(newValue -> {
+			ret.set(mapper.applyAsInt(newValue));
+		});
 		return ret;
 	}
 
@@ -98,22 +100,32 @@ public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
 	 * @param joiner
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static <AType, Btype, ResType, C extends RWObsObjHolder<ResType>> C join(ObsObjHolder<AType> a,
 			ObsObjHolder<Btype> b, Supplier<C> creator, BiFunction<AType, Btype, ResType> joiner) {
 		C ret = creator.get();
+		AType[] ah = (AType[]) new Object[1];
+		Btype[] bh = (Btype[]) new Object[1];
 		HashSet<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() == 2) {
-				ret.set(joiner.apply(a.get(), b.get()));
+				ResType joined = joiner.apply(ah[0], bh[0]);
+				ret.set(joined);
 			}
 		};
 		a.follow((newValue) -> {
-			received.add(a);
-			update.run();
+			synchronized (received) {
+				received.add(a);
+				ah[0] = newValue;
+				update.run();
+			}
 		});
 		b.follow((newValue) -> {
-			received.add(b);
-			update.run();
+			synchronized (received) {
+				received.add(b);
+				bh[0] = newValue;
+				update.run();
+			}
 		});
 		return ret;
 	}
