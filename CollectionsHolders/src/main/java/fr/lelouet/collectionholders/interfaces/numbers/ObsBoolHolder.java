@@ -5,6 +5,9 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import javafx.beans.value.ObservableBooleanValue;
 
+/**
+ * holder over a boolean. Contains logical values, like and or not xor.
+ */
 public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 
 	public <RWClass extends ObsBoolHolder & RWObsObjHolder<Boolean>> RWClass create();
@@ -33,6 +36,11 @@ public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 		return AObsObjHolder.map(this, this::create, (a) -> a != b);
 	}
 
+	/**
+	 * create and cache a boolean
+	 * 
+	 * @return
+	 */
 	public ObsBoolHolder not();
 
 	public ObservableBooleanValue asObservableBool();

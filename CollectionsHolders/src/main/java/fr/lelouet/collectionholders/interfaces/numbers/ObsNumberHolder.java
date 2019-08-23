@@ -1,7 +1,6 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
@@ -9,12 +8,18 @@ import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import javafx.beans.value.ObservableValue;
 
 /**
- * common methods for double and int observable holders
+ * common methods for double, long and int observable holders. <br />
+ * This class is parameterized by the SelfClass that is returned when using
+ * combination methods (add, sub, etc.). This allows to have IntHolder when
+ * adding two IntHolders.
  *
  * @param Contained
- *          the class of the number to hold
+ *          the class of the boxified number to hold
  * @param SelfClass
- *          self class
+ *          self class . It is used for the combination methods. eg a double
+ *          holder would return a double holder, not a obsNumberHolder. That
+ *          helps to keep the corect methods, eg a doublehodler has more methods
+ *          than an obsobjholder.
  *
  */
 public interface ObsNumberHolder<Contained extends Number, SelfClass extends ObsNumberHolder<Contained, SelfClass>>
@@ -28,6 +33,10 @@ extends ObsObjHolder<Contained> {
 	 * @return
 	 */
 	public <RWClass extends ObsNumberHolder<Contained, SelfClass> & RWObsObjHolder<Contained>> RWClass create();
+
+	//
+	// combination methods over numbers
+	//
 
 	public Contained add(Contained a, Contained b);
 
@@ -46,6 +55,10 @@ extends ObsObjHolder<Contained> {
 	public boolean le(Contained a, Contained b);
 
 	public boolean eq(Contained a, Contained b);
+
+	//
+	// combination methods over SelfClass
+	//
 
 	public default SelfClass add(SelfClass other) {
 		return AObsObjHolder.join(this, other, this::create, this::add);
@@ -88,16 +101,6 @@ extends ObsObjHolder<Contained> {
 	}
 
 	/**
-	 * create a variable containing a test over this variable value
-	 *
-	 * @param test
-	 *          test over the value
-	 * @return a new variable
-	 */
-	@Override
-	public ObsBoolHolder test(Predicate<Contained> test);
-
-	/**
 	 * create a variable containing a test over this variable's, and another's,
 	 * values
 	 *
@@ -129,6 +132,14 @@ extends ObsObjHolder<Contained> {
 		return test(this::eq, other);
 	}
 
+	/**
+	 * create and cache an observable variable that reflect the value hold in
+	 * this. The value is not created until the data is hold, so it may wait for
+	 * long.
+	 *
+	 * @return a cached internal value always mirroting the data contained in
+	 *         this.
+	 */
 	public ObservableValue<? extends Number> asObservableNumber();
 
 }
