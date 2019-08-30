@@ -14,6 +14,7 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -50,6 +51,26 @@ public class ObsMapHolderTest {
 		sourceimpl.dataReceived();
 		Assert.assertEquals(count[0], 4);
 		Stream.of('a', 'b', 'c').parallel().mapToInt(c -> Character.digit(c, 10)).min().orElseGet(() -> Integer.MAX_VALUE);
+	}
+
+	@Test(timeOut = 5000)
+	public void testReceivedPreFollow() {
+		ObservableMap<String, String> source = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source);
+		source.put("a", "b");
+		sourceimpl.dataReceived();
+		ObsIntHolder size = sourceimpl.size();
+		Assert.assertEquals(size.get(), (Integer) 1);
+	}
+
+	@Test(timeOut = 5000)
+	public void testReceivedPostFollow() {
+		ObservableMap<String, String> source = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source);
+		ObsIntHolder size = sourceimpl.size();
+		source.put("a", "b");
+		sourceimpl.dataReceived();
+		Assert.assertEquals(size.get(), (Integer) 1);
 	}
 
 	@Test(timeOut = 5000)

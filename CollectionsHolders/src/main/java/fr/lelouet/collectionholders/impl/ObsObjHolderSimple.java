@@ -4,10 +4,12 @@ import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
+
 /**
  * an implementation that contains the item to return and the list of listeners;
  */
-public class ObsObjHolderSimple<U> extends AObsObjHolder<U> {
+public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjHolder<U> {
 
 	public ObsObjHolderSimple() {
 	}

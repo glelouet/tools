@@ -24,7 +24,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public abstract class AObsObjHolder<U> implements RWObsObjHolder<U> {
+/**
+ * basic abstract methods that do not depend on the implementation.
+ *
+ * @param <U>
+ */
+public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
 	@Override
 	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
