@@ -105,11 +105,10 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
-		<version>0.0.3</version>
+		<version>0.0.4</version>
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<openjfx-version>12</openjfx-version>
 		<jackson-version>2.9.9</jackson-version>
 	</properties>
 </project>
