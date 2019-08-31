@@ -53,6 +53,11 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 
 	@Override
 	public synchronized void set(U newitem) {
+		// if there was already a value set, and we set to this same value, don't
+		// propagate.
+		if (waitLatch.getCount() == 0 && (newitem == item || newitem != null && newitem.equals(item))) {
+			return ;
+		}
 		item = newitem;
 		for (Consumer<U> cons : followers) {
 			cons.accept(newitem);

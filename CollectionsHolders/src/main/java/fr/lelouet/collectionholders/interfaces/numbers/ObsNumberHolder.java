@@ -112,7 +112,25 @@ extends ObsObjHolder<Contained> {
 	 */
 	public ObsBoolHolder test(BiPredicate<Contained, Contained> test, SelfClass b);
 
+	/**
+	 * create a new variable containing a test over this variable's value and
+	 * another fixed value
+	 *
+	 * @param test
+	 *          test over the two value
+	 * @param b
+	 *          the other value
+	 * @return a new variable
+	 */
+	public default ObsBoolHolder test(BiPredicate<Contained, Contained> test, Contained b) {
+		return test(value -> test.test(value, b));
+	}
+
 	public default ObsBoolHolder gt(SelfClass other) {
+		return test(this::gt, other);
+	}
+
+	public default ObsBoolHolder gt(Contained other) {
 		return test(this::gt, other);
 	}
 
@@ -120,7 +138,15 @@ extends ObsObjHolder<Contained> {
 		return test(this::ge, other);
 	}
 
+	public default ObsBoolHolder ge(Contained other) {
+		return test(this::ge, other);
+	}
+
 	public default ObsBoolHolder lt(SelfClass other) {
+		return test(this::lt, other);
+	}
+
+	public default ObsBoolHolder lt(Contained other) {
 		return test(this::lt, other);
 	}
 
@@ -128,7 +154,15 @@ extends ObsObjHolder<Contained> {
 		return test(this::le, other);
 	}
 
+	public default ObsBoolHolder lte(Contained other) {
+		return test(this::le, other);
+	}
+
 	public default ObsBoolHolder eq(SelfClass other) {
+		return test(this::eq, other);
+	}
+
+	public default ObsBoolHolder eq(Contained other) {
 		return test(this::eq, other);
 	}
 
