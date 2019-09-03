@@ -48,4 +48,6 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListCh
 	@Override
 	ObsListHolder<U> filter(Predicate<? super U> predicate);
 
+	ObsListHolder<U> concat(@SuppressWarnings("unchecked") ObsListHolder<? extends U>... lists);
+
 }

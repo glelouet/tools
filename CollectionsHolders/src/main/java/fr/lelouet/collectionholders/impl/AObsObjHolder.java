@@ -97,7 +97,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 *          type of second object hold
 	 * @param <ResType>
 	 *          joined type
-	 * @param <C>
+	 * @param <ColType>
 	 *          collection type to hold the joined value
 	 * @param a
 	 * @param b
@@ -106,9 +106,9 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AType, Btype, ResType, C extends RWObsObjHolder<ResType>> C join(ObsObjHolder<AType> a,
-			ObsObjHolder<Btype> b, Supplier<C> creator, BiFunction<AType, Btype, ResType> joiner) {
-		C ret = creator.get();
+	public static <AType, Btype, ResType, ColType extends RWObsObjHolder<ResType>> ColType join(ObsObjHolder<AType> a,
+			ObsObjHolder<Btype> b, Supplier<ColType> creator, BiFunction<AType, Btype, ResType> joiner) {
+		ColType ret = creator.get();
 		AType[] ah = (AType[]) new Object[1];
 		Btype[] bh = (Btype[]) new Object[1];
 		HashSet<Object> received = new HashSet<>();

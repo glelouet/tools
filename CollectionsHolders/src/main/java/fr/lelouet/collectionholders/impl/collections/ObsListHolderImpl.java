@@ -3,10 +3,13 @@ package fr.lelouet.collectionholders.impl.collections;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
@@ -128,6 +131,35 @@ implements ObsListHolder<U> {
 			}
 		}
 		return reverse;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ObsListHolder<U> concat(ObsListHolder<? extends U>... lists) {
+		if (lists == null || lists.length == 0) {
+			return this;
+		}
+		ObsListHolder<U>[] array = Stream
+				.concat(Stream.of(this), lists == null ? Stream.empty() : Stream.of(lists))
+				.filter(m -> m != null).toArray(ObsListHolder[]::new);
+		ObservableList<U> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		LinkedHashMap<ObsListHolder<U>, List<U>> alreadyreceived = new LinkedHashMap<>();
+		for (ObsListHolder<U> m : array) {
+			m.follow(list -> {
+				synchronized (alreadyreceived) {
+					alreadyreceived.remove(m);
+					alreadyreceived.put(m, list);
+					if (alreadyreceived.size() == array.length) {
+						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
+						internal.clear();
+						internal.addAll(newList);
+						ret.dataReceived();
+					}
+				}
+			});
+		}
+		return ret;
 	}
 
 }
