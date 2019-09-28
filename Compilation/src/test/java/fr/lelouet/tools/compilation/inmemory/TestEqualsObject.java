@@ -19,7 +19,7 @@ public class TestEqualsObject {
 	@Test
 	public void testProduceObject() throws JClassAlreadyExistsException, ClassNotFoundException, IOException {
 
-		// create public boolean my.package.Object#equals(java.lang.Object other){
+		// create public boolean my.pckg.Object#equals(java.lang.Object other){
 		// return true; }
 		JCodeModel cm = new JCodeModel();
 		JDefinedClass cl = cm._class(JMod.PUBLIC, "my.pckg.Object");
