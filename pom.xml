@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>tools</artifactId>
 	<version>1.0.2-SNAPSHOT</version>
@@ -27,17 +29,17 @@
 			<dependency>
 				<groupId>io.swagger.parser.v3</groupId>
 				<artifactId>swagger-parser</artifactId>
-				<version>2.0.11</version>
+				<version>2.0.14</version>
 			</dependency>
 			<dependency>
 				<groupId>com.helger</groupId>
 				<artifactId>jcodemodel</artifactId>
-				<version>3.2.2</version>
+				<version>3.2.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
-				<version>3.24.1-GA</version>
+				<version>3.25.0-GA</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mdkt.compiler</groupId>
@@ -59,6 +61,11 @@
 				<artifactId>javafx-fxml</artifactId>
 				<version>${openjfx-version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>Synchronization</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>
@@ -78,7 +85,7 @@
 			<url>http://91.121.120.36/maven/stable</url>
 		</repository>
 		<repository>
-			<id>kimsufi-maven</id>
+			<id>kimsufi-maven-snapshots</id>
 			<url>http://91.121.120.36/maven/snapshot</url>
 		</repository>
 	</repositories>
@@ -100,8 +107,6 @@
 		<tag>HEAD</tag>
 	</scm>
 
-
-
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
@@ -109,6 +114,13 @@
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<jackson-version>2.9.9</jackson-version>
+		<jackson-version>2.9.10</jackson-version>
 	</properties>
+	<modules>
+		<module>CollectionsHolders</module>
+		<module>Compilation</module>
+		
+		<module>Synchronization</module>
+		<module>YamlSettings</module>
+	</modules>
 </project>
