@@ -175,7 +175,7 @@ public class ObsListHolderImplTest {
 		 */
 		ObsDoubleHolder dist = test1
 				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
-		Assert.assertEquals(dist.get(), 2.0);
+		Assert.assertEquals((double) dist.get(), 2.0);
 
 		ObservableList<String> internal2 = FXCollections.observableArrayList();
 		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>(internal2);
@@ -185,6 +185,6 @@ public class ObsListHolderImplTest {
 				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
 		internal2.addAll("aa", "bb", "cc", "dd");
 		test2.dataReceived();
-		Assert.assertEquals(dist2.get(), 4.0);
+		Assert.assertEquals((double) dist2.get(), 4.0);
 	}
 }

@@ -10,18 +10,18 @@ public class ObsDoubleHolderImplTest {
 	@Test(timeOut = 5000)
 	public void testCreation() {
 		ObsDoubleHolderImpl twenty = new ObsDoubleHolderImpl(20.0);
-		Assert.assertEquals(twenty.add(4.0).get(), 24.0);
-		Assert.assertEquals(twenty.sub(4.0).get(), 16.0);
-		Assert.assertEquals(twenty.mult(4.0).get(), 80.0);
-		Assert.assertEquals(twenty.div(4.0).get(), 5.0);
+		Assert.assertEquals((double) twenty.add(4.0).get(), 24.0);
+		Assert.assertEquals((double) twenty.sub(4.0).get(), 16.0);
+		Assert.assertEquals((double) twenty.mult(4.0).get(), 80.0);
+		Assert.assertEquals((double) twenty.div(4.0).get(), 5.0);
 
-		Assert.assertEquals(twenty.get(), 20.0);
+		Assert.assertEquals((double) twenty.get(), 20.0);
 
 		ObsDoubleHolderImpl four = new ObsDoubleHolderImpl(4.0);
-		Assert.assertEquals(twenty.add(four).get(), 24.0);
-		Assert.assertEquals(twenty.sub(four).get(), 16.0);
-		Assert.assertEquals(twenty.mult(four).get(), 80.0);
-		Assert.assertEquals(twenty.div(four).get(), 5.0);
+		Assert.assertEquals((double) twenty.add(four).get(), 24.0);
+		Assert.assertEquals((double) twenty.sub(four).get(), 16.0);
+		Assert.assertEquals((double) twenty.mult(four).get(), 80.0);
+		Assert.assertEquals((double) twenty.div(four).get(), 5.0);
 
 		// test predicate
 		ObsBoolHolder even = twenty.test(i -> i % 2 == 0);

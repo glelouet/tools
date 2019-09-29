@@ -110,7 +110,7 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
-		<version>0.0.4</version>
+		<version>0.0.5</version>
 	</parent>
 	<name>Tools</name>
 	<properties>
@@ -119,7 +119,6 @@
 	<modules>
 		<module>CollectionsHolders</module>
 		<module>Compilation</module>
-		
 		<module>Synchronization</module>
 		<module>YamlSettings</module>
 	</modules>
