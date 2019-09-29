@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>tools</artifactId>
 		<groupId>fr.lelouet</groupId>
-		<version>1.0.2</version>
+		<version>1.0.3-SNAPSHOT</version>
 	</parent>
 	<groupId>fr.lelouet.tools</groupId>
 	<artifactId>Synchronization</artifactId>
@@ -26,6 +26,6 @@
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>tools-1.0.2</tag>
+		<tag>HEAD</tag>
 	</scm>
 </project>
