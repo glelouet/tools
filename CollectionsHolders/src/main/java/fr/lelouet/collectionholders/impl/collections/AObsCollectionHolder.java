@@ -111,7 +111,7 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
-	public <K> ObsCollectionHolder<K, ?, ?> mapItems(Function<U, K> mapper) {
+	public <K> ObsListHolderImpl<K> mapItems(Function<U, K> mapper) {
 		ObservableList<K> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
 		follow((o) -> {

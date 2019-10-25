@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
@@ -49,5 +50,8 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListCh
 	ObsListHolder<U> filter(Predicate<? super U> predicate);
 
 	ObsListHolder<U> concat(@SuppressWarnings("unchecked") ObsListHolder<? extends U>... lists);
+
+	@Override
+	<K> ObsListHolder<K> mapItems(Function<U, K> mapper);
 
 }
