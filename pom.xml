@@ -124,5 +124,6 @@
 		<module>Compilation</module>
 		<module>Synchronization</module>
 		<module>YamlSettings</module>
+		<module>XDGSettings</module>
 	</modules>
 </project>
