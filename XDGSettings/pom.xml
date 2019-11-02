@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>tools</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>XDGSettings</artifactId>
 	<groupId>fr.lelouet.tools</groupId>
@@ -32,7 +32,7 @@
 		<url>https://github.com/glelouet/tools</url>
 		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
-		<tag>tools-1.0.5</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<name>XDGSettings</name>
 </project>
