@@ -5,7 +5,7 @@
 		<artifactId>tools</artifactId>
 		<version>1.0.4-SNAPSHOT</version>
 	</parent>
-	<artifactId>YamlSettings</artifactId>
+	<artifactId>XDGSettings</artifactId>
 	<groupId>fr.lelouet.tools</groupId>
 	<dependencies>
 		<dependency>
@@ -26,10 +26,6 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.lelouet.tools</groupId>
-			<artifactId>XDGSettings</artifactId>
-		</dependency>
 	</dependencies>
 
 	<scm>
@@ -38,5 +34,5 @@
 		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
-	<name>YamlSettings</name>
+	<name>XDGSettings</name>
 </project>
