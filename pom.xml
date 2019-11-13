@@ -117,7 +117,7 @@
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<jackson-version>2.9.10</jackson-version>
+		<jackson-version>2.10.1</jackson-version>
 	</properties>
 	<modules>
 		<module>CollectionsHolders</module>
