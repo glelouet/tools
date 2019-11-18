@@ -3,7 +3,7 @@ name: maven test CI
 on: [push]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -13,5 +13,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 12
-    - name: Build with Maven
+    - name: test with Maven
       run: mvn -B test
+    - name : deploy with maven
+      if: not contains(github.ref, "SNAPSHOT")
+      run: mvn -B deploy -DskipTests
