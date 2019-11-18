@@ -14,7 +14,4 @@ jobs:
       with:
         java-version: 12
     - name: test with Maven
-      run: mvn -B test
-    - name: deploy with maven
-      if: ! endsWith(github.ref, '-SNAPSHOT')
-      run: mvn -B deploy -DskipTests
+      run: mvn -B test deploy
