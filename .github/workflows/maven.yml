@@ -16,5 +16,5 @@ jobs:
     - name: test with Maven
       run: mvn -B test
     - name: deploy with maven
-      if: endsWith(github.ref, '-SNAPSHOT')
+      if: ! endsWith(github.ref, '-SNAPSHOT')
       run: mvn -B deploy -DskipTests
