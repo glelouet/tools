@@ -14,4 +14,4 @@ jobs:
       with:
         java-version: 12
     - name: test with Maven
-      run: mvn deploy
+      run: mvn test
