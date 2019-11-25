@@ -73,25 +73,11 @@
 	</dependencyManagement>
 	<distributionManagement>
 		<repository>
-			<id>kimsufi-maven</id>
-			<url>ftp://91.121.120.36:12345/stable</url>
+			<id>github-glelouet</id>
+			<name>GitHub glelouet/tools Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/glelouet/tools</url>
 		</repository>
-		<snapshotRepository>
-			<id>kimsufi-maven</id>
-			<url>ftp://91.121.120.36:12345/snapshot</url>
-		</snapshotRepository>
 	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>Lkimsufi-maven</id>
-			<url>http://91.121.120.36/maven/stable</url>
-		</repository>
-		<repository>
-			<id>kimsufi-maven-snapshots</id>
-			<url>http://91.121.120.36/maven/snapshot</url>
-		</repository>
-	</repositories>
 
 	<developers>
 		<developer>
