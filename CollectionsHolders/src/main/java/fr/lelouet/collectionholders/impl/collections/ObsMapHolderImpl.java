@@ -121,7 +121,6 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		}
 	}
 
-	@Override
 	public void dataReceived() {
 		dataReceivedLatch.countDown();
 		if (receiveListeners != null) {
