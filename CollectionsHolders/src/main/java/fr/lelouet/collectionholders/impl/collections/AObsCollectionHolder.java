@@ -247,4 +247,22 @@ implements ObsCollectionHolder<U, C, L> {
 		return ret;
 	}
 
+	/**
+	 * NOT DONE YET<br />
+	 * flatten a collection of collections of V in a collection of V.
+	 * 
+	 * @param <V>
+	 *          type of the items hold in the sub collections
+	 * @param holders
+	 *          the collections holder
+	 * @return a new collectionholder that contains the items holds in the sub
+	 *         collections.
+	 */
+	public static <V> ObsCollectionHolder<V, ?, ?> flatten(
+			ObsCollectionHolder<ObsCollectionHolder<V, ?, ?>, ?, ?> holders) {
+		// TODO
+		return null;
+
+	}
+
 }
