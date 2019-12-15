@@ -4,8 +4,20 @@
 	<version>${revision}</version>
 	<packaging>pom</packaging>
 
-	<description>provide several tools, with classes or static methods
-	</description>
+	<description>provide several tools, with classes or static methods</description>
+
+	<repositories>
+		<repository>
+			<id>github-glelouet-common</id>
+			<name>GitHub glelouet/common-maven Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/glelouet/common-maven</url>
+		</repository>
+		<repository>
+			<id>github-glelouet-tools</id>
+			<name>GitHub glelouet/common-maven Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/glelouet/tools</url>
+		</repository>
+	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
@@ -99,7 +111,7 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
-		<version>0.0.5</version>
+		<version>0.0.6</version>
 	</parent>
 	<name>Tools</name>
 	<properties>
