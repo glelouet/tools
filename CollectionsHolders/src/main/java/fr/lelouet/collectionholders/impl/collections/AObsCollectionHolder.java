@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -12,6 +13,8 @@ import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
@@ -115,11 +118,14 @@ implements ObsCollectionHolder<U, C, L> {
 		ObservableList<K> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
 		follow((o) -> {
-			internal.clear();
-			for (U u : o) {
-				internal.add(mapper.apply(u));
+			List<K> mappedList = o.parallelStream().map(mapper).collect(Collectors.toList());
+			if (!internal.equals(mappedList) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(mappedList);
+				}
+				ret.dataReceived();
 			}
-			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -129,11 +135,15 @@ implements ObsCollectionHolder<U, C, L> {
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
 		follow((o) -> {
-			ArrayList<U> modified = new  ArrayList<>(o);
-			Collections.sort(modified, comparator);
-			internal.clear();
-			internal.addAll(modified);
-			ret.dataReceived();
+			List<U> sortedList = new ArrayList<>(o);
+			Collections.sort(sortedList, comparator);
+			if (!internal.equals(sortedList) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(sortedList);
+				}
+				ret.dataReceived();
+			}
 		});
 		return ret;
 	}
@@ -143,26 +153,29 @@ implements ObsCollectionHolder<U, C, L> {
 	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand) {
 		ObservableList<O> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<O> ret = new ObsListHolderImpl<>(internal);
-		Collection<U>[] leftCol = new Collection[1];
-		Collection<V>[] rightCol = new Collection[1];
-
+		Collection<U>[] leftCollection = new Collection[1];
+		Collection<V>[] rightCollection = new Collection[1];
 		Runnable update = () -> {
-			if (leftCol[0] != null && rightCol[0] != null) {
-				internal.clear();
-				for (U u : leftCol[0]) {
-					for (V v : rightCol[0]) {
-						internal.add(operand.apply(u, v));
+			if (leftCollection[0] != null && rightCollection[0] != null) {
+				List<O> newproduct = leftCollection[0].parallelStream()
+						.flatMap(
+								leftElem -> rightCollection[0].parallelStream().map(rightElem -> operand.apply(leftElem, rightElem)))
+						.collect(Collectors.toList());
+				if (!internal.equals(newproduct) || internal.isEmpty()) {
+					synchronized (internal) {
+						internal.clear();
+						internal.addAll(newproduct);
 					}
+					ret.dataReceived();
 				}
-				ret.dataReceived();
 			}
 		};
 		follow((o) -> {
-			leftCol[0] = o;
+			leftCollection[0] = o;
 			update.run();
 		});
 		right.follow((o) -> {
-			rightCol[0] = o;
+			rightCollection[0] = o;
 			update.run();
 		});
 		return ret;
@@ -236,13 +249,15 @@ implements ObsCollectionHolder<U, C, L> {
 		ObservableList<V> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
 		follow((newValue) -> {
-			internal.clear();
-			if (newValue != null) {
-				for (V v : generator.apply(newValue)) {
-					internal.add(v);
+			List<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false)
+					.collect(Collectors.toList());
+			if (!internal.equals(newlist) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(newlist);
 				}
+				ret.dataReceived();
 			}
-			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -250,7 +265,7 @@ implements ObsCollectionHolder<U, C, L> {
 	/**
 	 * NOT DONE YET<br />
 	 * flatten a collection of collections of V in a collection of V.
-	 * 
+	 *
 	 * @param <V>
 	 *          type of the items hold in the sub collections
 	 * @param holders

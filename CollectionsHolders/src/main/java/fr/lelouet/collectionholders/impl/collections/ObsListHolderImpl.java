@@ -20,8 +20,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 
-public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>>
-implements ObsListHolder<U> {
+public class ObsListHolderImpl<U> extends
+AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>> implements ObsListHolder<U> {
 
 	public ObsListHolderImpl(ObservableList<U> underlying) {
 		super(underlying);
@@ -66,11 +66,14 @@ implements ObsListHolder<U> {
 		ObservableList<T> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<T> ret = new ObsListHolderImpl<>(internal);
 		source.follow((t) -> {
-			synchronized (internal) {
-				internal.clear();
-				t.stream().filter(predicate).forEach(internal::add);
+			List<T> filteredList = t.parallelStream().filter(predicate).collect(Collectors.toList());
+			if (!internal.equals(filteredList) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(filteredList);
+				}
+				ret.dataReceived();
 			}
-			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -90,11 +93,14 @@ implements ObsListHolder<U> {
 					ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
 					ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
 					follow((l) -> {
+						boolean modified = false;
 						synchronized (internal) {
-							internal.retainAll(l);
-							internal.addAll(l);
+							modified = internal.retainAll(l);
+							modified = internal.addAll(l) ? true : modified;
 						}
-						ret.dataReceived();
+						if (modified) {
+							ret.dataReceived();
+						}
 					});
 					distinct = ret;
 				}
@@ -123,13 +129,15 @@ implements ObsListHolder<U> {
 					ObservableList<U> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
 					follow((o) -> {
-						ArrayList<U> modified = new ArrayList<>(o);
-						Collections.reverse(modified);
-						synchronized (internal) {
-							internal.clear();
-							internal.addAll(modified);
+						List<U> reverseList = new ArrayList<>(o);
+						Collections.reverse(reverseList);
+						if (!internal.equals(reverseList)) {
+							synchronized (internal) {
+								internal.clear();
+								internal.addAll(reverseList);
+							}
+							ret.dataReceived();
 						}
-						ret.dataReceived();
 					});
 					ret.reverse = this;
 					reverse = ret;
@@ -145,8 +153,7 @@ implements ObsListHolder<U> {
 		if (lists == null || lists.length == 0) {
 			return this;
 		}
-		ObsListHolder<U>[] array = Stream
-				.concat(Stream.of(this), lists == null ? Stream.empty() : Stream.of(lists))
+		ObsListHolder<U>[] array = Stream.concat(Stream.of(this), lists == null ? Stream.empty() : Stream.of(lists))
 				.filter(m -> m != null).toArray(ObsListHolder[]::new);
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
@@ -158,9 +165,13 @@ implements ObsListHolder<U> {
 					alreadyreceived.put(m, list);
 					if (alreadyreceived.size() == array.length) {
 						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
-						internal.clear();
-						internal.addAll(newList);
-						ret.dataReceived();
+						if (!internal.equals(newList) || internal.isEmpty()) {
+							synchronized (internal) {
+								internal.clear();
+								internal.addAll(newList);
+							}
+							ret.dataReceived();
+						}
 					}
 				}
 			});
