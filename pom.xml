@@ -7,16 +7,30 @@
 	<description>provide several tools, with classes or static methods</description>
 
 	<repositories>
+<!-- 		<repository> -->
+<!-- 			<id>github-glelouet-common</id> -->
+<!-- 			<name>GitHub glelouet/common-maven Apache Maven Packages</name> -->
+<!-- 			<url>https://maven.pkg.github.com/glelouet/common-maven</url> -->
+<!-- 		</repository> -->
+<!-- 		<repository> -->
+<!-- 			<id>github-glelouet-tools</id> -->
+<!-- 			<name>GitHub glelouet/common-maven Apache Maven Packages</name> -->
+<!-- 			<url>https://maven.pkg.github.com/glelouet/tools</url> -->
+<!-- 		</repository> -->
 		<repository>
-			<id>github-glelouet-common</id>
-			<name>GitHub glelouet/common-maven Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/glelouet/common-maven</url>
+			<id>kimsufi-stable</id>
+			<url>http://91.121.120.36/maven/stable</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
-		<repository>
-			<id>github-glelouet-tools</id>
-			<name>GitHub glelouet/common-maven Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/glelouet/tools</url>
-		</repository>
+<!-- 		<repository> -->
+<!-- 			<id>kimsufi-snapshots</id> -->
+<!-- 			<url>http://91.121.120.36/maven/snapshot/</url> -->
+<!-- 			<snapshots> -->
+<!-- 				<enabled>true</enabled> -->
+<!-- 			</snapshots> -->
+<!-- 		</repository> -->
 	</repositories>
 
 	<dependencyManagement>
@@ -84,11 +98,15 @@
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>
-		<repository>
-			<id>github-glelouet</id>
-			<name>GitHub glelouet/tools Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/glelouet/tools</url>
-		</repository>
+ 		<repository>
+			<id>kimsufi-repository</id>
+			<url>ftp://91.121.120.36:12345/stable</url>
+ 		</repository>
+<!-- 		<repository> -->
+<!-- 			<id>github-glelouet</id> -->
+<!-- 			<name>GitHub glelouet/tools Apache Maven Packages</name> -->
+<!-- 			<url>https://maven.pkg.github.com/glelouet/tools</url> -->
+<!-- 		</repository> -->
 	</distributionManagement>
 
 	<developers>
@@ -111,12 +129,12 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>common-maven</artifactId>
-		<version>0.0.6</version>
+		<version>0.0.7</version>
 	</parent>
 	<name>Tools</name>
 	<properties>
 		<jackson-version>2.10.1</jackson-version>
-		<revision>1.0.6</revision>
+		<revision>1.0.7</revision>
 	</properties>
 	<modules>
 		<module>CollectionsHolders</module>
