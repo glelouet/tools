@@ -3,7 +3,7 @@
   <parent>
     <groupId>fr.lelouet</groupId>
     <artifactId>tools</artifactId>
-    <version>${tools-revision}</version>
+    <version>1.0.7</version>
   </parent>
   <groupId>fr.lelouet.tools</groupId>
   <artifactId>Compilation</artifactId>
