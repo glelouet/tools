@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>tools</artifactId>
-	<version>${revision}</version>
+	<version>${tools-revision}</version>
 	<packaging>pom</packaging>
 
 	<description>provide several tools, with classes or static methods</description>
@@ -88,12 +88,12 @@
 			<dependency>
 				<groupId>fr.lelouet.tools</groupId>
 				<artifactId>Synchronization</artifactId>
-				<version>${project.version}</version>
+				<version>${tools-revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.lelouet.tools</groupId>
 				<artifactId>XDGSettings</artifactId>
-				<version>${project.version}</version>
+				<version>${tools-revision}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -134,7 +134,7 @@
 	<name>Tools</name>
 	<properties>
 		<jackson-version>2.10.1</jackson-version>
-		<revision>1.0.7</revision>
+		<tools-revision>1.0.7</tools-revision>
 	</properties>
 	<modules>
 		<module>CollectionsHolders</module>
