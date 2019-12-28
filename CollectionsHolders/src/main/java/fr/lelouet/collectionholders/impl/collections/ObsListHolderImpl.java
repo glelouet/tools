@@ -66,7 +66,7 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		ObservableList<T> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<T> ret = new ObsListHolderImpl<>(internal);
 		source.follow((t) -> {
-			List<T> filteredList = t.parallelStream().filter(predicate).collect(Collectors.toList());
+			List<T> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
 			if (!internal.equals(filteredList) || internal.isEmpty()) {
 				synchronized (internal) {
 					internal.clear();

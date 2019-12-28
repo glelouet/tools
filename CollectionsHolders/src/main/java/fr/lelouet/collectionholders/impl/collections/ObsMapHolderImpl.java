@@ -201,9 +201,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
 		list.follow((l) -> {
 			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, (a, b) -> b));
-			internal.keySet().retainAll(newmap.keySet());
-			internal.putAll(newmap);
-			ret.dataReceived();
+			if (!newmap.equals(internal) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.keySet().retainAll(newmap.keySet());
+					internal.putAll(newmap);
+				}
+				ret.dataReceived();
+			}
 		});
 		return ret;
 	}
@@ -247,9 +251,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					if (alreadyreceived.size() == array.length) {
 						Map<K, V> newmap = alreadyreceived.values().stream().flatMap(m2 -> m2.entrySet().stream())
 								.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), merger));
-						internal.keySet().retainAll(newmap.keySet());
-						internal.putAll(newmap);
-						ret.dataReceived();
+						if (!newmap.equals(internal) || internal.isEmpty()) {
+							synchronized (internal) {
+								internal.keySet().retainAll(newmap.keySet());
+								internal.putAll(newmap);
+							}
+							ret.dataReceived();
+						}
 					}
 				}
 			});
@@ -328,9 +336,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					ObservableSet<K> internal = FXCollections.observableSet(new HashSet<>());
 					ObsSetHolderImpl<K> ret = new ObsSetHolderImpl<>(internal);
 					follow(m -> {
-						internal.clear();
-						internal.addAll(m.keySet());
-						ret.dataReceived();
+						if (!internal.equals(m.keySet()) || internal.isEmpty()) {
+							synchronized (internal) {
+								internal.retainAll(m.keySet());
+								internal.addAll(m.keySet());
+							}
+							ret.dataReceived();
+						}
 					});
 					keys = ret;
 				}
@@ -349,9 +361,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					ObservableList<V> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
 					follow(m -> {
-						internal.clear();
-						internal.addAll(m.values());
-						ret.dataReceived();
+						if (!internal.equals(m.values()) || internal.isEmpty()) {
+							synchronized (internal) {
+								internal.clear();
+								internal.addAll(m.values());
+							}
+							ret.dataReceived();
+						}
 					});
 					values = ret;
 				}
@@ -369,7 +385,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
 		followEntries(change -> {
 			if (change.wasRemoved()) {
-				internal.remove(change.getKey());
+				synchronized (internal) {
+					internal.remove(change.getKey());
+				}
 			}
 			if (change.wasAdded()) {
 				if (keyFilter != null) {
@@ -382,7 +400,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 						return;
 					}
 				}
-				internal.put(change.getKey(), change.getValueAdded());
+				synchronized (internal) {
+					internal.put(change.getKey(), change.getValueAdded());
+				}
 			}
 		});
 		follow(m -> {

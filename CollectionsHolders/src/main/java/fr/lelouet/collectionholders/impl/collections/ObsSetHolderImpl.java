@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
@@ -50,9 +51,14 @@ implements ObsSetHolder<U> {
 		ObservableSet<T> internal = FXCollections.observableSet(new HashSet<>());
 		ObsSetHolderImpl<T> ret = new ObsSetHolderImpl<>(internal);
 		source.follow((t) -> {
-			internal.clear();
-			t.stream().filter(predicate).forEach(internal::add);
-			ret.dataReceived();
+			Set<T> filteredList = t.stream().filter(predicate).collect(Collectors.toSet());
+			if (!internal.equals(filteredList) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.retainAll(filteredList);
+					internal.addAll(filteredList);
+				}
+				ret.dataReceived();
+			}
 		});
 		return ret;
 	}

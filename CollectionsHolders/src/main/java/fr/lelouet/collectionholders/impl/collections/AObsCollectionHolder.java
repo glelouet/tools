@@ -118,7 +118,7 @@ implements ObsCollectionHolder<U, C, L> {
 		ObservableList<K> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
 		follow((o) -> {
-			List<K> mappedList = o.parallelStream().map(mapper).collect(Collectors.toList());
+			List<K> mappedList = o.stream().map(mapper).collect(Collectors.toList());
 			if (!internal.equals(mappedList) || internal.isEmpty()) {
 				synchronized (internal) {
 					internal.clear();
@@ -157,9 +157,9 @@ implements ObsCollectionHolder<U, C, L> {
 		Collection<V>[] rightCollection = new Collection[1];
 		Runnable update = () -> {
 			if (leftCollection[0] != null && rightCollection[0] != null) {
-				List<O> newproduct = leftCollection[0].parallelStream()
+				List<O> newproduct = leftCollection[0].stream()
 						.flatMap(
-								leftElem -> rightCollection[0].parallelStream().map(rightElem -> operand.apply(leftElem, rightElem)))
+								leftElem -> rightCollection[0].stream().map(rightElem -> operand.apply(leftElem, rightElem)))
 						.collect(Collectors.toList());
 				if (!internal.equals(newproduct) || internal.isEmpty()) {
 					synchronized (internal) {
