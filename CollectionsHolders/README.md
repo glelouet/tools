@@ -1,15 +1,30 @@
 # CollectionsHolders
-synchronized updated collections
 
-## What role
+A library containing several reactive collections. Those collections mimic the usual java collections, but are designed to allow formal expression on variables collections. 
 
-Main goal : to implement both observable and stream of modification together in synchronized collections.
-Typically useful when you have several items you want to fetch, an they may be already fetched (or not), or they may be modified.
+## Target usage
 
-## USe case and reason
+Those collections are designed, to separate formal expression and resolution on instanciation. This way you can define your relations between variables, and only when all the required variables are actually set, will the evaluation be performed.
+
+Typically you create a observable list of prices, and you define the minimum price variable, as being a  function of that list : 
+`minPrice = prices.min()`. It does not matter if the list of prices is already fetched or not : once it is fetched, it sends it to  minimum price variable, and this variable becomes updated and can update other variables that depend on it. If you have two items, you want one of the first and two of the second, you can do something like`totalprices = prices(item1).min().add(prices(item2).min().mult(2)) ;`.
+Once an item has its prices list updated, the minimum price variable becomes updated, and once the two minimum prices are updated, the totalprices variable is also updated. If later the prices of an item is changed, then the totalprice will be updated to reflect those new prices.
+
+This usage is very close to java observable collections, however those collections need to be returned instanciated, and thus required to wait for the fetch() to end. This is also close to a "future", however the futures feature does not handle streams of data, that is variable that will evolve later.  This can be done but requires lot of work with synchronization. This library basically handles mostof the synchronization for such a kind of feature.
 
 
-This collection is made for, when you fetch resources over internet with a cache system.
+
+## Original use case
+
+This original use case is : when you fetch resources over internet with a cache system. If you want to use thousands of internet resources at the same time, you don't want to wait for the completion of a request to start the next request. Instead you want to start as much requests as you can, asynchronously put the answers in holders, and when all the data are received process the full set of results. This however is still an issue if there is a cache : you don't want to start all the cache at the same time, rather keep updating the resources in an external process. What's more you want to express the usage of the resources in the same way, whether the data is already cached or not.
+
+This leads to inversion of control : instead of requesting the resource and working with it, you register handlers to be called when the resource is fetched. The cache manager is responsible for fetching the resource, caching it, and giving it to your handlers whenever the resource is updated.
+
+If the resource is represented by a single object, you just need need a holder on that object as well as way to know when the object is ready (ObservableObject in java are always ready) ; If your resource is actually eg an array, then you need a bit more powerful tools to work with them.
+
+One of the original use case was : given a resource that is an array of prices for an item, how do I get the lower price ? Typically I want a way to do something like
+`getPrices(item).min()` that gets me a future/observable value ; what's more I want to be able to make the lowest price of a list of items, something like 
+`prices(items).mapInteger(prices->prices.min()).sum()`.
 
 ### Parallel and sequential calls
 

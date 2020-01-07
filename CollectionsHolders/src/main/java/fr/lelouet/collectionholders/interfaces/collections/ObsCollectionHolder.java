@@ -201,4 +201,20 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 */
 	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand);
 
+	/**
+	 * NOT DONE YET<br />
+	 * flatten this by converting all the elements to {@link ObsCollectionHolder}
+	 * and merging them. The mapped collections are listened to, whenever a new
+	 * one is to be created.
+	 *
+	 * @param <V>
+	 *          type of the items hold in the sub collections
+	 * @param mapper
+	 *          the function to convert each element in the collection, to a
+	 *          collection of V.
+	 * @return a new collectionholder that contains the items holds in the sub
+	 *         collections.
+	 */
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper);
+
 }

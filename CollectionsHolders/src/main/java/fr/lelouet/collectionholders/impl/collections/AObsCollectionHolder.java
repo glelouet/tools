@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
@@ -32,6 +36,18 @@ import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ *
+ *
+ * @param <U>
+ *          The type of object hold inside
+ * @param <C>
+ *          The type of collection, eg list
+ * @param <OC>
+ *          the type of observable collection
+ * @param <L>
+ *          internal observer
+ */
 public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L>
 implements ObsCollectionHolder<U, C, L> {
 
@@ -42,6 +58,7 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	CountDownLatch waitLatch = new CountDownLatch(1);
+
 	public void waitData() {
 		try {
 			waitLatch.await();
@@ -95,7 +112,6 @@ implements ObsCollectionHolder<U, C, L> {
 			receiveListeners.remove(callback);
 		}
 	}
-
 
 	/**
 	 * called by the data fetcher when data has been received. This specifies that
@@ -158,8 +174,7 @@ implements ObsCollectionHolder<U, C, L> {
 		Runnable update = () -> {
 			if (leftCollection[0] != null && rightCollection[0] != null) {
 				List<O> newproduct = leftCollection[0].stream()
-						.flatMap(
-								leftElem -> rightCollection[0].stream().map(rightElem -> operand.apply(leftElem, rightElem)))
+						.flatMap(leftElem -> rightCollection[0].stream().map(rightElem -> operand.apply(leftElem, rightElem)))
 						.collect(Collectors.toList());
 				if (!internal.equals(newproduct) || internal.isEmpty()) {
 					synchronized (internal) {
@@ -262,21 +277,77 @@ implements ObsCollectionHolder<U, C, L> {
 		return ret;
 	}
 
-	/**
-	 * NOT DONE YET<br />
-	 * flatten a collection of collections of V in a collection of V.
-	 *
-	 * @param <V>
-	 *          type of the items hold in the sub collections
-	 * @param holders
-	 *          the collections holder
-	 * @return a new collectionholder that contains the items holds in the sub
-	 *         collections.
-	 */
-	public static <V> ObsCollectionHolder<V, ?, ?> flatten(
-			ObsCollectionHolder<ObsCollectionHolder<V, ?, ?>, ?, ?> holders) {
-		// TODO
-		return null;
+	@Override
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper) {
+		ObservableList<V> underlying = FXCollections.observableArrayList();
+		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(underlying);
+
+		HashMap<U, ObsCollectionHolder<V, C2, ?>> mappedvalues = new LinkedHashMap<>();
+		HashMap<ObsCollectionHolder<V, C2, ?>, Consumer<C2>> listeners = new LinkedHashMap<>();
+		HashMap<ObsCollectionHolder<V, C2, ?>, Collection<V>> knownCollections = new LinkedHashMap<>();
+
+		/**
+		 * try to merge the known collections, if they are all we need .Synced over
+		 * mappedValues, so not to be called within another sync
+		 */
+		Runnable tryUpdate = () -> {
+			synchronized (mappedvalues) {
+				if (new HashSet<>(mappedvalues.values()).equals(knownCollections.keySet())) {
+					List<V> newlist = mappedvalues.values().stream().flatMap(coll -> knownCollections.get(coll).stream())
+							.collect(Collectors.toList());
+					if (!newlist.equals(underlying) || underlying.isEmpty()) {
+						synchronized (underlying) {
+							underlying.setAll(newlist);
+						}
+						ret.dataReceived();
+					}
+				} else {
+				}
+			}
+		};
+
+		follow(c -> {
+			HashSet<U> toRemove, toAdd;
+			synchronized (mappedvalues) {
+				if (mappedvalues.keySet().equals(c)) {
+					return;
+				}
+				toRemove = new LinkedHashSet<>(mappedvalues.keySet());
+				toRemove.removeAll(c);
+				toAdd = new LinkedHashSet<>(c);
+				toAdd.removeAll(mappedvalues.keySet());
+			}
+			for (U u : toRemove) {
+				synchronized (mappedvalues) {
+					ObsCollectionHolder<V, C2, ?> converted = mappedvalues.remove(u);
+					Consumer<C2> listener = listeners.remove(converted);
+					converted.unfollow(listener);
+					knownCollections.remove(converted);
+				}
+			}
+			for (U u : toAdd) {
+				ObsCollectionHolder<V, C2, ?> converted = mapper.apply(u);
+				Consumer<C2> listener = c2 -> {
+					synchronized (mappedvalues) {
+						if (listeners.containsKey(converted)) {
+							knownCollections.put(converted, c2);
+						}
+						else {
+						}
+					}
+					tryUpdate.run();
+				};
+				synchronized (mappedvalues) {
+					mappedvalues.put(u, converted);
+					listeners.put(converted, listener);
+				}
+				// must be called outside of the
+				converted.follow(listener);
+			}
+			tryUpdate.run();
+		});
+
+		return ret;
 
 	}
 
