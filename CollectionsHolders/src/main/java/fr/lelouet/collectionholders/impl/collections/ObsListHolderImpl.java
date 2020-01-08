@@ -23,6 +23,22 @@ import javafx.collections.ObservableSet;
 public class ObsListHolderImpl<U> extends
 AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>> implements ObsListHolder<U> {
 
+	/**
+	 * create an unmodifiable list of items
+	 *
+	 * @param <U>
+	 *          type of the items
+	 * @param args
+	 *          items to add
+	 * @return a new list
+	 */
+	@SafeVarargs
+	public static <U> ObsListHolderImpl<U> of(U... args) {
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(FXCollections.observableArrayList(args));
+		ret.dataReceived();
+		return ret;
+	}
+
 	public ObsListHolderImpl(ObservableList<U> underlying) {
 		super(underlying);
 	}

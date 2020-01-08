@@ -31,6 +31,24 @@ import javafx.collections.ObservableSet;
 
 public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
+	/**
+	 * create an unmodifiable map of items. Will fail if keyvals is not exactly an
+	 * array of 2-items arrays,
+	 *
+	 * @param <K>
+	 *          type of the keys
+	 * @param <V>
+	 *          type of the values
+	 * @param keyvals
+	 *          couples of (K,V) to map.
+	 * @return a new observable map
+	 */
+	public static <K, V> ObsMapHolderImpl<K, V> of(Object[][] keyvals) {
+		@SuppressWarnings("unchecked")
+		Map<K, V> mapped = Stream.of(keyvals).collect(Collectors.toMap(arr -> (K) arr[0], arr -> (V) arr[1]));
+		return new ObsMapHolderImpl<>(FXCollections.observableMap(mapped), true);
+	}
+
 	private ObservableMap<K, V> underlying;
 
 	public ObsMapHolderImpl(ObservableMap<K, V> underlying) {
@@ -301,7 +319,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	@Override
 	public ObsObjHolder<V> at(K key, V defaultValue) {
 		if (defaultValue == null) {
-			throw new NullPointerException();
+			throw new NullPointerException("does not allow null for defaultValue");
 		}
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		follow(t -> {

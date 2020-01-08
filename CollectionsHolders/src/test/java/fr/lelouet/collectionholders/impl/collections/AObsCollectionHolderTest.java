@@ -11,7 +11,7 @@ import javafx.collections.ObservableList;
 
 public class AObsCollectionHolderTest {
 
-	@Test
+	@Test(timeOut = 500)
 	public void testFlattenNotReceived() {
 		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
 		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
@@ -27,7 +27,7 @@ public class AObsCollectionHolderTest {
 		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r'));
 	}
 
-	@Test
+	@Test(timeOut = 500)
 	public void testFlattenReceived() {
 		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
 		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
@@ -48,7 +48,7 @@ public class AObsCollectionHolderTest {
 
 	}
 
-	@Test
+	@Test(timeOut = 500)
 	public void testConcat() {
 		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
 		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
@@ -74,7 +74,7 @@ public class AObsCollectionHolderTest {
 		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'));
 	}
 
-	@Test
+	@Test(timeOut = 500)
 	public void testRemove() {
 		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
 		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);

@@ -18,9 +18,10 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
+@Test(timeOut = 1)
 public class ObsMapHolderTest {
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testMap() {
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source, true);
@@ -35,7 +36,7 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(mapped.get().get("c"), "+cc");
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testMapreceived() {
 		int[] count = new int[] { 0 };
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
@@ -53,7 +54,7 @@ public class ObsMapHolderTest {
 		Stream.of('a', 'b', 'c').parallel().mapToInt(c -> Character.digit(c, 10)).min().orElseGet(() -> Integer.MAX_VALUE);
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testReceivedPreFollow() {
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source);
@@ -63,7 +64,7 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(size.get(), (Integer) 1);
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testReceivedPostFollow() {
 		ObservableMap<String, String> source = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> sourceimpl = new ObsMapHolderImpl<>(source);
@@ -73,7 +74,7 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(size.get(), (Integer) 1);
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testMerge() {
 		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> m1 = new ObsMapHolderImpl<>(im1);
@@ -131,7 +132,7 @@ public class ObsMapHolderTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testMerge2() {
 
 		ObservableMap<String, String> im1 = FXCollections.observableHashMap();
@@ -161,7 +162,7 @@ public class ObsMapHolderTest {
 
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testAt() {
 
 		ObservableMap<String, String> imap = FXCollections.observableHashMap();
@@ -197,7 +198,7 @@ public class ObsMapHolderTest {
 
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testKeyValue() {
 		ObservableMap<String, String> imap = FXCollections.observableHashMap();
 		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
@@ -217,6 +218,16 @@ public class ObsMapHolderTest {
 
 		Assert.assertEquals((int) values.size().get(), 2);
 
+	}
+
+	@Test(timeOut = 500)
+	public void testOf() {
+		String[][] map = { { "a", "aa" }, { "b", "bb" } };
+		ObsMapHolderImpl<String, String> test = ObsMapHolderImpl.of(map);
+		Assert.assertEquals(test.get("a"), "aa");
+		Assert.assertEquals(test.get("b"), "bb");
+		Assert.assertEquals(test.at("a", "n").get(), "aa");
+		Assert.assertEquals(test.at("b", "n").get(), "bb");
 	}
 
 }

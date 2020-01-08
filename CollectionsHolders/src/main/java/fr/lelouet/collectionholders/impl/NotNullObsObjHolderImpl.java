@@ -1,7 +1,7 @@
 package fr.lelouet.collectionholders.impl;
 
 /**
- * Object holders that throw an exception when set to null
+ * Object holders that throw an exception when set to null. Used for numbers.
  *
  * @param <U>
  */

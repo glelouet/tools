@@ -11,7 +11,7 @@ import javafx.collections.ObservableMap;
 
 public class MixedCasesTest {
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testMixedDate() {
 
 		ObservableMap<Integer, Integer> underlying = FXCollections.observableHashMap();

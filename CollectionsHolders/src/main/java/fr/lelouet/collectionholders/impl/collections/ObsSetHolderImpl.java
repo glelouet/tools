@@ -18,6 +18,22 @@ import javafx.collections.SetChangeListener;
 public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>, ObservableSet<U>, SetChangeListener<? super U>>
 implements ObsSetHolder<U> {
 
+	/**
+	 * create a unmodifiable observable set of items
+	 *
+	 * @param <U>
+	 *          type of the items
+	 * @param args
+	 *          items to add.
+	 * @return a new observable set
+	 */
+	@SafeVarargs
+	public static <U> ObsSetHolderImpl<U> of(U... args) {
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(FXCollections.observableSet(args));
+		ret.dataReceived();
+		return ret;
+	}
+
 	public ObsSetHolderImpl(ObservableSet<U> underlying) {
 		super(underlying);
 	}
