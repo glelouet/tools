@@ -33,14 +33,16 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	/**
 	 * create an unmodifiable map of items. Will fail if keyvals is not exactly an
-	 * array of 2-items arrays,
+	 * array of 2-items arrays.
 	 *
 	 * @param <K>
 	 *          type of the keys
 	 * @param <V>
 	 *          type of the values
 	 * @param keyvals
-	 *          couples of (K,V) to map.
+	 *          couples of (K,V) to map. Not requesting a varargar cause it can
+	 *          lead to safevararg, and does not allow to create the array
+	 *          dynamically (needs to be instantiated first)
 	 * @return a new observable map
 	 */
 	public static <K, V> ObsMapHolderImpl<K, V> of(Object[][] keyvals) {
