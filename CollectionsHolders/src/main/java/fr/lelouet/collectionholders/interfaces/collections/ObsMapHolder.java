@@ -83,8 +83,8 @@ public interface ObsMapHolder<K, V> {
 	void waitData();
 
 	/**
-	 * register a runnable to be run once {@link #dataReceived()} is called. The
-	 * call is made in a new thread.
+	 * register a runnable to be run once, next time {@link #dataReceived()} is
+	 * called. The call is made in a new thread.
 	 *
 	 * @param callback
 	 *          the function to call once data is available. if data is already
@@ -170,5 +170,17 @@ public interface ObsMapHolder<K, V> {
 	 *         null
 	 */
 	ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter);
+
+	/**
+	 * create a filtered map of this. The (key, val) couples are duplicated in the
+	 * returned map, unless the key is not contained in the allowedKeys
+	 * collection.
+	 *
+	 * @param allowedKeys
+	 *          the observable collection holder on the allowed keys. can't be
+	 *          null.
+	 * @return a new Observable map holder.
+	 */
+	ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?, ?> allowedKeys);
 
 }

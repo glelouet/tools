@@ -16,6 +16,7 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 @Test(timeOut = 1)
@@ -228,6 +229,43 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(test.get("b"), "bb");
 		Assert.assertEquals(test.at("a", "n").get(), "aa");
 		Assert.assertEquals(test.at("b", "n").get(), "bb");
+	}
+
+	@Test(timeOut = 500)
+	public void testFilterKeys() {
+		ObservableMap<String, String> imap = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
+
+		ObservableList<String> ilist = FXCollections.observableArrayList();
+		ObsListHolderImpl<String> list = new ObsListHolderImpl<>(ilist);
+
+		ObsMapHolder<String, String> test = map.filterKeys(list);
+
+		map.dataReceived();list.dataReceived();
+		Assert.assertEquals(test.size().get(), (Integer)0);
+
+		ilist.add("a1");
+		ilist.add("a2");
+		list.dataReceived();
+		Assert.assertEquals(test.size().get(), (Integer) 0);
+
+		imap.put("a1", "aa");
+		imap.put("b1", "bb");
+		map.dataReceived();
+		Assert.assertEquals(test.size().get(), (Integer) 1);
+		Assert.assertEquals(test.get("a1"), "aa");
+		Assert.assertEquals(test.get("a2"), null);
+		Assert.assertEquals(test.get("b1"), null);
+
+		imap.put("a2", "ab");
+		map.dataReceived();
+		ilist.remove("a1");
+		list.dataReceived();
+		Assert.assertEquals(test.size().get(), (Integer) 1);
+		Assert.assertEquals(test.get("a1"), null);
+		Assert.assertEquals(test.get("a2"), "ab");
+		Assert.assertEquals(test.get("b1"), null);
+
 	}
 
 }

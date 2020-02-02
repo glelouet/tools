@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -427,6 +428,44 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		});
 		follow(m -> {
 			ret.dataReceived();
+		});
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?, ?> allowedKeys) {
+		ObservableMap<K, V> internal = FXCollections.observableHashMap();
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
+		Map<K, V>[] lastMap = new Map[1];
+		Collection<K>[] lastCol = new Collection[1];
+		Runnable update = () -> {
+			synchronized (lastMap) {
+				if (lastMap[0] != null && lastCol[0] != null) {
+					Map<K, V> newMap = new HashMap<>(lastMap[0]);
+					newMap.keySet().retainAll(lastCol[0]);
+					if (!newMap.equals(internal) || newMap.isEmpty()) {
+						synchronized (internal) {
+							internal.keySet().retainAll(newMap.keySet());
+							internal.putAll(newMap);
+						}
+						ret.dataReceived();
+					}
+				}
+			}
+		};
+
+		follow(m -> {
+			synchronized (lastMap) {
+				lastMap[0] = m;
+			}
+			update.run();
+		});
+		allowedKeys.follow(l -> {
+			synchronized (lastMap) {
+				lastCol[0] = l;
+			}
+			update.run();
 		});
 		return ret;
 	}
