@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.Observable;
 import javafx.collections.MapChangeListener;
@@ -69,6 +70,8 @@ public interface ObsMapHolder<K, V> {
 	 *         internal map last time it received data.
 	 */
 	public ObsIntHolder size();
+
+	public ObsBoolHolder isEmpty();
 
 	/**
 	 * apply all existing values to the change listener, and register it as a

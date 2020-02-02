@@ -13,6 +13,7 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
@@ -46,6 +47,8 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *         internal collection last time it received data.
 	 */
 	public ObsIntHolder size();
+
+	public ObsBoolHolder isEmpty();
 
 	/**
 	 * apply all existing values to the change listener, and register it as a

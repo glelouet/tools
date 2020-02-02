@@ -21,6 +21,7 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
@@ -345,6 +346,21 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			}
 		}
 		return size;
+	}
+
+	private ObsBoolHolder isEmpty = null;
+
+	@Override
+	public ObsBoolHolder isEmpty() {
+		if (isEmpty == null) {
+			ObsIntHolder msize = size();
+			synchronized (this) {
+				if (isEmpty == null) {
+					isEmpty = msize.eq(0);
+				}
+			}
+		}
+		return isEmpty;
 	}
 
 	private ObsSetHolder<K> keys = null;

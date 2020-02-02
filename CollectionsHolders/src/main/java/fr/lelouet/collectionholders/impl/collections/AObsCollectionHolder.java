@@ -91,6 +91,21 @@ implements ObsCollectionHolder<U, C, L> {
 		return size;
 	}
 
+	private ObsBoolHolder isEmpty = null;
+
+	@Override
+	public ObsBoolHolder isEmpty() {
+		if (isEmpty == null) {
+			ObsIntHolder msize = size();
+			synchronized (this) {
+				if (isEmpty == null) {
+					isEmpty = msize.eq(0);
+				}
+			}
+		}
+		return isEmpty;
+	}
+
 	private ArrayList<Consumer<C>> receiveListeners;
 
 	@Override
