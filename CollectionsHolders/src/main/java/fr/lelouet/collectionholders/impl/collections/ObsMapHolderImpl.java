@@ -203,7 +203,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 * @return
 	 */
 	public static <K, V> ObsMapHolderImpl<K, V> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor) {
-		return toMap(list, keyExtractor, o -> o);
+		return toMap(list, keyExtractor, o -> o, (a, b) -> b);
 	}
 
 	/**
@@ -218,11 +218,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 * @return
 	 */
 	public static <K, V, L> ObsMapHolderImpl<K, L> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor,
-			Function<V, L> remapper) {
+			Function<V, L> remapper, BinaryOperator<L> mergeFunction) {
 		ObservableMap<K, L> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
 		list.follow((l) -> {
-			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, (a, b) -> b));
+			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, mergeFunction));
 			if (!newmap.equals(internal) || internal.isEmpty()) {
 				synchronized (internal) {
 					internal.keySet().retainAll(newmap.keySet());

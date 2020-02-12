@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -125,14 +126,11 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		return distinct;
 	}
 
-	@Override
-	public <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor) {
-		return ObsMapHolderImpl.toMap(this, keyExtractor);
-	}
 
 	@Override
-	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
-		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
+	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor,
+			BinaryOperator<V> collisionHandler) {
+		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor, collisionHandler);
 	}
 
 	private ObsListHolderImpl<U> reverse = null;

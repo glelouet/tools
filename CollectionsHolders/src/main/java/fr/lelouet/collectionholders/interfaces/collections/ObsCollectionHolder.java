@@ -89,7 +89,9 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @return a new map that contains this list's items, with the corresponding
 	 *         key.
 	 */
-	public <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor);
+	public default <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor) {
+		return toMap(keyExtractor, v -> v, (a, b) -> b);
+	}
 
 	/**
 	 * map the items in this into a new Map. In case of collision in the key
@@ -105,7 +107,28 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *          function to transform an element in the value
 	 * @return a new map.
 	 */
-	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor);
+	public default <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
+		return toMap(keyExtractor, valExtractor, (a, b) -> b);
+	}
+
+	/**
+	 * map the items in this into a new Map.
+	 *
+	 * @param <K>
+	 *          the key type of the map
+	 * @param <V>
+	 *          the value type of the map
+	 * @param keyExtractor
+	 *          function to transform an element in the key
+	 * @param valExtractor
+	 *          function to transform an element in the value
+	 * @param collisionHandler
+	 *          the function to handle the case where to values are mapped to the
+	 *          same key.
+	 * @return a new map.
+	 */
+	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor,
+			BinaryOperator<V> collisionHandler);
 
 	/**
 	 * join the items in this using a mapper and a joiner

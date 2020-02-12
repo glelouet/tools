@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -85,13 +86,9 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public <K> ObsMapHolder<K, U> toMap(Function<U, K> keyExtractor) {
-		return ObsMapHolderImpl.toMap(this, keyExtractor);
-	}
-
-	@Override
-	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor) {
-		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor);
+	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor,
+			BinaryOperator<V> collisionHandler) {
+		return ObsMapHolderImpl.toMap(this, keyExtractor, valExtractor, collisionHandler);
 	}
 
 	@Override
