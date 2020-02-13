@@ -134,6 +134,7 @@
 	<name>Tools</name>
 	<properties>
 		<jackson-version>2.10.2</jackson-version>
+		<openjfx-version>15-ea+1</openjfx-version>
 	</properties>
 	<modules>
 		<module>CollectionsHolders</module>
