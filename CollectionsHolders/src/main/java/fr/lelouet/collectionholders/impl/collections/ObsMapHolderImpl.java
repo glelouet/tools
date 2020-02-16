@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -411,6 +412,31 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			}
 		}
 		return values;
+	}
+
+	ObsListHolderImpl<Entry<K, V>> entries = null;
+
+	@Override
+	public ObsCollectionHolder<Entry<K, V>, ?, ?> entries() {
+		if (entries == null) {
+			synchronized (this) {
+				if (entries == null) {
+					ObservableList<Entry<K, V>> internal = FXCollections.observableArrayList();
+					ObsListHolderImpl<Entry<K, V>> ret = new ObsListHolderImpl<>(internal);
+					follow(m -> {
+						if (!internal.equals(m.values()) || internal.isEmpty()) {
+							synchronized (internal) {
+								internal.clear();
+								internal.addAll(m.entrySet());
+							}
+							ret.dataReceived();
+						}
+					});
+					entries = ret;
+				}
+			}
+		}
+		return entries;
 	}
 
 	@Override

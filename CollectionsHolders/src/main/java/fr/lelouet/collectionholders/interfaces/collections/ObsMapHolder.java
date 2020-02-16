@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -158,6 +159,13 @@ public interface ObsMapHolder<K, V> {
 	 *         internal collections
 	 */
 	ObsCollectionHolder<V, ?, ?> values();
+
+	/**
+	 *
+	 * @return a collection holder that contains all the entries of the internal
+	 *         Map.
+	 */
+	ObsCollectionHolder<Entry<K, V>, ?, ?> entries();
 
 	/**
 	 * create a filtered map of this. The (key, val) couples are duplicated in the
