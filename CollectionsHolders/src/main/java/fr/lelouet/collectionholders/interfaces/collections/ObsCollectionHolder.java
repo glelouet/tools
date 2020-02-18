@@ -50,6 +50,12 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 
 	public ObsBoolHolder isEmpty();
 
+	@Override
+	default ObsCollectionHolder<U, C, L> peek(Consumer<C> observer) {
+		follow(observer);
+		return this;
+	}
+
 	/**
 	 * apply all existing values to the change listener, and register it as a
 	 * listener of the underlying list.

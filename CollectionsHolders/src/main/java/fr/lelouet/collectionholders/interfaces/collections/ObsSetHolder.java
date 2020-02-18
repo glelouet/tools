@@ -1,12 +1,19 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.collections.SetChangeListener;
 
 public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChangeListener<? super U>> {
+
+	@Override
+	default ObsSetHolder<U> peek(Consumer<Set<U>> observer) {
+		follow(observer);
+		return this;
+	}
 
 	/**
 	 * create a variable which is set to true whenever this contains a specific

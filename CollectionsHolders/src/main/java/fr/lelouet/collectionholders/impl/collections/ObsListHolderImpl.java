@@ -112,7 +112,8 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 					follow((l) -> {
 						boolean modified = false;
 						synchronized (internal) {
-							modified = internal.retainAll(l);
+							modified = internal.isEmpty();
+							modified = internal.retainAll(l) ? true : modified;
 							modified = internal.addAll(l) ? true : modified;
 						}
 						if (modified) {

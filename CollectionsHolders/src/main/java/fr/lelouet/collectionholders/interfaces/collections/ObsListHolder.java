@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -30,6 +31,12 @@ import javafx.collections.ObservableList;
  */
 public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListChangeListener<? super U>> {
 
+
+	@Override
+	default ObsListHolder<U> peek(Consumer<List<U>> observer) {
+		follow(observer);
+		return this;
+	}
 
 	/**
 	 * wait for at least one element to be added, then apply the consumer to the

@@ -49,6 +49,11 @@ public interface ObsObjHolder<U> {
 	 */
 	public void follow(Consumer<U> cons);
 
+	default ObsObjHolder<U> peek(Consumer<U> observer) {
+		follow(observer);
+		return this;
+	}
+
 	/**
 	 * remove a follower added with {@link #follow(Consumer)}
 	 *
@@ -115,7 +120,7 @@ public interface ObsObjHolder<U> {
 	 * @param <V>
 	 *          the internal type of the list we generate
 	 * @param generator
-	 *          the function that tnrasofrm the value hold, in an iterable over
+	 *          the function that transforms the value hold, in an iterable over
 	 *          the list type.
 	 * @return a new list holder.
 	 */
