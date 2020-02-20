@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -79,11 +80,12 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		});
 	}
 
-	public static <T> ObsListHolderImpl<T> filter(ObsListHolder<T> source, Predicate<? super T> predicate) {
-		ObservableList<T> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<T> ret = new ObsListHolderImpl<>(internal);
-		source.follow((t) -> {
-			List<T> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
+	@Override
+	public ObsListHolderImpl<U> filter(Predicate<? super U> predicate) {
+		ObservableList<U> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		follow((t) -> {
+			List<U> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
 			if (!internal.equals(filteredList) || internal.isEmpty()) {
 				synchronized (internal) {
 					internal.clear();
@@ -96,8 +98,26 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 	}
 
 	@Override
-	public ObsListHolderImpl<U> filter(Predicate<? super U> predicate) {
-		return filter(this, predicate);
+	public ObsListHolderImpl<U> filterWhen(
+			Function<? super U, ObsBoolHolder> filterer) {
+		ObservableList<U> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		filterWhen(filteredStream -> {
+			// System.err.println("got new stream");
+			List<U> filteredList = filteredStream.collect(Collectors.toList());
+			// System.err.println(" collection is " + filteredList);
+			if (!internal.equals(filteredList) || internal.isEmpty()) {
+				// System.err.println(" new list : setting it");
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(filteredList);
+				}
+				ret.dataReceived();
+			} else {
+				// System.err.println(" nothing to do");
+			}
+		}, filterer);
+		return ret;
 	}
 
 	private ObsSetHolder<U> distinct = null;

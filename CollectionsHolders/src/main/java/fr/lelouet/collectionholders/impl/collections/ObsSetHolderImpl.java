@@ -11,6 +11,7 @@ import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -64,15 +65,16 @@ implements ObsSetHolder<U> {
 		});
 	}
 
-	public static <T> ObsSetHolderImpl<T> filter(ObsSetHolder<T> source, Predicate<? super T> predicate) {
-		ObservableSet<T> internal = FXCollections.observableSet(new HashSet<>());
-		ObsSetHolderImpl<T> ret = new ObsSetHolderImpl<>(internal);
-		source.follow((t) -> {
-			Set<T> filteredList = t.stream().filter(predicate).collect(Collectors.toSet());
-			if (!internal.equals(filteredList) || internal.isEmpty()) {
+	@Override
+	public ObsSetHolderImpl<U> filter(Predicate<? super U> predicate) {
+		ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
+		follow((t) -> {
+			Set<U> filteredSet = t.stream().filter(predicate).collect(Collectors.toSet());
+			if (!internal.equals(filteredSet) || internal.isEmpty()) {
 				synchronized (internal) {
-					internal.retainAll(filteredList);
-					internal.addAll(filteredList);
+					internal.retainAll(filteredSet);
+					internal.addAll(filteredSet);
 				}
 				ret.dataReceived();
 			}
@@ -81,8 +83,20 @@ implements ObsSetHolder<U> {
 	}
 
 	@Override
-	public ObsSetHolderImpl<U> filter(Predicate<? super U> predicate) {
-		return filter(this, predicate);
+	public ObsSetHolderImpl<U> filterWhen(Function<? super U, ObsBoolHolder> filterer) {
+		ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
+		filterWhen(filteredStream -> {
+			Set<U> filteredSet = filteredStream.collect(Collectors.toSet());
+			if (!internal.equals(filteredSet) || internal.isEmpty()) {
+				synchronized (internal) {
+					internal.retainAll(filteredSet);
+					internal.addAll(filteredSet);
+				}
+				ret.dataReceived();
+			}
+		}, filterer);
+		return ret;
 	}
 
 	@Override

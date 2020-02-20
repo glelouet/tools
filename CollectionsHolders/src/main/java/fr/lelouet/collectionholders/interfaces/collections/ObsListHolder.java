@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
@@ -55,6 +56,9 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListCh
 
 	@Override
 	ObsListHolder<U> filter(Predicate<? super U> predicate);
+
+	@Override
+	ObsListHolder<U> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
 	ObsListHolder<U> concat(@SuppressWarnings("unchecked") ObsListHolder<? extends U>... lists);
 

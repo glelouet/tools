@@ -15,6 +15,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 
 public class ObsListHolderImplTest {
 
@@ -186,5 +187,57 @@ public class ObsListHolderImplTest {
 		internal2.addAll("aa", "bb", "cc", "dd");
 		test2.dataReceived();
 		Assert.assertEquals((double) dist2.get(), 4.0);
+	}
+
+	@Test(timeOut = 1000)
+	public void testFilterWhen() {
+
+		// System.err.println("creation");
+		ObservableList<ObsMapHolder<String, Integer>> internal = FXCollections.observableArrayList();
+		ObsListHolderImpl<ObsMapHolder<String, Integer>> source = new ObsListHolderImpl<>(internal);
+		// source.peek(l -> System.err.println("received new test list : " + l));
+
+		// System.err.println();
+		// System.err.println("test empty");
+		ObsListHolderImpl<ObsMapHolder<String, Integer>> test = source.filterWhen(m -> m.isEmpty().not());
+		source.dataReceived();
+		Assert.assertTrue(test.isEmpty().get());
+
+		// System.err.println();
+		// System.err.println(" test with empty map");
+		ObservableMap<String, Integer> imap1 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, Integer> map1 = new ObsMapHolderImpl<>(imap1);
+		map1.dataReceived();
+		internal.add(map1);
+		source.dataReceived();
+		Assert.assertTrue(test.isEmpty().get());
+
+		// System.err.println();
+		// System.err.println("add value in map");
+		imap1.put("a", 1);
+		map1.dataReceived();
+		Assert.assertFalse(test.isEmpty().get());
+
+		// System.err.println();
+		// System.err.println("add second map, empty");
+		ObservableMap<String, Integer> imap2 = FXCollections.observableHashMap();
+		ObsMapHolderImpl<String, Integer> map2 = new ObsMapHolderImpl<>(imap2);
+		map2.dataReceived();
+		internal.add(map2);
+		source.dataReceived();
+		Assert.assertEquals(test.get().size(), 1, "got : " + test.get());
+
+		// System.err.println();
+		// System.err.println("add value in second map");
+		imap2.put("bb", 2);
+		map2.dataReceived();
+		Assert.assertEquals(test.get().size(), 2, "got : " + test.get());
+
+		// System.err.println();
+		// System.err.println("remove first map");
+		internal.remove(map1);
+		source.dataReceived();
+		Assert.assertEquals(test.get().size(), 1, "got : " + test.get());
+
 	}
 }

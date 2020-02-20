@@ -71,9 +71,28 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *
 	 * @param predicate
 	 *          the predicate to select the items
-	 * @return a new collection with same parametrized signature.
+	 * @return a new collection with same parameterized signature.
 	 */
 	public ObsCollectionHolder<U, C, L> filter(Predicate<? super U> predicate);
+
+	/**
+	 * create a filtered collection on an observable predicate.
+	 * <p>
+	 * Formally, it ensure that the returned collection only holds and hold all,
+	 * the elements for which the filterer made a observable boolean holder that
+	 * contains true.
+	 * </p>
+	 * <p>
+	 * An example would be to filter a list of map, by checking if those maps are
+	 * not empty.<br />
+	 * <code>listofmaps.filterWhen(m->m.isEmpty().not())</code>
+	 * </p>
+	 *
+	 * @param filterer
+	 *          the mapping of items to their observable filter
+	 * @return a new collection with same parameterized signature.
+	 */
+	public ObsCollectionHolder<U, C, L> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
 	/**
 	 * map each item in this to a new item in another collection
@@ -234,7 +253,6 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand);
 
 	/**
-	 * NOT DONE YET<br />
 	 * flatten this by converting all the elements to {@link ObsCollectionHolder}
 	 * and merging them. The mapped collections are listened to, whenever a new
 	 * one is to be created.

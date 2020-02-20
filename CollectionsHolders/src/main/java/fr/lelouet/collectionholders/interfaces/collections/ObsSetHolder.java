@@ -2,6 +2,8 @@ package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
@@ -35,5 +37,11 @@ public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChang
 	 * @return a new variable
 	 */
 	public ObsBoolHolder contains(ObsObjHolder<U> value);
+
+	@Override
+	ObsSetHolder<U> filter(Predicate<? super U> predicate);
+
+	@Override
+	ObsSetHolder<U> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
 }

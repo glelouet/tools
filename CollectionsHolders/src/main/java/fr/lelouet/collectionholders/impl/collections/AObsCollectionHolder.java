@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -18,6 +19,7 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
@@ -361,9 +363,60 @@ implements ObsCollectionHolder<U, C, L> {
 			}
 			tryUpdate.run();
 		});
-
 		return ret;
+	}
 
+	// TODO
+	protected void filterWhen(Consumer<Stream<U>> onNewValue, Function<? super U, ObsBoolHolder> filterer) {
+		Map<U, ObsBoolHolder> filters = new LinkedHashMap<>();
+		Map<U, Boolean> elementsPredicate = new LinkedHashMap<>();
+		Map<U, Consumer<Boolean>> listeners = new HashMap<>();
+		Runnable update = () -> {
+			synchronized (elementsPredicate) {
+				// System.err.println("run update predicates=" + elementsPredicate);
+				if (elementsPredicate.size() == filters.size()) {
+					Stream<U> filteredStream = elementsPredicate.entrySet().stream().filter(e -> e.getValue())
+							.map(e -> e.getKey());
+					onNewValue.accept(filteredStream);
+				}
+			}
+		};
+		follow(c -> {
+			// System.err.println("filter got new collection");
+			synchronized (filters) {
+				// first add the elements that are to be added
+				for (U u : c) {
+					if (!filters.containsKey(u)) {
+						ObsBoolHolder predicate = filterer.apply(u);
+						filters.put(u, predicate);
+						Consumer<Boolean> cons = b -> {
+							// System.err.println("got new predicate value " + b + " for " +
+							// u);
+							elementsPredicate.put(u, b);
+							update.run();
+						};
+						listeners.put(u, cons);
+						predicate.follow(cons);
+					}
+				}
+				// then remove the elements that need to be removed.
+				List<U> removed = filters.keySet().stream().filter(u -> !c.contains(u)).collect(Collectors.toList());
+				if (!removed.isEmpty()) {
+					synchronized (elementsPredicate) {
+						for (U u : removed) {
+							ObsBoolHolder filter = filters.remove(u);
+							filter.unfollow(listeners.get(u));
+							filters.remove(u);
+							elementsPredicate.remove(u);
+						}
+					}
+					update.run();
+				}
+				if (c.isEmpty()) {
+					update.run();
+				}
+			}
+		});
 	}
 
 }
