@@ -28,6 +28,10 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 		}
 	}
 
+	public boolean isDataAvailable() {
+		return waitLatch.getCount() == 0;
+	}
+
 	private U item;
 
 	@Override
