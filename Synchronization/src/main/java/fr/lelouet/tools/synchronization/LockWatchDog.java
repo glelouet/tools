@@ -80,8 +80,7 @@ public class LockWatchDog {
 	/** for each thread, the set of locks it holds */
 	private final HashMap<Thread, IdentityHashMap<Object, Object>> threadsLocksHolding = new HashMap<>();
 
-	public static boolean skip =
-			System.getProperties().contains("nowatchdog");
+	public static boolean skip = System.getProperties().contains("nowatchdog");
 	// true;
 
 	public void tak(Object lock) {
@@ -285,8 +284,11 @@ public class LockWatchDog {
 
 	private LockWatchDog() {
 		if (!skip) {
-			Executors.newScheduledThreadPool(1).scheduleAtFixedRate(this::log, periodLogSeconds, periodLogSeconds,
-					TimeUnit.SECONDS);
+			Executors.newScheduledThreadPool(1, r -> {
+				Thread t = Executors.defaultThreadFactory().newThread(r);
+				t.setDaemon(true);
+				return t;
+			}).scheduleAtFixedRate(this::log, periodLogSeconds, periodLogSeconds, TimeUnit.SECONDS);
 		}
 	}
 
