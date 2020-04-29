@@ -23,8 +23,6 @@ public class CleanRepresenter extends Representer {
 	@Override
 	protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue,
 			Tag customTag) {
-		// System.err.println("represent property " + javaBean.getClass() + "." +
-		// property.getName());
 		if (propertyValue == null || propertyValue instanceof Collection && ((Collection<?>) propertyValue).isEmpty()
 				|| propertyValue instanceof Map && ((Map<?, ?>) propertyValue).isEmpty() || ZEROS.contains(propertyValue)) {
 			return null;
@@ -42,13 +40,11 @@ public class CleanRepresenter extends Representer {
 
 	@Override
 	protected MappingNode representJavaBean(Set<Property> properties, Object javaBean) {
-		// System.err.println("represent " + javaBean.getClass());
 		// remove the !!class
 		if (!classTags.containsKey(javaBean.getClass())) {
 			addClassTag(javaBean.getClass(), Tag.MAP);
 		}
 		MappingNode ret = super.representJavaBean(properties, javaBean);
-		// ret.setFlowStyle(FlowStyle.BLOCK);
 		return ret;
 	}
 }
