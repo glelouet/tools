@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>fr.lelouet.tools</groupId>
+		<artifactId>application</artifactId>
+		<version>1.3.4</version>
+	</parent>
+	<artifactId>XDGSettings</artifactId>
+	<groupId>fr.lelouet.tools.application</groupId>
+	<dependencies>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.26</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+	</dependencies>
+
+	<scm>
+		<url>https://github.com/glelouet/tools</url>
+		<connection>scm:git:git://github.com/glelouet/tools.git</connection>
+		<developerConnection>scm:git:git@github.com:glelouet/tools.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	<name>XDGSettings</name>
+</project>

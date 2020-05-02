@@ -91,8 +91,13 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.lelouet.tools</groupId>
+				<groupId>fr.lelouet.tools.application</groupId>
 				<artifactId>XDGSettings</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools.application</groupId>
+				<artifactId>YamlSettings</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
@@ -140,8 +145,10 @@
 		<module>CollectionsHolders</module>
 		<module>Compilation</module>
 		<module>Synchronization</module>
-		<module>YamlSettings</module>
-		<module>XDGSettings</module>
+		
+		
 		<module>LambdaRef</module>
+		
+		<module>application</module>
 	</modules>
 </project>
