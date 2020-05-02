@@ -3,11 +3,16 @@
   <parent>
     <groupId>fr.lelouet</groupId>
     <artifactId>tools</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
   </parent>
   <groupId>fr.lelouet.tools</groupId>
   <artifactId>application</artifactId>
   <name>application</name>
   <description>projects dedicated to making applications</description>
   <packaging>pom</packaging>
+  <modules>
+  	<module>SettingsMaker</module>
+  	<module>XDGSettings</module>
+  	<module>YamlSettings</module>
+  </modules>
 </project>
