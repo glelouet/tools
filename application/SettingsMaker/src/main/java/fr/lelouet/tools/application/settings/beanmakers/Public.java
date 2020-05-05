@@ -22,7 +22,7 @@ public class Public implements FieldAccess {
 	AbstractJClass listRef;
 
 	@Override
-	public void createField(JDefinedClass clazz, String name, AbstractJType fieldType) {
+	public void createField(JDefinedClass clazz, String name, AbstractJType fieldType, String description) {
 		JFieldVar f = clazz.field(JMod.PUBLIC, fieldType, name);
 		if (!fieldType.isPrimitive()) {
 			if (fieldType instanceof AbstractJClass && ((AbstractJClass) fieldType).isParameterized()) {
@@ -35,7 +35,11 @@ public class Public implements FieldAccess {
 				f.init(fieldType._new());
 			}
 		}
+		if (description != null) {
+			f.javadoc().add(description);
+		}
 	}
+
 
 	@Override
 	public JDefinedClass makeRootClass(SettingsCompiler settingsCompiler) {

@@ -10,7 +10,13 @@ import java.util.HashMap;
  */
 public class TypeDescription {
 
+	/** reference to a type */
 	public String ref= null;
+
+	/**
+	 * description of the field, will be used as a comment.
+	 */
+	public String desc = null;
 
 	/**
 	 * if a list, must describe the internal type.

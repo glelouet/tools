@@ -7,7 +7,9 @@ types:
    children:
     type: list
     of: node
-   value: string
+   value:
+    ref: string
+    desc: description of the "value" field
 contains:
  yes : bool
  name : string

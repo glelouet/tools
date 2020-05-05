@@ -13,10 +13,15 @@ public interface FieldAccess {
 	 * create a field in a class.
 	 *
 	 * @param clazz
+	 *          the class to create the field into
 	 * @param name
+	 *          name of the field
 	 * @param fieldType
+	 *          type of the field
+	 * @param description
+	 *          description of the field
 	 */
-	void createField(JDefinedClass clazz, String name, AbstractJType fieldType);
+	void createField(JDefinedClass clazz, String name, AbstractJType fieldType, String description);
 
 	JDefinedClass makeRootClass(SettingsCompiler settingsCompiler);
 

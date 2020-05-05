@@ -143,7 +143,6 @@ public class SettingsCompiler {
 				}
 			}
 		}
-		System.err.println("working with field access " + clazz + " for name " + settings.access);
 		try {
 			return clazz.getConstructor().newInstance();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
@@ -229,8 +228,9 @@ public class SettingsCompiler {
 	/** add correct fields in the class */
 	protected void addTypeStruct(JDefinedClass clazz, Map<String, TypeDescription> struct) {
 		for (Entry<String, TypeDescription> e : struct.entrySet()) {
+			TypeDescription td = e.getValue();
 			bean.createField(clazz, e.getKey(),
-					makeType(e.getValue(), () -> clazz.getPackage().subPackage(clazz.name().toLowerCase()), e.getKey(), false));
+					makeType(td, () -> clazz.getPackage().subPackage(clazz.name().toLowerCase()), e.getKey(), false), td.desc);
 		}
 	}
 
