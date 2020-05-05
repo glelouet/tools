@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
@@ -179,7 +177,7 @@ public class SettingsCompiler {
 		if (type.struct != null) {
 			// make a structure
 			try {
-				JDefinedClass creation = pck.get()._class(makeJavaClassName(name));
+				JDefinedClass creation = bean.makeClass(pck.get(), makeJavaClassName(name));
 				if (store) {
 					knownTypes.put(name, creation);
 				}
@@ -193,13 +191,13 @@ public class SettingsCompiler {
 			JDefinedClass creation = null;
 			if (store) {
 				try {
-					creation = pck.get()._class(makeJavaClassName(name));
+					creation = bean.makeClass(pck.get(), makeJavaClassName(name));
 				} catch (JClassAlreadyExistsException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}
 				knownTypes.put(name, creation);
 			}
-			JNarrowedClass clazz = jcm.ref(ArrayList.class).narrow(makeType(type.of, pck, name, false));
+			JNarrowedClass clazz = bean.listRef().narrow(makeType(type.of, pck, name, false));
 			if (creation != null) {
 				creation._extends(clazz);
 			}
@@ -209,13 +207,13 @@ public class SettingsCompiler {
 			JDefinedClass creation = null;
 			if (store) {
 				try {
-					creation = pck.get()._class(makeJavaClassName(name));
+					creation = bean.makeClass(pck.get(), makeJavaClassName(name));
 				} catch (JClassAlreadyExistsException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}
 				knownTypes.put(name, creation);
 			}
-			JNarrowedClass clazz = jcm.ref(LinkedHashMap.class).narrow(makeType(type.key, pck, name, false))
+			JNarrowedClass clazz = bean.mapRef().narrow(makeType(type.key, pck, name, false))
 					.narrow(makeType(type.val, pck, name, false));
 			if (creation != null) {
 				creation._extends(clazz);
