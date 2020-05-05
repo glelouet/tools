@@ -17,7 +17,8 @@ import com.helger.jcodemodel.JNarrowedClass;
 import com.helger.jcodemodel.JPackage;
 import com.helger.jcodemodel.writer.JCMWriter;
 
-import fr.lelouet.tools.application.settings.beanmakers.PublicField;
+import fr.lelouet.tools.application.settings.beanmakers.JavaBeans;
+import fr.lelouet.tools.application.settings.beanmakers.Public;
 
 public class SettingsCompiler {
 
@@ -83,7 +84,7 @@ public class SettingsCompiler {
 		this.settings = settings;
 	}
 
-	BeanMaker bean = null;
+	FieldAccess bean = null;
 
 	JCodeModel jcm;
 
@@ -126,21 +127,23 @@ public class SettingsCompiler {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected BeanMaker loadBeanMaker() {
-		Class<? extends BeanMaker> clazz = PublicField.class;
-		Map<String, Class<? extends BeanMaker>> knownMakers = new HashMap<>();
-		knownMakers.put("field", clazz);
-		if (settings.bean != null) {
-			if (knownMakers.containsKey(settings.bean)) {
-				clazz = knownMakers.get(settings.bean);
+	protected FieldAccess loadBeanMaker() {
+		Class<? extends FieldAccess> clazz = Public.class;
+		Map<String, Class<? extends FieldAccess>> knownMakers = new HashMap<>();
+		knownMakers.put("public", clazz);
+		knownMakers.put("javabeans", JavaBeans.class);
+		if (settings.access != null) {
+			if (knownMakers.containsKey(settings.access)) {
+				clazz = knownMakers.get(settings.access);
 			} else {
 				try {
-					clazz = (Class<? extends BeanMaker>) SettingsCompiler.class.getClassLoader().loadClass(settings.bean);
+					clazz = (Class<? extends FieldAccess>) SettingsCompiler.class.getClassLoader().loadClass(settings.access);
 				} catch (ClassNotFoundException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}
 			}
 		}
+		System.err.println("working with field access " + clazz + " for name " + settings.access);
 		try {
 			return clazz.getConstructor().newInstance();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException

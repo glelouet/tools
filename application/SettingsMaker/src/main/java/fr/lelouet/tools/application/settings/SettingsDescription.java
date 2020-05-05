@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
-import fr.lelouet.tools.application.settings.beanmakers.PublicField;
+import fr.lelouet.tools.application.settings.beanmakers.Public;
 import fr.lelouet.tools.application.yaml.CleanRepresenter;
 
 public class SettingsDescription {
@@ -26,11 +26,11 @@ public class SettingsDescription {
 	public String path;
 
 	/**
-	 * bean maker for fields in a class. can be one of the default classes, eg
-	 * field for {@link PublicField}, or a selected class that implements
-	 * {@link BeanMaker}
+	 * access generation for fields in a class. can be one of the default classes,
+	 * eg "public" for {@link Public}, or a selected class that implements
+	 * {@link FieldAccess}
 	 */
-	public String bean;
+	public String access;
 
 	/**
 	 * if true, all types will be generated, even those that are not reachable

@@ -8,7 +8,7 @@ public class SettingsDescriptionTest {
 	@Test
 	public void testLoad() {
 		SettingsDescription settings = SettingsDescription
-				.load(getClass().getClassLoader().getResourceAsStream("simpleDescription.yaml"));
+				.load(getClass().getClassLoader().getResourceAsStream("test1.yaml"));
 		Assert.assertEquals(settings.name, "simpleapp");
 		Assert.assertEquals(settings.path, "my.simple.app");
 		Assert.assertEquals(settings.contains.get("yes").ref, "bool");

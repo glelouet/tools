@@ -12,10 +12,10 @@ import com.helger.jcodemodel.JMod;
 import com.helger.jcodemodel.JNarrowedClass;
 import com.helger.jcodemodel.JPackage;
 
-import fr.lelouet.tools.application.settings.BeanMaker;
+import fr.lelouet.tools.application.settings.FieldAccess;
 import fr.lelouet.tools.application.settings.SettingsCompiler;
 
-public class PublicField implements BeanMaker {
+public class Public implements FieldAccess {
 
 	AbstractJClass mapRef;
 

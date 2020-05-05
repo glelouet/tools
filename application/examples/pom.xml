@@ -12,5 +12,15 @@
   <description>package of examples for the application</description>
   <modules>
   	<module>SimpleApp</module>
+  	<module>JavaBeanExample</module>
   </modules>
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>fr.lelouet.tools.application</groupId>
+  			<artifactId>SettingsMaker</artifactId>
+  			<version>${project.version}</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

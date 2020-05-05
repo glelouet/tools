@@ -1,0 +1,21 @@
+name: withBeans
+path: fr.lelouet.application.settings.examples
+access: javabeans
+types:
+ node:
+  struct:
+   children:
+    type: list
+    of: node
+   value: string
+contains:
+ yes : bool
+ name : string
+ locations :
+   struct:
+     a : string
+     b : double
+ root : node
+ people:
+  key: string
+  val: string

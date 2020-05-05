@@ -7,7 +7,7 @@ import com.helger.jcodemodel.JDefinedClass;
 import com.helger.jcodemodel.JPackage;
 
 /** generate a bean for given type in a {@link JDefinedClass} */
-public interface BeanMaker {
+public interface FieldAccess {
 
 	/**
 	 * create a field in a class.
