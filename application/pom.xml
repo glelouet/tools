@@ -14,5 +14,7 @@
   	<module>SettingsMaker</module>
   	<module>XDGSettings</module>
   	<module>YamlSettings</module>
+  	
+  	<module>examples</module>
   </modules>
 </project>

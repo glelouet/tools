@@ -14,5 +14,9 @@
   		<groupId>fr.lelouet.tools.application</groupId>
   		<artifactId>YamlSettings</artifactId>
   	</dependency>
+  	<dependency>
+  		<groupId>com.helger</groupId>
+  		<artifactId>jcodemodel</artifactId>
+  	</dependency>
   </dependencies>
 </project>

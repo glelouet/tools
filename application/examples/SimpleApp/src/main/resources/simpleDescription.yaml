@@ -1,5 +1,6 @@
 name : simpleapp
 path : my.simple.app
+forceAllTypes: true
 types:
  node:
   struct:
@@ -7,6 +8,11 @@ types:
     type: list
     of: node
    value: string
+ recursiveList:
+  of: recursiveList
+ recursiveMap:
+  key: recursiveMap
+  val: recursiveMap
 contains:
  yes : bool
  name : string

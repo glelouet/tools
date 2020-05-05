@@ -13,20 +13,6 @@ public class TypeDescription {
 	public String ref= null;
 
 	/**
-	 * complex type if we are not a reference : can be a map, a list, or a
-	 * structure.
-	 *
-	 * @author glelouet
-	 *
-	 */
-	public enum COMPLEXETYPE {
-		map, list, struct;
-	}
-
-	/** if not a reference, must be set. default is struct */
-	public COMPLEXETYPE type = COMPLEXETYPE.struct;
-
-	/**
 	 * if a list, must describe the internal type.
 	 */
 	public TypeDescription of;
@@ -51,6 +37,23 @@ public class TypeDescription {
 
 	public TypeDescription(String ref) {
 		this.ref = ref;
+	}
+
+	@Override
+	public String toString() {
+		if (ref != null) {
+			return "ref:" + ref;
+		}
+		if (of != null) {
+			return "of:" + of;
+		}
+		if (key != null && val != null) {
+			return "map:" + key + ":" + val;
+		}
+		if (struct != null) {
+			return "struct:" + struct;
+		}
+		return "empty";
 	}
 
 }
