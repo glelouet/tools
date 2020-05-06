@@ -10,6 +10,7 @@ import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 
 import fr.lelouet.tools.application.settings.description.AccessDescription;
+import fr.lelouet.tools.application.settings.description.StoreDescription;
 import fr.lelouet.tools.application.settings.fieldaccess.Public;
 import fr.lelouet.tools.application.yaml.CleanRepresenter;
 
@@ -32,6 +33,9 @@ public class SettingsDescription {
 	 * {@link FieldAccess}
 	 */
 	public AccessDescription access;
+
+	/** how to create a store() and static load() method in the root class */
+	public StoreDescription store;
 
 	/**
 	 * if true, all types will be generated, even those that are not reachable

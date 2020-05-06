@@ -5,8 +5,13 @@ import java.util.Map;
 
 public class AccessDescription {
 
+	/** name of the class to instantiate */
 	public String name = null;
 
+	/** if set, requires to set root class as extends this one */
+	public String rootClass = null;
+
+	/** additional parameters */
 	public Map<String, String> params = new LinkedHashMap<>();
 
 	public AccessDescription() {

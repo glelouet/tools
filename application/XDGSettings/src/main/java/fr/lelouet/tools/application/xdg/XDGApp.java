@@ -214,8 +214,6 @@ public class XDGApp {
 		} else {
 			endpath = appName == null ? "" : appName;
 		}
-		// System.err.println("key=" + home_key + " default=" + home_default + "
-		// begin=" + beginPath + " ; end=" + endpath);
 		return new File(beginPath + File.separator + endpath);
 	}
 

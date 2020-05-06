@@ -2,7 +2,6 @@ package fr.lelouet.tools.application.settings.fieldaccess;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import com.helger.jcodemodel.AbstractJClass;
 import com.helger.jcodemodel.AbstractJType;
@@ -15,6 +14,7 @@ import com.helger.jcodemodel.JPackage;
 
 import fr.lelouet.tools.application.settings.FieldAccess;
 import fr.lelouet.tools.application.settings.SettingsCompiler;
+import fr.lelouet.tools.application.settings.description.AccessDescription;
 
 public class Public implements FieldAccess {
 
@@ -41,15 +41,27 @@ public class Public implements FieldAccess {
 		}
 	}
 
-
 	@Override
 	public JDefinedClass makeRootClass(SettingsCompiler settingsCompiler) {
 		mapRef = settingsCompiler.codeModel().ref(LinkedHashMap.class);
 		listRef = settingsCompiler.codeModel().ref(ArrayList.class);
 		try {
-			return settingsCompiler.rootPackage()
+			Class<?> rootExtends = null;
+			if (params.rootClass != null) {
+				rootExtends = Public.class.getClassLoader().loadClass(params.rootClass);
+			}
+			JDefinedClass ret = settingsCompiler.rootPackage()
 					._class(SettingsCompiler.makeJavaClassName(settingsCompiler.settings().name));
-		} catch (JClassAlreadyExistsException e) {
+			if (rootExtends != null) {
+				AbstractJClass ref = ret.owner().ref(rootExtends);
+				if (rootExtends.isInterface()) {
+					ret._implements(ref);
+				} else {
+					ret._extends(ref);
+				}
+			}
+			return ret;
+		} catch (JClassAlreadyExistsException | ClassNotFoundException e) {
 			throw new UnsupportedOperationException("catch this", e);
 		}
 	}
@@ -69,9 +81,13 @@ public class Public implements FieldAccess {
 		return pck._class(JMod.PUBLIC, className);
 	}
 
+	protected AccessDescription params = null;
+
 	@Override
-	public void setParams(Map<String, String> params) {
-		// do nothing, we don't care
+	public void setParams(AccessDescription params) {
+		if (params != null) {
+			this.params = params;
+		}
 	}
 
 }

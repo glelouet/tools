@@ -111,7 +111,7 @@ public class SettingsCompiler {
 	}
 
 	public JCodeModel generate() {
-		bean = loadBeanMaker();
+		bean = loadFieldAccess();
 		jcm = new JCodeModel();
 		rootPck = jcm._package(settings.path.toLowerCase());
 		rootClass = bean.makeRootClass(this);
@@ -127,7 +127,7 @@ public class SettingsCompiler {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected FieldAccess loadBeanMaker() {
+	protected FieldAccess loadFieldAccess() {
 		Class<? extends FieldAccess> clazz = Public.class;
 		Map<String, Class<? extends FieldAccess>> knownMakers = new HashMap<>();
 		knownMakers.put("public", clazz);
@@ -145,7 +145,9 @@ public class SettingsCompiler {
 			}
 		}
 		try {
-			return clazz.getConstructor().newInstance();
+			FieldAccess instance = clazz.getConstructor().newInstance();
+			instance.setParams(settings.access);
+			return instance;
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
 			throw new UnsupportedOperationException("catch this", e);
