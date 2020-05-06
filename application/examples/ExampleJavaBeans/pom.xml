@@ -6,8 +6,8 @@
     <version>1.4.2</version>
   </parent>
   <groupId>fr.lelouet.tools.application.examples</groupId>
-  <artifactId>JavaBeanExample</artifactId>
-  <name>JavaBeanExample</name>
+  <artifactId>ExampleJavaBeans</artifactId>
+  <name>Example Java Beans</name>
   <description>example of code produced by creating a simple settings with java beans</description>
 	<build>
 		<plugins>

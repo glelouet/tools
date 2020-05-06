@@ -1,5 +1,7 @@
 package fr.lelouet.tools.application.settings;
 
+import java.util.Map;
+
 import com.helger.jcodemodel.AbstractJClass;
 import com.helger.jcodemodel.AbstractJType;
 import com.helger.jcodemodel.JClassAlreadyExistsException;
@@ -22,6 +24,8 @@ public interface FieldAccess {
 	 *          description of the field
 	 */
 	void createField(JDefinedClass clazz, String name, AbstractJType fieldType, String description);
+
+	void setParams(Map<String, String> params);
 
 	JDefinedClass makeRootClass(SettingsCompiler settingsCompiler);
 

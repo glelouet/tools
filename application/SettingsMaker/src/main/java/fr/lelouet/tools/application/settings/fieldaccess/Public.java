@@ -1,7 +1,8 @@
-package fr.lelouet.tools.application.settings.beanmakers;
+package fr.lelouet.tools.application.settings.fieldaccess;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.helger.jcodemodel.AbstractJClass;
 import com.helger.jcodemodel.AbstractJType;
@@ -66,6 +67,11 @@ public class Public implements FieldAccess {
 	@Override
 	public JDefinedClass makeClass(JPackage pck, String className) throws JClassAlreadyExistsException {
 		return pck._class(JMod.PUBLIC, className);
+	}
+
+	@Override
+	public void setParams(Map<String, String> params) {
+		// do nothing, we don't care
 	}
 
 }

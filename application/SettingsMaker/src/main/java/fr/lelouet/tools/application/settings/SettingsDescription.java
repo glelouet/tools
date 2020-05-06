@@ -9,7 +9,8 @@ import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
-import fr.lelouet.tools.application.settings.beanmakers.Public;
+import fr.lelouet.tools.application.settings.description.AccessDescription;
+import fr.lelouet.tools.application.settings.fieldaccess.Public;
 import fr.lelouet.tools.application.yaml.CleanRepresenter;
 
 public class SettingsDescription {
@@ -30,7 +31,7 @@ public class SettingsDescription {
 	 * eg "public" for {@link Public}, or a selected class that implements
 	 * {@link FieldAccess}
 	 */
-	public String access;
+	public AccessDescription access;
 
 	/**
 	 * if true, all types will be generated, even those that are not reachable

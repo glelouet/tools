@@ -11,8 +11,8 @@
   <name>examples</name>
   <description>package of examples for the application</description>
   <modules>
-  	<module>SimpleApp</module>
-  	<module>JavaBeanExample</module>
+  	<module>ExampleSimpleApp</module>
+  	<module>ExampleJavaBeans</module>
   </modules>
   <dependencyManagement>
   	<dependencies>

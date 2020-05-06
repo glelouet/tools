@@ -7,9 +7,9 @@
 		<artifactId>examples</artifactId>
 		<version>1.4.2</version>
 	</parent>
-	<artifactId>SimpleApp</artifactId>
+	<artifactId>ExampleSimpleApp</artifactId>
 	<groupId>fr.lelouet.tools.application.examples</groupId>
-	<name>SimpleApp</name>
+	<name>Example Simple App</name>
 	<description>simple app to show how to use the settingsMaker</description>
 	<build>
 		<plugins>

@@ -17,8 +17,8 @@ import com.helger.jcodemodel.JNarrowedClass;
 import com.helger.jcodemodel.JPackage;
 import com.helger.jcodemodel.writer.JCMWriter;
 
-import fr.lelouet.tools.application.settings.beanmakers.JavaBeans;
-import fr.lelouet.tools.application.settings.beanmakers.Public;
+import fr.lelouet.tools.application.settings.fieldaccess.JavaBeans;
+import fr.lelouet.tools.application.settings.fieldaccess.Public;
 
 public class SettingsCompiler {
 
@@ -132,12 +132,13 @@ public class SettingsCompiler {
 		Map<String, Class<? extends FieldAccess>> knownMakers = new HashMap<>();
 		knownMakers.put("public", clazz);
 		knownMakers.put("javabeans", JavaBeans.class);
-		if (settings.access != null) {
-			if (knownMakers.containsKey(settings.access)) {
-				clazz = knownMakers.get(settings.access);
+		if (settings.access != null && settings.access.name != null) {
+			if (knownMakers.containsKey(settings.access.name)) {
+				clazz = knownMakers.get(settings.access.name);
 			} else {
 				try {
-					clazz = (Class<? extends FieldAccess>) SettingsCompiler.class.getClassLoader().loadClass(settings.access);
+					clazz = (Class<? extends FieldAccess>) SettingsCompiler.class.getClassLoader()
+							.loadClass(settings.access.name);
 				} catch (ClassNotFoundException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}

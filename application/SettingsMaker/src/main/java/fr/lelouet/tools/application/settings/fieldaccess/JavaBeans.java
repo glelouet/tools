@@ -1,4 +1,4 @@
-package fr.lelouet.tools.application.settings.beanmakers;
+package fr.lelouet.tools.application.settings.fieldaccess;
 
 import com.helger.jcodemodel.AbstractJClass;
 import com.helger.jcodemodel.AbstractJType;
