@@ -1,11 +1,11 @@
-package fr.lelouet.tools.application.settings.storeformat;
+package fr.lelouet.tools.application.settings.fieldaccess.storeformat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.yaml.snakeyaml.Yaml;
 
-import fr.lelouet.tools.application.settings.StoreFormat;
+import fr.lelouet.tools.application.settings.fieldaccess.StoreFormat;
 
 public class YAMLFormat implements StoreFormat {
 

@@ -11,6 +11,10 @@ public class AccessDescription {
 	/** if set, requires to set root class as extends this one */
 	public String rootClass = null;
 
+	public String path = null;
+
+	public String format = null;
+
 	/** additional parameters */
 	public Map<String, String> params = new LinkedHashMap<>();
 

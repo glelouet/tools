@@ -1,4 +1,4 @@
-package fr.lelouet.tools.application.settings;
+package fr.lelouet.tools.application.settings.fieldaccess;
 
 import java.io.InputStream;
 

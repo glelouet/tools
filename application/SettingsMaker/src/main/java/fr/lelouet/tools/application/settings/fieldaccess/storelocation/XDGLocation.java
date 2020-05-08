@@ -1,4 +1,4 @@
-package fr.lelouet.tools.application.settings.storelocation;
+package fr.lelouet.tools.application.settings.fieldaccess.storelocation;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import fr.lelouet.tools.application.settings.StoreLocation;
+import fr.lelouet.tools.application.settings.fieldaccess.StoreLocation;
 import fr.lelouet.tools.application.xdg.XDGApp;
 
 public class XDGLocation implements StoreLocation {
