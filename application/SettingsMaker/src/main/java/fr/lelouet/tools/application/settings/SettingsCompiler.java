@@ -197,6 +197,7 @@ public class SettingsCompiler {
 			if (store) {
 				try {
 					creation = bean.makeClass(pck.get(), makeJavaClassName(name));
+					creation.annotate(SuppressWarnings.class).param("serial");
 				} catch (JClassAlreadyExistsException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}
@@ -213,6 +214,7 @@ public class SettingsCompiler {
 			if (store) {
 				try {
 					creation = bean.makeClass(pck.get(), makeJavaClassName(name));
+					creation.annotate(SuppressWarnings.class).param("serial");
 				} catch (JClassAlreadyExistsException e) {
 					throw new UnsupportedOperationException("catch this", e);
 				}

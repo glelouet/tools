@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import fr.lelouet.tools.application.xdg.XDGApp;
-
 public class XDGAppTest {
 
 	@Test

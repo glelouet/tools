@@ -47,7 +47,7 @@ public class Public implements FieldAccess {
 		listRef = settingsCompiler.codeModel().ref(ArrayList.class);
 		try {
 			Class<?> rootExtends = null;
-			if (params.rootClass != null) {
+			if (params != null && params.rootClass != null) {
 				rootExtends = Public.class.getClassLoader().loadClass(params.rootClass);
 			}
 			JDefinedClass ret = settingsCompiler.rootPackage()
