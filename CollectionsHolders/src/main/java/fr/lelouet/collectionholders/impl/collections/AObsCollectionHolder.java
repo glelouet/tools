@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
@@ -53,17 +56,26 @@ import javafx.collections.ObservableList;
 public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L>
 implements ObsCollectionHolder<U, C, L> {
 
+	private static final Logger logger = LoggerFactory.getLogger(AObsCollectionHolder.class);
+
 	protected OC underlying;
+
+	public OC underlying() {
+		return underlying;
+	}
 
 	public AObsCollectionHolder(OC underlying) {
 		this.underlying = underlying;
 	}
 
-	CountDownLatch waitLatch = new CountDownLatch(1);
+	/**
+	 * latch that is set to 0 (ready) once data is received.
+	 */
+	CountDownLatch dataReceivedLatch = new CountDownLatch(1);
 
 	public void waitData() {
 		try {
-			waitLatch.await();
+			dataReceivedLatch.await();
 		} catch (InterruptedException e) {
 			throw new UnsupportedOperationException("catch this", e);
 		}
@@ -117,7 +129,7 @@ implements ObsCollectionHolder<U, C, L> {
 				receiveListeners = new ArrayList<>();
 			}
 			receiveListeners.add(callback);
-			if (waitLatch.getCount() == 0) {
+			if (dataReceivedLatch.getCount() == 0) {
 				callback.accept(underlying);
 			}
 		});
@@ -136,7 +148,7 @@ implements ObsCollectionHolder<U, C, L> {
 	 */
 	public void dataReceived() {
 		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			waitLatch.countDown();
+			dataReceivedLatch.countDown();
 			if (receiveListeners != null) {
 				C consumed = underlying;
 				for (Consumer<C> r : receiveListeners) {
@@ -152,13 +164,11 @@ implements ObsCollectionHolder<U, C, L> {
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
 		follow((o) -> {
 			List<K> mappedList = o.stream().map(mapper).collect(Collectors.toList());
-			if (!internal.equals(mappedList) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(mappedList);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.clear();
+				internal.addAll(mappedList);
 			}
+			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -170,13 +180,11 @@ implements ObsCollectionHolder<U, C, L> {
 		follow((o) -> {
 			List<U> sortedList = new ArrayList<>(o);
 			Collections.sort(sortedList, comparator);
-			if (!internal.equals(sortedList) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(sortedList);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.clear();
+				internal.addAll(sortedList);
 			}
+			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -193,14 +201,12 @@ implements ObsCollectionHolder<U, C, L> {
 				List<O> newproduct = leftCollection[0].stream()
 						.flatMap(leftElem -> rightCollection[0].stream().map(rightElem -> operand.apply(leftElem, rightElem)))
 						.collect(Collectors.toList());
-				if (!internal.equals(newproduct) || internal.isEmpty()) {
-					synchronized (internal) {
-						internal.clear();
-						internal.addAll(newproduct);
-					}
-					ret.dataReceived();
+				synchronized (internal) {
+					internal.clear();
+					internal.addAll(newproduct);
 				}
-			}
+				ret.dataReceived();
+				}
 		};
 		follow((o) -> {
 			leftCollection[0] = o;
@@ -283,25 +289,105 @@ implements ObsCollectionHolder<U, C, L> {
 		follow((newValue) -> {
 			List<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false)
 					.collect(Collectors.toList());
-			if (!internal.equals(newlist) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(newlist);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.clear();
+				internal.addAll(newlist);
 			}
-		});
+			ret.dataReceived();
+			});
 		return ret;
+	}
+
+	/**
+	 * Keep data about a converted element of a obsevableCollection that is
+	 * flattened.<br />
+	 * More precisely, keeps the converted collection, the last received data, the
+	 * internal listeners added.<br />
+	 * Provides {@link #received() a method} to test if the data has been received
+	 * yet, and {@link #last() another one} to get that data. There are two
+	 * methods because "null" may be a possible data. <br />
+	 * Also provides {@link #addListener() a method} to add a runnable as a
+	 * listener whenever data is received. This method should be called out of
+	 * sync block if the runnable uses a sync block (the listener can be called
+	 * inside the add). {@link #removeListener() Another method} removes that
+	 * listeners, for when the converted element is removed from the flattened
+	 * collection.
+	 *
+	 * @param <V>
+	 *          converted type
+	 * @param <C2>
+	 *          converted collection type.
+	 */
+	private class ObsFlattenData<V, C2 extends Collection<V>> {
+
+		private ObsCollectionHolder<V, C2, ?> observed = null;
+
+		private C2 lastReceived = null;
+
+		private boolean received = false;
+
+		private Consumer<C2> listener;
+
+		private Runnable updater;
+
+		private String debug = null;
+
+		public ObsFlattenData(ObsCollectionHolder<V, C2, ?> observed, Runnable updater, String debug) {
+			this.observed = observed;
+			this.updater = updater;
+			this.debug = debug;
+			listener = this::onDataReceived;
+
+		}
+
+		protected void onDataReceived(C2 newCol) {
+			received = true;
+			if (debug != null) {
+				logger.debug(
+						debug + " flatten partial received new collection " + newCol + " had "
+								+ (lastReceived == null ? "null" : lastReceived));
+			}
+			lastReceived = newCol;
+			updater.run();
+		}
+
+		/**
+		 * must be called AFTER the storing, so out of constructor otherwise may be
+		 * called within a sync and thus create deadlock
+		 */
+		public void addListener() {
+			observed.follow(listener);
+		}
+
+		public void removeListener() {
+			observed.unfollow(listener);
+		}
+
+		public boolean received() {
+			return received;
+		}
+
+		public C2 last() {
+			return lastReceived;
+		}
+
 	}
 
 	@Override
 	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper) {
+		return flatten(mapper, null);
+	}
+
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper,
+			String debuger) {
 		ObservableList<V> underlying = FXCollections.observableArrayList();
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(underlying);
 
-		HashMap<U, ObsCollectionHolder<V, C2, ?>> mappedvalues = new LinkedHashMap<>();
-		HashMap<ObsCollectionHolder<V, C2, ?>, Consumer<C2>> listeners = new LinkedHashMap<>();
-		HashMap<ObsCollectionHolder<V, C2, ?>, Collection<V>> knownCollections = new LinkedHashMap<>();
+		/**
+		 * for each item of the collection, the known corresponding obsmapholder we
+		 * are listening
+		 */
+		HashMap<U, ObsFlattenData<V, C2>> mappedvalues = new LinkedHashMap<>();
 
 		/**
 		 * try to merge the known collections, if they are all we need .Synced over
@@ -309,16 +395,22 @@ implements ObsCollectionHolder<U, C, L> {
 		 */
 		Runnable tryUpdate = () -> {
 			synchronized (mappedvalues) {
-				if (new HashSet<>(mappedvalues.values()).equals(knownCollections.keySet())) {
-					List<V> newlist = mappedvalues.values().stream().flatMap(coll -> knownCollections.get(coll).stream())
+				if (mappedvalues.values().stream().filter(fl -> !fl.received()).findAny().isEmpty()) {
+					// all the mapped values hold data
+					List<V> newlist = mappedvalues.values().stream().flatMap(coll -> coll.last().stream())
 							.collect(Collectors.toList());
-					if (!newlist.equals(underlying) || underlying.isEmpty()) {
-						synchronized (underlying) {
-							underlying.setAll(newlist);
-						}
-						ret.dataReceived();
+					if (debuger != null) {
+						logger.debug(debuger + " flatten got all colections, propagating data " + newlist);
 					}
+					synchronized (underlying) {
+						underlying.setAll(newlist);
+					}
+					ret.dataReceived();
 				} else {
+					// some data did not produce a collection yet.
+					if (debuger != null) {
+						logger.debug(debuger + " flatten missing collections reception");
+					}
 				}
 			}
 		};
@@ -336,37 +428,23 @@ implements ObsCollectionHolder<U, C, L> {
 			}
 			for (U u : toRemove) {
 				synchronized (mappedvalues) {
-					ObsCollectionHolder<V, C2, ?> converted = mappedvalues.remove(u);
-					Consumer<C2> listener = listeners.remove(converted);
-					converted.unfollow(listener);
-					knownCollections.remove(converted);
+					ObsFlattenData<V, C2> holder = mappedvalues.remove(u);
+					holder.removeListener();
 				}
 			}
 			for (U u : toAdd) {
 				ObsCollectionHolder<V, C2, ?> converted = mapper.apply(u);
-				Consumer<C2> listener = c2 -> {
-					synchronized (mappedvalues) {
-						if (listeners.containsKey(converted)) {
-							knownCollections.put(converted, c2);
-						}
-						else {
-						}
-					}
-					tryUpdate.run();
-				};
+				ObsFlattenData<V, C2> holder = new ObsFlattenData<>(converted, tryUpdate, debuger);
 				synchronized (mappedvalues) {
-					mappedvalues.put(u, converted);
-					listeners.put(converted, listener);
+					mappedvalues.put(u, holder);
 				}
-				// must be called outside of the
-				converted.follow(listener);
+				holder.addListener();
 			}
 			tryUpdate.run();
 		});
 		return ret;
 	}
 
-	// TODO
 	protected void filterWhen(Consumer<Stream<U>> onNewValue, Function<? super U, ObsBoolHolder> filterer) {
 		Map<U, ObsBoolHolder> filters = new LinkedHashMap<>();
 		Map<U, Boolean> elementsPredicate = new LinkedHashMap<>();
@@ -417,6 +495,24 @@ implements ObsCollectionHolder<U, C, L> {
 				}
 			}
 		});
+	}
+
+	@Override
+	public int hashCode() {
+		return dataReceivedLatch.getCount() == 0 ? 0 : underlying.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass() == this.getClass()) {
+			AObsCollectionHolder<?, ?, ?, ?> other = (AObsCollectionHolder<?, ?, ?, ?>) obj;
+			// equals if same status of data received AND same data received, if
+			// received.
+			return dataReceivedLatch.getCount() != 0 && other.dataReceivedLatch.getCount() != 0
+					|| dataReceivedLatch.getCount() == 0 && other.dataReceivedLatch.getCount() == 0
+					&& underlying.equals(other.underlying);
+		}
+		return false;
 	}
 
 }

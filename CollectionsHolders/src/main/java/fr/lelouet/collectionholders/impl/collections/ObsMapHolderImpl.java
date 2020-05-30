@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -14,6 +15,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
@@ -33,6 +37,9 @@ import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 
 public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(ObsMapHolderImpl.class);
 
 	/**
 	 * create an unmodifiable map of items. Will fail if keyvals is not exactly an
@@ -56,6 +63,10 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	private ObservableMap<K, V> underlying;
 
+	public ObservableMap<K, V> underlying() {
+		return underlying;
+	}
+
 	public ObsMapHolderImpl(ObservableMap<K, V> underlying) {
 		this(underlying, false);
 	}
@@ -78,6 +89,13 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		}
 	}
 
+	public ObsMapHolderImpl() {
+		this(FXCollections.observableHashMap(), false);
+	}
+
+	/**
+	 * is set to 0 once data is received.
+	 */
 	private CountDownLatch dataReceivedLatch = new CountDownLatch(1);
 
 	private ArrayList<Consumer<Map<K, V>>> receiveListeners;
@@ -94,7 +112,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	@Override
 	public Map<K, V> get() {
 		waitData();
-		return LockWatchDog.BARKER.syncExecute(underlying, () -> new HashMap<>(underlying));
+		return LockWatchDog.BARKER.syncExecute(underlying, () -> Collections.unmodifiableMap(underlying));
 	}
 
 	@Override
@@ -224,13 +242,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
 		list.follow((l) -> {
 			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, mergeFunction));
-			if (!newmap.equals(internal) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.keySet().retainAll(newmap.keySet());
-					internal.putAll(newmap);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.keySet().retainAll(newmap.keySet());
+				internal.putAll(newmap);
 			}
+			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -274,13 +290,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					if (alreadyreceived.size() == array.length) {
 						Map<K, V> newmap = alreadyreceived.values().stream().flatMap(m2 -> m2.entrySet().stream())
 								.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), merger));
-						if (!newmap.equals(internal) || internal.isEmpty()) {
-							synchronized (internal) {
-								internal.keySet().retainAll(newmap.keySet());
-								internal.putAll(newmap);
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.keySet().retainAll(newmap.keySet());
+							internal.putAll(newmap);
 						}
+						ret.dataReceived();
 					}
 				}
 			});
@@ -374,13 +388,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					ObservableSet<K> internal = FXCollections.observableSet(new HashSet<>());
 					ObsSetHolderImpl<K> ret = new ObsSetHolderImpl<>(internal);
 					follow(m -> {
-						if (!internal.equals(m.keySet()) || internal.isEmpty()) {
-							synchronized (internal) {
-								internal.retainAll(m.keySet());
-								internal.addAll(m.keySet());
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.retainAll(m.keySet());
+							internal.addAll(m.keySet());
 						}
+						ret.dataReceived();
 					});
 					keys = ret;
 				}
@@ -399,13 +411,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					ObservableList<V> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
 					follow(m -> {
-						if (!internal.equals(m.values()) || internal.isEmpty()) {
-							synchronized (internal) {
-								internal.clear();
-								internal.addAll(m.values());
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.clear();
+							internal.addAll(m.values());
 						}
+						ret.dataReceived();
 					});
 					values = ret;
 				}
@@ -424,13 +434,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					ObservableList<Entry<K, V>> internal = FXCollections.observableArrayList();
 					ObsListHolderImpl<Entry<K, V>> ret = new ObsListHolderImpl<>(internal);
 					follow(m -> {
-						if (!internal.equals(m.values()) || internal.isEmpty()) {
-							synchronized (internal) {
-								internal.clear();
-								internal.addAll(m.entrySet());
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.clear();
+							internal.addAll(m.entrySet());
 						}
+						ret.dataReceived();
 					});
 					entries = ret;
 				}
@@ -486,13 +494,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				if (lastMap[0] != null && lastCol[0] != null) {
 					Map<K, V> newMap = new HashMap<>(lastMap[0]);
 					newMap.keySet().retainAll(lastCol[0]);
-					if (!newMap.equals(internal) || newMap.isEmpty()) {
-						synchronized (internal) {
-							internal.keySet().retainAll(newMap.keySet());
-							internal.putAll(newMap);
-						}
-						ret.dataReceived();
+					synchronized (internal) {
+						internal.keySet().retainAll(newMap.keySet());
+						internal.putAll(newMap);
 					}
+					ret.dataReceived();
 				}
 			}
 		};
@@ -510,6 +516,24 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			update.run();
 		});
 		return ret;
+	}
+
+	@Override
+	public int hashCode() {
+		return dataReceivedLatch.getCount() == 0 ? 0 : underlying.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass() == this.getClass()) {
+			ObsMapHolderImpl<?, ?> other = (ObsMapHolderImpl<?, ?>) obj;
+			// equals if same status of data received AND same data received, if
+			// received.
+			return dataReceivedLatch.getCount() != 0 && other.dataReceivedLatch.getCount() != 0
+					|| dataReceivedLatch.getCount() == 0 && other.dataReceivedLatch.getCount() == 0
+					&& underlying.equals(other.underlying);
+		}
+		return false;
 	}
 
 }

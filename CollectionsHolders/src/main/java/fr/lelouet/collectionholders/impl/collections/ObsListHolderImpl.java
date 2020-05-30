@@ -45,6 +45,10 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		super(underlying);
 	}
 
+	public ObsListHolderImpl() {
+		this(FXCollections.observableArrayList());
+	}
+
 	@Override
 	public List<U> get() {
 		waitData();
@@ -86,36 +90,26 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
 		follow((t) -> {
 			List<U> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
-			if (!internal.equals(filteredList) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(filteredList);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.clear();
+				internal.addAll(filteredList);
 			}
-		});
+			ret.dataReceived();
+			});
 		return ret;
 	}
 
 	@Override
-	public ObsListHolderImpl<U> filterWhen(
-			Function<? super U, ObsBoolHolder> filterer) {
+	public ObsListHolderImpl<U> filterWhen(Function<? super U, ObsBoolHolder> filterer) {
 		ObservableList<U> internal = FXCollections.observableArrayList();
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
 		filterWhen(filteredStream -> {
-			// System.err.println("got new stream");
 			List<U> filteredList = filteredStream.collect(Collectors.toList());
-			// System.err.println(" collection is " + filteredList);
-			if (!internal.equals(filteredList) || internal.isEmpty()) {
-				// System.err.println(" new list : setting it");
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(filteredList);
-				}
-				ret.dataReceived();
-			} else {
-				// System.err.println(" nothing to do");
+			synchronized (internal) {
+				internal.clear();
+				internal.addAll(filteredList);
 			}
+			ret.dataReceived();
 		}, filterer);
 		return ret;
 	}
@@ -147,7 +141,6 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		return distinct;
 	}
 
-
 	@Override
 	public <K, V> ObsMapHolder<K, V> toMap(Function<U, K> keyExtractor, Function<U, V> valExtractor,
 			BinaryOperator<V> collisionHandler) {
@@ -166,13 +159,11 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 					follow((o) -> {
 						List<U> reverseList = new ArrayList<>(o);
 						Collections.reverse(reverseList);
-						if (!internal.equals(reverseList)) {
-							synchronized (internal) {
-								internal.clear();
-								internal.addAll(reverseList);
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.clear();
+							internal.addAll(reverseList);
 						}
+						ret.dataReceived();
 					});
 					ret.reverse = this;
 					reverse = ret;
@@ -200,13 +191,11 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 					alreadyreceived.put(m, list);
 					if (alreadyreceived.size() == array.length) {
 						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
-						if (!internal.equals(newList) || internal.isEmpty()) {
-							synchronized (internal) {
-								internal.clear();
-								internal.addAll(newList);
-							}
-							ret.dataReceived();
+						synchronized (internal) {
+							internal.clear();
+							internal.addAll(newList);
 						}
+						ret.dataReceived();
 					}
 				}
 			});

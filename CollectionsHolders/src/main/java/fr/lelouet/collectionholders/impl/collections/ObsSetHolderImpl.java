@@ -40,6 +40,10 @@ implements ObsSetHolder<U> {
 		super(underlying);
 	}
 
+	public ObsSetHolderImpl() {
+		this(FXCollections.observableSet(new HashSet<>()));
+	}
+
 	@Override
 	public Set<U> get() {
 		waitData();
@@ -71,13 +75,11 @@ implements ObsSetHolder<U> {
 		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
 		follow((t) -> {
 			Set<U> filteredSet = t.stream().filter(predicate).collect(Collectors.toSet());
-			if (!internal.equals(filteredSet) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.retainAll(filteredSet);
-					internal.addAll(filteredSet);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.retainAll(filteredSet);
+				internal.addAll(filteredSet);
 			}
+			ret.dataReceived();
 		});
 		return ret;
 	}
@@ -88,13 +90,11 @@ implements ObsSetHolder<U> {
 		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
 		filterWhen(filteredStream -> {
 			Set<U> filteredSet = filteredStream.collect(Collectors.toSet());
-			if (!internal.equals(filteredSet) || internal.isEmpty()) {
-				synchronized (internal) {
-					internal.retainAll(filteredSet);
-					internal.addAll(filteredSet);
-				}
-				ret.dataReceived();
+			synchronized (internal) {
+				internal.retainAll(filteredSet);
+				internal.addAll(filteredSet);
 			}
+			ret.dataReceived();
 		}, filterer);
 		return ret;
 	}
