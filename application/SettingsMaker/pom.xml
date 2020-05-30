@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>fr.lelouet.tools</groupId>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
     <artifactId>application</artifactId>
   </parent>
   <groupId>fr.lelouet.tools.application</groupId>

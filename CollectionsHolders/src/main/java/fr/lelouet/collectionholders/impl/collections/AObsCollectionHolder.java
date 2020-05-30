@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -206,7 +206,7 @@ implements ObsCollectionHolder<U, C, L> {
 					internal.addAll(newproduct);
 				}
 				ret.dataReceived();
-				}
+			}
 		};
 		follow((o) -> {
 			leftCollection[0] = o;
@@ -294,7 +294,7 @@ implements ObsCollectionHolder<U, C, L> {
 				internal.addAll(newlist);
 			}
 			ret.dataReceived();
-			});
+		});
 		return ret;
 	}
 
@@ -385,9 +385,12 @@ implements ObsCollectionHolder<U, C, L> {
 
 		/**
 		 * for each item of the collection, the known corresponding obsmapholder we
-		 * are listening
+		 * are listening <br />
+		 * We use identity hashmap because if the keys are collections, that can
+		 * lead to issues.
 		 */
-		HashMap<U, ObsFlattenData<V, C2>> mappedvalues = new LinkedHashMap<>();
+		IdentityHashMap<U, ObsFlattenData<V, C2>> mappedvalues = new IdentityHashMap<>();
+		ArrayList<U> order = new ArrayList<>();
 
 		/**
 		 * try to merge the known collections, if they are all we need .Synced over
@@ -397,10 +400,10 @@ implements ObsCollectionHolder<U, C, L> {
 			synchronized (mappedvalues) {
 				if (mappedvalues.values().stream().filter(fl -> !fl.received()).findAny().isEmpty()) {
 					// all the mapped values hold data
-					List<V> newlist = mappedvalues.values().stream().flatMap(coll -> coll.last().stream())
+					List<V> newlist = order.stream().flatMap(key -> mappedvalues.get(key).last().stream())
 							.collect(Collectors.toList());
 					if (debuger != null) {
-						logger.debug(debuger + " flatten got all colections, propagating data " + newlist);
+						logger.debug(debuger + " flatten got all collections, propagating data " + newlist);
 					}
 					synchronized (underlying) {
 						underlying.setAll(newlist);
@@ -416,20 +419,25 @@ implements ObsCollectionHolder<U, C, L> {
 		};
 
 		follow(c -> {
-			HashSet<U> toRemove, toAdd;
+			Collection<U> toRemove, toAdd;
 			synchronized (mappedvalues) {
 				if (mappedvalues.keySet().equals(c)) {
 					return;
 				}
-				toRemove = new LinkedHashSet<>(mappedvalues.keySet());
+				toRemove = new ArrayList<>(mappedvalues.keySet());
 				toRemove.removeAll(c);
-				toAdd = new LinkedHashSet<>(c);
+				toAdd = new ArrayList<>(c);
 				toAdd.removeAll(mappedvalues.keySet());
 			}
 			for (U u : toRemove) {
 				synchronized (mappedvalues) {
 					ObsFlattenData<V, C2> holder = mappedvalues.remove(u);
 					holder.removeListener();
+					for (Iterator<U> it = order.iterator(); it.hasNext();) {
+						if (it.next() == u) {
+							it.remove();
+						}
+					}
 				}
 			}
 			for (U u : toAdd) {
@@ -437,6 +445,12 @@ implements ObsCollectionHolder<U, C, L> {
 				ObsFlattenData<V, C2> holder = new ObsFlattenData<>(converted, tryUpdate, debuger);
 				synchronized (mappedvalues) {
 					mappedvalues.put(u, holder);
+					for (Iterator<U> it = order.iterator(); it.hasNext();) {
+						if (it.next() == u) {
+							it.remove();
+						}
+					}
+					order.add(u);
 				}
 				holder.addListener();
 			}

@@ -279,9 +279,9 @@ public class ObsMapHolderTest {
 		access.underlying().put(0, new ObsMapHolderImpl<>());
 		access.underlying().put(1, new ObsMapHolderImpl<>());
 		access.dataReceived();
+		Assert.assertFalse(received[0]);
 		access.underlying().get(0).underlying().put("a", "a0");
 		access.underlying().get(0).dataReceived();
-		Assert.assertFalse(received[0]);
 		access.underlying().get(1).dataReceived();
 		Assert.assertTrue(received[0]);
 		Assert.assertTrue(allVals.contains("a0").get());

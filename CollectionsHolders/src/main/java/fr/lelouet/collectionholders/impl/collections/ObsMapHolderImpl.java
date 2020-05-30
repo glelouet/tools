@@ -281,12 +281,14 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		}
 		ObservableMap<K, V> internal = FXCollections.observableHashMap();
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
-		LinkedHashMap<ObsMapHolder<K, V>, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
-		for (ObsMapHolder<K, V> m : array) {
+		LinkedHashMap<Integer, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
+		for (int i = 0; i < array.length; i++) {
+			ObsMapHolder<K, V> m = array[i];
+			int index = i;
 			m.follow(map -> {
 				synchronized (alreadyreceived) {
-					alreadyreceived.remove(m);
-					alreadyreceived.put(m, map);
+					alreadyreceived.remove(index);
+					alreadyreceived.put(index, map);
 					if (alreadyreceived.size() == array.length) {
 						Map<K, V> newmap = alreadyreceived.values().stream().flatMap(m2 -> m2.entrySet().stream())
 								.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), merger));
@@ -295,6 +297,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 							internal.putAll(newmap);
 						}
 						ret.dataReceived();
+					} else {
 					}
 				}
 			});
