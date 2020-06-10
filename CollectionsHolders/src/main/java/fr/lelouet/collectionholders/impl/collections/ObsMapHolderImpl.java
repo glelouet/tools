@@ -13,6 +13,9 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,14 +23,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
+import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -156,9 +164,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public boolean unfollow(Consumer<Map<K, V>> callback) {
+	public void unfollow(Consumer<Map<K, V>> callback) {
 		synchronized (underlying) {
-			return receiveListeners.remove(callback);
+			receiveListeners.remove(callback);
 		}
 	}
 
@@ -537,6 +545,56 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					&& underlying.equals(other.underlying);
 		}
 		return false;
+	}
+
+	@Override
+	public <U> ObsObjHolder<U> map(Function<Map<K, V>, U> mapper) {
+		ObsObjHolderSimple<U> ret = new ObsObjHolderSimple<>();
+		follow(m -> ret.set(mapper.apply(m)));
+		return ret;
+	}
+
+	@Override
+	public ObsIntHolder mapInt(ToIntFunction<Map<K, V>> mapper) {
+		ObsIntHolderImpl ret = new ObsIntHolderImpl();
+		follow(m -> ret.set(mapper.applyAsInt(m)));
+		return ret;
+	}
+
+	@Override
+	public ObsLongHolder mapLong(ToLongFunction<Map<K, V>> mapper) {
+		ObsLongHolderImpl ret = new ObsLongHolderImpl();
+		follow(m -> ret.set(mapper.applyAsLong(m)));
+		return ret;
+	}
+
+	@Override
+	public ObsDoubleHolder mapDouble(ToDoubleFunction<Map<K, V>> mapper) {
+		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
+		follow(m -> ret.set(mapper.applyAsDouble(m)));
+		return ret;
+	}
+
+	@Override
+	public ObsBoolHolder test(Predicate<Map<K, V>> test) {
+		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
+		follow(m -> ret.set(test.test(m)));
+		return ret;
+	}
+
+	@Override
+	public <U> ObsListHolder<U> toList(Function<Map<K, V>, Iterable<U>> generator) {
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
+		follow((newValue) -> {
+			ret.underlying().clear();
+			if (newValue != null) {
+				for (U v : generator.apply(newValue)) {
+					ret.underlying().add(v);
+				}
+			}
+			ret.dataReceived();
+		});
+		return ret;
 	}
 
 }

@@ -19,7 +19,7 @@ import javafx.collections.MapChangeListener;
  * @param <K>
  * @param <V>
  */
-public interface ObsMapHolder<K, V> {
+public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 
 	/**
 	 * wait for at least one data to be received, then returns a copy of the
@@ -27,6 +27,7 @@ public interface ObsMapHolder<K, V> {
 	 *
 	 * @return
 	 */
+	@Override
 	Map<K, V> get();
 
 	/**
@@ -107,6 +108,7 @@ public interface ObsMapHolder<K, V> {
 	 * batches and rather recompute the whole data instead of manage all the small
 	 * modifications
 	 */
+	@Override
 	public void follow(Consumer<Map<K, V>> callback);
 
 	/**
@@ -115,7 +117,8 @@ public interface ObsMapHolder<K, V> {
 	 * @param callback
 	 * @return true if the callback was added.
 	 */
-	public boolean unfollow(Consumer<Map<K, V>> callback);
+	@Override
+	public void unfollow(Consumer<Map<K, V>> callback);
 
 	/** return an observable to be notified when values are changed */
 	Observable asObservable();

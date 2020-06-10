@@ -21,8 +21,6 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 /**
  * basic abstract methods that do not depend on the implementation.
@@ -70,13 +68,12 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
 	@Override
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
-		ObservableList<V> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>();
 		follow((newValue) -> {
-			internal.clear();
+			ret.underlying().clear();
 			if (newValue != null) {
 				for (V v : generator.apply(newValue)) {
-					internal.add(v);
+					ret.underlying().add(v);
 				}
 			}
 			ret.dataReceived();
@@ -141,6 +138,65 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	}
 
 	/**
+	 * join two observable object holder into a third one
+	 *
+	 * @param <AType>
+	 *          type of the first object hold
+	 * @param <BType>
+	 *          type of second object hold
+	 * @param <ResType>
+	 *          joined type
+	 * @param <HolderType>
+	 *          holder implementation type to hold the joined value
+	 * @param a
+	 *          first object to listen
+	 * @param b
+	 *          second object to listen
+	 * @param creator
+	 *          function to create a holder on the result
+	 * @param joiner
+	 *          function to be called to join an array of the types. The types are
+	 *          objects and must be cast. The array will be
+	 * @return a new variable bound to the application of the joiner on a and b.
+	 */
+	public static <ResType, HolderType extends RWObsObjHolder<ResType>> HolderType join(ObsObjHolder<?> a,
+			ObsObjHolder<?> b, ObsObjHolder<?> c, Supplier<HolderType> creator, Function<Object[], ResType> joiner) {
+		HolderType ret = creator.get();
+		Object[] ah = new Object[1];
+		Object[] bh = new Object[1];
+		Object[] ch = new Object[1];
+		HashSet<Object> received = new HashSet<>();
+		Runnable update = () -> {
+			if (received.size() == 3) {
+				ResType joined = joiner.apply(new Object[] { ah[0], bh[0], ch[0] });
+				ret.set(joined);
+			}
+		};
+		a.follow((newValue) -> {
+			synchronized (received) {
+				received.add(a);
+				ah[0] = newValue;
+				update.run();
+			}
+		});
+		b.follow((newValue) -> {
+			synchronized (received) {
+				received.add(b);
+				bh[0] = newValue;
+				update.run();
+			}
+		});
+		c.follow((newValue) -> {
+			synchronized (received) {
+				received.add(c);
+				ch[0] = newValue;
+				update.run();
+			}
+		});
+		return ret;
+	}
+
+	/**
 	 * map an obs object with a specific constructor.
 	 *
 	 * @param <U>
@@ -152,7 +208,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 * @param from
 	 *          the original object holder
 	 * @param creator
-	 *          the function to create a C from a ObservableValue of V. Typically
+	 *          the function to create a C for a ObservableValue of V. Typically
 	 *          the constructor.
 	 * @param mapper
 	 *          the function to translate a U into a V
