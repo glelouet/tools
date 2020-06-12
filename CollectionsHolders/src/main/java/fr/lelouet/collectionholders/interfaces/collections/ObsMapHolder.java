@@ -197,4 +197,10 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	 */
 	ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?, ?> allowedKeys);
 
+	@Override
+	default ObsMapHolder<K, V> peek(Consumer<Map<K, V>> observer) {
+		follow(observer);
+		return this;
+	}
+
 }

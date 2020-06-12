@@ -597,4 +597,10 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return ret;
 	}
 
+	@Override
+	public ObsMapHolderImpl<K, V> peek(Consumer<Map<K, V>> observer) {
+		follow(observer);
+		return this;
+	}
+
 }

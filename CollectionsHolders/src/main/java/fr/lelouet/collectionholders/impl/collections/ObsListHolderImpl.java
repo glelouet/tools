@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -95,7 +96,7 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 				internal.addAll(filteredList);
 			}
 			ret.dataReceived();
-			});
+		});
 		return ret;
 	}
 
@@ -201,6 +202,12 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 			});
 		}
 		return ret;
+	}
+
+	@Override
+	public ObsListHolderImpl<U> peek(Consumer<List<U>> observer) {
+		follow(observer);
+		return this;
 	}
 
 }
