@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.impl;
 
 import java.util.HashSet;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -222,5 +223,43 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		});
 		return ret;
 	}
+
+	public static <V, W> ObsObjHolder<W> unPack(ObsObjHolder<V> target, Function<V, ObsObjHolder<W>> unpacker) {
+		ObsObjHolderSimple<W> ret = new ObsObjHolderSimple<>();
+		@SuppressWarnings("unchecked")
+		ObsObjHolder<W>[] last = new ObsObjHolder[1];
+		Consumer<W> cons = v -> ret.set(v);
+		target.follow(u -> {
+			if (last[0] != null) {
+				last[0].unfollow(cons);
+			}
+			last[0] = unpacker.apply(u);
+			last[0].follow(cons);
+		});
+		return ret;
+	}
+
+	@Override
+	public <V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker) {
+		return unPack(this, unpacker);
+	}
+
+	// public static <V, W> ObsCollectionHolder<W, ?, ?> unPackCol(ObsObjHolder<V>
+	// target,
+	// Function<V, ObsCollectionHolder<W, ?, ?>> unpacker) {
+	// ObsListHolderImpl<W> ret = new ObsListHolderImpl<>();
+	// @SuppressWarnings("unchecked")
+	// ObsCollectionHolder<W, ?, ?>[] last = new ObsCollectionHolder[1];
+	// Consumer<Collection<W>> cons = v -> ret.underlying().setAll(v);
+	// target.follow(u -> {
+	// if (last[0] != null) {
+	// last[0].unfollow(cons);
+	// }
+	// last[0] = unpacker.apply(u);
+	// last[0].follow(cons);
+	// });
+	//
+	// return ret;
+	// }
 
 }

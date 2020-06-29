@@ -25,6 +25,7 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
@@ -527,6 +528,11 @@ implements ObsCollectionHolder<U, C, L> {
 					&& underlying.equals(other.underlying);
 		}
 		return false;
+	}
+
+	@Override
+	public <T> ObsObjHolder<T> unPack(Function<C, ObsObjHolder<T>> unpacker) {
+		return AObsObjHolder.unPack(this, unpacker);
 	}
 
 }

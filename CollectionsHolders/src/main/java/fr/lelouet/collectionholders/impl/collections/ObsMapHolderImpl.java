@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
@@ -601,6 +602,11 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	public ObsMapHolderImpl<K, V> peek(Consumer<Map<K, V>> observer) {
 		follow(observer);
 		return this;
+	}
+
+	@Override
+	public <T> ObsObjHolder<T> unPack(Function<Map<K, V>, ObsObjHolder<T>> unpacker) {
+		return AObsObjHolder.unPack(this, unpacker);
 	}
 
 }

@@ -125,4 +125,18 @@ public interface ObsObjHolder<U> {
 	 * @return a new list holder.
 	 */
 	<V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator);
+
+	/**
+	 * unpack the internal value into an internal observable field.
+	 * <p>
+	 * eg if a holder contains an access, and that access can give an observable
+	 * String lastConnect, we can have a obsHolder on the lastConnect value that
+	 * is updated when the access or its lastConnect is updated
+	 * </p>
+	 *
+	 * @param <V>
+	 * @param unpacker
+	 * @return
+	 */
+	<V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker);
 }
