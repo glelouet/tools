@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
+import java.util.function.Consumer;
+
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.value.ObservableLongValue;
@@ -79,5 +81,11 @@ public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder>
 			}
 		}
 		return obs;
+	}
+
+	@Override
+	public ObsLongHolderImpl peek(Consumer<Long> observer) {
+		follow(observer);
+		return this;
 	}
 }

@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
+import java.util.function.Consumer;
+
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableIntegerValue;
@@ -79,6 +81,12 @@ public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder
 			}
 		}
 		return obs;
+	}
+
+	@Override
+	public ObsIntHolderImpl peek(Consumer<Integer> observer) {
+		follow(observer);
+		return this;
 	}
 
 }

@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
+import java.util.function.Consumer;
+
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -108,5 +110,11 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 			}
 		}
 		return obs;
+	}
+
+	@Override
+	public ObsDoubleHolderImpl peek(Consumer<Double> observer) {
+		follow(observer);
+		return this;
 	}
 }

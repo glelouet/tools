@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
+import java.util.function.Consumer;
+
 import javafx.beans.value.ObservableDoubleValue;
 
 /**
@@ -14,4 +16,8 @@ public interface ObsDoubleHolder extends ObsNumberHolder<Double, ObsDoubleHolder
 
 	@Override
 	public ObservableDoubleValue asObservableNumber();
+
+	@Override
+	ObsDoubleHolder peek(Consumer<Double> observer);
+
 }

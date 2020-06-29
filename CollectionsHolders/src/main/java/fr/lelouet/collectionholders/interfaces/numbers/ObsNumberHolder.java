@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
@@ -175,5 +176,8 @@ extends ObsObjHolder<Contained> {
 	 *         this.
 	 */
 	public ObservableValue<? extends Number> asObservableNumber();
+
+	@Override
+	ObsNumberHolder<Contained, SelfClass> peek(Consumer<Contained> observer);
 
 }

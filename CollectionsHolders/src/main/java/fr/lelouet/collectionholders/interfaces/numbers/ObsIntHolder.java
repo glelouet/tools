@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
+import java.util.function.Consumer;
+
 import javafx.beans.value.ObservableIntegerValue;
 
 /**
@@ -11,5 +13,8 @@ public interface ObsIntHolder extends ObsNumberHolder<Integer, ObsIntHolder> {
 
 	@Override
 	public ObservableIntegerValue asObservableNumber();
+
+	@Override
+	ObsIntHolder peek(Consumer<Integer> observer);
 
 }
