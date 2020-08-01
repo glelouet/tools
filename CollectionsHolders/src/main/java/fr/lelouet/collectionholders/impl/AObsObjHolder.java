@@ -1,6 +1,8 @@
 package fr.lelouet.collectionholders.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,6 +11,8 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
@@ -149,51 +153,40 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 *          joined type
 	 * @param <HolderType>
 	 *          holder implementation type to hold the joined value
-	 * @param a
-	 *          first object to listen
-	 * @param b
-	 *          second object to listen
 	 * @param creator
 	 *          function to create a holder on the result
 	 * @param joiner
 	 *          function to be called to join an array of the types. The types are
 	 *          objects and must be cast. The array will be
+	 * @param holders
+	 *          the holders we want to join.
 	 * @return a new variable bound to the application of the joiner on a and b.
 	 */
-	public static <ResType, HolderType extends RWObsObjHolder<ResType>> HolderType join(ObsObjHolder<?> a,
-			ObsObjHolder<?> b, ObsObjHolder<?> c, Supplier<HolderType> creator, Function<Object[], ResType> joiner) {
+	@SafeVarargs
+	public static <ResType, HolderType extends RWObsObjHolder<ResType>, JoinerType> HolderType join(
+			Supplier<HolderType> creator, Function<List<JoinerType>, ResType> joiner,
+			ObsObjHolder<? extends JoinerType>... holders) {
+		if (holders == null) {
+			return null;
+		}
 		HolderType ret = creator.get();
-		Object[] ah = new Object[1];
-		Object[] bh = new Object[1];
-		Object[] ch = new Object[1];
-		HashSet<Object> received = new HashSet<>();
-		Runnable update = () -> {
-			if (received.size() == 3) {
-				ResType joined = joiner.apply(new Object[] { ah[0], bh[0], ch[0] });
-				ret.set(joined);
-			}
-		};
-		a.follow((newValue) -> {
-			synchronized (received) {
-				received.add(a);
-				ah[0] = newValue;
-				update.run();
-			}
-		});
-		b.follow((newValue) -> {
-			synchronized (received) {
-				received.add(b);
-				bh[0] = newValue;
-				update.run();
-			}
-		});
-		c.follow((newValue) -> {
-			synchronized (received) {
-				received.add(c);
-				ch[0] = newValue;
-				update.run();
-			}
-		});
+		ArrayList<JoinerType> lastReceived = new ArrayList<>(
+				IntStream.rangeClosed(1, holders.length).mapToObj(i -> (JoinerType) null).collect(Collectors.toList()));
+		HashSet<Object> holderReceived = new HashSet<>();
+		for (int i = 0; i < holders.length; i++) {
+			int index = i;
+			ObsObjHolder<? extends JoinerType> h = holders[i];
+			h.follow((newValue) -> {
+				synchronized (holderReceived) {
+					holderReceived.add(h);
+					lastReceived.set(index, newValue);
+					if (holderReceived.size() == holders.length) {
+						ResType joined = joiner.apply(lastReceived);
+						ret.set(joined);
+					}
+				}
+			});
+		}
 		return ret;
 	}
 

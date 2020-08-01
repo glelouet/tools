@@ -322,9 +322,6 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	@Override
 	public ObsObjHolder<V> at(ObsObjHolder<K> key, V defaultValue) {
-		if (defaultValue == null) {
-			throw new NullPointerException();
-		}
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		HashSet<Object> received = new HashSet<>();
 		Runnable updateValue = () -> {
@@ -349,9 +346,6 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	@Override
 	public ObsObjHolder<V> at(K key, V defaultValue) {
-		if (defaultValue == null) {
-			throw new NullPointerException("does not allow null for defaultValue");
-		}
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		follow(t -> {
 			ret.set(t.getOrDefault(key, defaultValue));

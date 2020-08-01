@@ -8,8 +8,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.yaml.snakeyaml.Yaml;
 
-import fr.lelouet.tools.application.yaml.YamlSettings;
-
 public class YamlSettingsTest {
 
 	public static File tmpFile;
