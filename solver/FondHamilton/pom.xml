@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>fr.lelouet.tools</groupId>
+    <artifactId>solver</artifactId>
+    <version>1.4.8</version>
+  </parent>
+  <groupId>fr.lelouet.tools.solver</groupId>
+  <artifactId>FondHamilton</artifactId>
+  <name>FondHamilton</name>
+  <description>find the smallest cycle in a non oriented graph</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.testng</groupId>
+  		<artifactId>testng</artifactId>
+  		<optional>true</optional>
+  	</dependency>
+  </dependencies>
+</project>

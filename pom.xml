@@ -150,5 +150,6 @@
 		<module>LambdaRef</module>
 		
 		<module>application</module>
+		<module>solver</module>
 	</modules>
 </project>
