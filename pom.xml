@@ -100,6 +100,11 @@
 				<artifactId>YamlSettings</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.choco-solver</groupId>
+				<artifactId>choco-solver</artifactId>
+				<version>${choco-version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>
@@ -140,6 +145,7 @@
 	<properties>
 		<jackson-version>2.11.0</jackson-version>
 		<openjfx-version>15-ea+4</openjfx-version>
+		<choco-version>4.10.2</choco-version>
 	</properties>
 	<modules>
 		<module>CollectionsHolders</module>

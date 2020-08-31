@@ -1,4 +1,4 @@
-package fr.lelouet.tools.solver.fondhamilton;
+package fr.lelouet.tools.solver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
