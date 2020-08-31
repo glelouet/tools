@@ -5,15 +5,16 @@ Le problème est la recherche d'un cycle hamiltonien minimal dans un graphe comp
 ##Problème de base.
 
 Le problème de base est de chercher un cycle minimal parcourant tous les sommets importants 
-dans un graphe non orienté.
+dans un graphe simple (non orienté, sans poids, sans boucle, sans arrête double).
 
 Une étape étant définie comme un somment du graphe adjacent du sommet précedent,
 une solution est donc un sommet initial adjoint d'une succession d'étapes, contenant 
 chaque sommet importants au moins une fois, et dont la dernière étape est le sommet 
 initial.
 Le caractère minimal d'une solution considère que chaque étape a un poid donné, typiquement 1.
-il s'agit donc de déterminer la suite d'étapes dont la somme des poids des étape est 
-la plus faible.
+Il s'agit donc de déterminer la suite d'étapes dont la somme des poids des étape est 
+la plus faible. Typiquement is on a N sommets importants, alors le plus petit cycle 
+sera au moins de taille N.
 
 Le but est de modéliser le problème dans choco, puis déterminer des heuristiques qui 
 permettent de trouver et prouver la solution optimale au plus vite.
@@ -27,11 +28,11 @@ ayant le moins de distance à parcourir. Le passage ou non par des nœuds non in
 n'est pas détrimental à une solution, tout comme le passage par un même nœud important 
 plusieurs fois. Une solution doit donc passer au moins une fois par chaque nœud intéressant.
 
-On définit donc le graphe complet utile comme étant le graphe composé des sommets intéressants 
+On définit le graphe complet utile comme étant le graphe composé des sommets intéressants 
 du graphe de base, et chaque couple de sommets intéressants A,B est relié par une arrête AB 
 de distance égale au nombre de sommets parcourus, au minimum, pour aller de A à B. 
 Par exemple si mon graphe de base est A-B-C-D et que seuls A et D sont intéressants, 
-le graphe complet est donc composé des sommets (A, D) et de l'arrête AD de distance 3.
+le graphe complet est donc composé des sommets (A, D) et de l'arrête AD de poids 3.
 
 On démontre facilement que toute solution dans le graphe complet correspond à au moins 
 une solution dans le graphe de base de même distance, et réciproquement que toute solution 
