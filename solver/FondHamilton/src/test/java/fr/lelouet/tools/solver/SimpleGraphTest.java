@@ -2,6 +2,7 @@ package fr.lelouet.tools.solver;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.testng.Assert;
@@ -13,10 +14,7 @@ public class SimpleGraphTest {
 
 	@Test
 	public void testTriangle() {
-		SimpleGraph<String> test = SimpleGraph.natural();
-		test.addEdge("b", "c");
-		test.addEdge("a", "b");
-		test.addEdge("a", "c");
+		SimpleGraph<String> test = SimpleGraph.triangle();
 		Assert.assertEquals(test.adjacent("a").collect(Collectors.joining()), "bc");
 		Assert.assertEquals(test.adjacent("b").collect(Collectors.joining()), "ac");
 		Assert.assertEquals(test.adjacent("c").collect(Collectors.joining()), "ab");
@@ -110,6 +108,21 @@ public class SimpleGraphTest {
 		test.addEdge("d", "e");
 		Completion<String> complete = test.complete("a");
 		Assert.assertEquals(complete.index.size(), 3);
+	}
+
+	@Test
+	public void testCorridor() {
+		SimpleGraph<String> test = SimpleGraph.corridor(27);
+		Set<String> vertices = test.vertices().collect(Collectors.toSet());
+		Assert.assertTrue(vertices.contains("aa"), "got " + vertices);
+		Assert.assertTrue(vertices.contains("ba"), "got " + vertices);
+		Assert.assertFalse(vertices.contains("bb"), "got " + vertices);
+	}
+
+	@Test(dependsOnMethods = { "testCorridor", "testDistance" })
+	public void testDistanceCorridor() {
+		SimpleGraph<String> test = SimpleGraph.corridor(27);
+		Assert.assertEquals(test.distance("aa", "ba"), 26);
 	}
 
 }

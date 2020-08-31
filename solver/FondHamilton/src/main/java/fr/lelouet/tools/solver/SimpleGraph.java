@@ -123,24 +123,34 @@ public class SimpleGraph<T> {
 	 *
 	 * @param origin
 	 * @param destination
-	 * @return - 1if no route from one to another.
+	 * @return - 1 if no route from one to another.
 	 */
 	public int distance(T origin, T destination) {
-		int distance = 0;
+		if (origin == null || destination == null) {
+			return -1;
+		}
+		if (origin.equals(destination)) {
+			return 0;
+		}
+		int distance = 1;
 		Set<T> done = new HashSet<>();
 		Set<T> frontier = new HashSet<>(Arrays.asList(origin));
+		boolean[] found = new boolean[] { false };
 		while (!frontier.isEmpty()) {
 			Set<T> nextFrontier = new HashSet<>();
 			done.addAll(frontier);
 			for (T t : frontier) {
-				if (t == destination) {
+				adjacent(t).forEach(v -> {
+					if (v.equals(destination)) {
+						found[0] = true;
+					} else
+						if (!done.contains(v)) {
+							nextFrontier.add(v);
+						}
+				});
+				if (found[0]) {
 					return distance;
 				}
-				adjacent(t).forEach(v -> {
-					if (!done.contains(v)) {
-						nextFrontier.add(v);
-					}
-				});
 			}
 			frontier = nextFrontier;
 			distance++;
@@ -172,6 +182,77 @@ public class SimpleGraph<T> {
 			for (int j = 0; j < i; j++) {
 				distances[i][j] = distances[j][i] = distance(origin, index.item(j));
 			}
+		}
+		return ret;
+	}
+
+	// useful graphs
+
+	/**
+	 *
+	 * @return a new graph of 3 vertices a, b, c each linked to the other ones
+	 */
+	public static SimpleGraph<String> triangle() {
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		ret.addEdge("a", "b");
+		ret.addEdge("b", "c");
+		ret.addEdge("a", "c");
+		return ret;
+	}
+
+	/**
+	 *
+	 * @return a new graph of 4 vertices a, b, d c, each linked to the previous
+	 *         one.
+	 */
+	public static SimpleGraph<String> square() {
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		ret.addEdge("a", "b");
+		ret.addEdge("b", "d");
+		ret.addEdge("c", "d");
+		ret.addEdge("a", "c");
+		return ret;
+	}
+
+	/**
+	 *
+	 * @return a new graph shaped in a 8 : <pre>
+	 * a - b
+	 * |   |
+	 * c - d
+	 * |   |
+	 * e - f
+	 * </pre>
+	 */
+	public static SimpleGraph<String> eight() {
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		ret.addEdge("a", "b");
+		ret.addEdge("a", "c");
+		ret.addEdge("b", "d");
+		ret.addEdge("c", "d");
+		ret.addEdge("c", "e");
+		ret.addEdge("d", "f");
+		ret.addEdge("e", "f");
+		return ret;
+	}
+
+	public static SimpleGraph<String> corridor(int vertices) {
+		int wordL = (int) Math.ceil(Math.log(vertices) / Math.log(26));
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		String last = null;
+		for (int i = 0; i < vertices; i++) {
+			int cp = i;
+			String vertex = "";
+			for(int idx=0;idx<wordL;idx++) {
+				vertex = (char) ('a' + cp % 26) + vertex;
+				cp = cp / 26;
+			}
+			if (last == null) {
+				ret.addVertex(vertex);
+			} else {
+				ret.addEdge(last, vertex);
+			}
+			last = vertex;
 		}
 		return ret;
 	}
