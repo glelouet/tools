@@ -143,10 +143,9 @@ public class SimpleGraph<T> {
 				adjacent(t).forEach(v -> {
 					if (v.equals(destination)) {
 						found[0] = true;
-					} else
-						if (!done.contains(v)) {
-							nextFrontier.add(v);
-						}
+					} else if (!done.contains(v)) {
+						nextFrontier.add(v);
+					}
 				});
 				if (found[0]) {
 					return distance;
@@ -202,6 +201,30 @@ public class SimpleGraph<T> {
 
 	/**
 	 *
+	 * @return a new graph of 3 Ts, the foot of each being the a. <pre>
+	 *       c - b - d
+	 *           |
+	 *    f- e - a - h - i
+	 *       |       |
+	 *       g       j
+	 *   </pre>
+	 */
+	public static SimpleGraph<String> triT() {
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		ret.addEdge("a", "b");
+		ret.addEdge("b", "c");
+		ret.addEdge("b", "d");
+		ret.addEdge("a", "e");
+		ret.addEdge("e", "f");
+		ret.addEdge("e", "g");
+		ret.addEdge("a", "h");
+		ret.addEdge("h", "i");
+		ret.addEdge("h", "j");
+		return ret;
+	}
+
+	/**
+	 *
 	 * @return a new graph of 4 vertices a, b, d c, each linked to the previous
 	 *         one.
 	 */
@@ -236,17 +259,31 @@ public class SimpleGraph<T> {
 		return ret;
 	}
 
+	protected static String name(int vertex, int wordLength) {
+		String name = "";
+		for (int idx = 0; idx < wordLength; idx++) {
+			name = (char) ('a' + vertex % 26) + name;
+			vertex = vertex / 26;
+		}
+		return name;
+	}
+
+	/**
+	 * create a corridor, that is a series of vertex linked each to the
+	 * next.<br />
+	 * eg corridor(3) should return a - b - c ; while corridor(27) should return
+	 * aa - ab - ... - az - ba
+	 *
+	 * @param vertices
+	 *          number of vertex to have in the graph
+	 * @return a new graph .
+	 */
 	public static SimpleGraph<String> corridor(int vertices) {
 		int wordL = (int) Math.ceil(Math.log(vertices) / Math.log(26));
 		SimpleGraph<String> ret = SimpleGraph.natural();
 		String last = null;
 		for (int i = 0; i < vertices; i++) {
-			int cp = i;
-			String vertex = "";
-			for(int idx=0;idx<wordL;idx++) {
-				vertex = (char) ('a' + cp % 26) + vertex;
-				cp = cp / 26;
-			}
+			String vertex = name(i, wordL);
 			if (last == null) {
 				ret.addVertex(vertex);
 			} else {
