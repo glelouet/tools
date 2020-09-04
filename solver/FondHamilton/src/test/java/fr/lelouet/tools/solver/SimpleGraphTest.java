@@ -106,7 +106,7 @@ public class SimpleGraphTest {
 		test.addEdge("a", "b");
 		test.addEdge("b", "c");
 		test.addEdge("d", "e");
-		Completion<String> complete = test.complete("a");
+		Completion<String> complete = test.complete("a", null);
 		Assert.assertEquals(complete.index.size(), 3);
 	}
 
@@ -123,6 +123,15 @@ public class SimpleGraphTest {
 	public void testDistanceCorridor() {
 		SimpleGraph<String> test = SimpleGraph.corridor(27);
 		Assert.assertEquals(test.distance("aa", "ba"), 26);
+	}
+
+	@Test
+	public void testCastle() {
+		SimpleGraph<String> test = SimpleGraph.castle(3);
+		Assert.assertEquals(test.adjacent("a").collect(Collectors.joining()), "bcdg");
+		Assert.assertEquals(test.adjacent("d").collect(Collectors.joining()), "aefg");
+		Assert.assertEquals(test.adjacent("g").collect(Collectors.joining()), "adhi");
+		Assert.assertEquals(test.distance("b", "f"), 3);
 	}
 
 }

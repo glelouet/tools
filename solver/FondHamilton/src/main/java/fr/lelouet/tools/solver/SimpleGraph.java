@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -167,12 +169,18 @@ public class SimpleGraph<T> {
 	 *
 	 * @param source
 	 *          a vertex in this
+	 * @param predicate
+	 *          predicate to accept vertices besides the source. if null, all
+	 *          vertices are accepted.
 	 * @return a new Completion that holds the vertices that are reachable from
 	 *         the source, and the distances between them.
 	 */
-	public Completion<T> complete(T source) {
+	public Completion<T> complete(T source, Predicate<T> predicate) {
+		Predicate<T> withSource = predicate == null ? v -> true : predicate.or(v -> source.equals(v));
 		Completion<T> ret = new Completion<>();
-		Indexer<T> index = ret.index = new Indexer<>(comparator, connected(source));
+		Set<T> allowed = connected(source).stream().filter(withSource)
+				.collect(Collectors.toSet());
+		Indexer<T> index = ret.index = new Indexer<>(comparator, allowed);
 		int[][] distances = ret.distances = new int[index.size()][];
 		for (int i = 0; i < index.size(); i++) {
 			distances[i] = new int[index.size()];
@@ -259,6 +267,58 @@ public class SimpleGraph<T> {
 		return ret;
 	}
 
+	/**
+	 * create a cycle of vertice, each point of the cycle is the start of another
+	 * cycle of 3 vertices.<br />
+	 * <p>
+	 * example for 2 1 : a-b-c-a (one cycle from a)
+	 * </p>
+	 * <p>
+	 * example for 2 : a-b-c-a-d-e-f-d (one cycle from a, one from d)
+	 * </p>
+	 * <p>
+	 * example for 3 : main cycle is a-d-g-a, and thre cycles centered on those
+	 * three vertices
+	 * </p>
+	 *
+	 * @param towers
+	 *          the number of vertices in the main cycle, must be >1
+	 *
+	 * @return a new graph
+	 */
+	public static SimpleGraph<String> castle(int towers) {
+		SimpleGraph<String> ret = SimpleGraph.natural();
+		int length=(int) Math.ceil(Math.log(towers*				3) / Math.log(26));
+		String first=null;
+		String last=null;
+		for(int i=0;i<towers;i++) {
+			String base=name(i*3, length);
+			if(last!=null) {
+				ret.addEdge(last, base);
+			} else {
+				first=base;
+			}
+			String angle1 = name(i * 3 + 1, length);
+			String angle2 = name(i * 3 + 2, length);
+			ret.addEdge(base, angle1);
+			ret.addEdge(base, angle2);
+			ret.addEdge(angle1, angle2);
+			last = base;
+		}
+		ret.addEdge(first, last);
+		return ret;
+	}
+
+	/**
+	 * create the name of the nth vertices with a word length.
+	 *
+	 * @param vertex
+	 *          indice of the vertex in the graph.
+	 * @param wordLength
+	 *          number of chars. misisng ones are 'a' instead of 0
+	 * @return the corresponding name of the vertex in base 26(characters a-z),
+	 *         with leading a to ensure the length. eg name(25, 3)=aaz
+	 */
 	protected static String name(int vertex, int wordLength) {
 		String name = "";
 		for (int idx = 0; idx < wordLength; idx++) {

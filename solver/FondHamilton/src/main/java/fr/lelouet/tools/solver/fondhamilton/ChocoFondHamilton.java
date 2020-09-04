@@ -12,9 +12,12 @@ import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.search.strategy.selectors.variables.InputOrder;
+import org.chocosolver.solver.search.strategy.strategy.AbstractStrategy;
+import org.chocosolver.solver.search.strategy.strategy.FindAndProve;
 import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
 import org.chocosolver.solver.search.strategy.strategy.StrategiesSequencer;
 import org.chocosolver.solver.variables.IntVar;
+import org.chocosolver.solver.variables.Variable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,7 @@ public class ChocoFondHamilton implements IFondHamilton {
 
 	public static final ChocoFondHamilton INSTANCE = new ChocoFondHamilton();
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public <T> List<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
 		Model choco = new Model();
@@ -230,14 +234,14 @@ public class ChocoFondHamilton implements IFondHamilton {
 
 		StrategiesSequencer optimalSearch = new StrategiesSequencer(removeHighEdges, nextRouteClosest,
 				Search.defaultSearch(choco));
-		// FindAndProve<IntVar> fap = new
-		// FindAndProve<>(choco.retrieveIntVars(true), nextRouteClosest,
-		// optimalSearch);
-		// solver.setSearch(fap);
-		solver.setSearch(optimalSearch);
+		@SuppressWarnings("unchecked")
+		FindAndProve<Variable> fap = new FindAndProve<Variable>(choco.getVars(), (AbstractStrategy) nextRouteClosest,
+				optimalSearch);
+		solver.setSearch(fap);
+		// solver.setSearch(optimalSearch);
 
 		solver.showSolutions();
-		// solver.showDecisions();
+		solver.showDecisions();
 		// solver.showContradiction();
 		Solution solution = solver.findOptimalSolution(totalDist, false);
 		// Solution solution = solver.findSolution();
