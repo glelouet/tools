@@ -30,138 +30,152 @@ public class ChocoFondHamilton implements IFondHamilton {
 
 	public static final ChocoFondHamilton INSTANCE = new ChocoFondHamilton();
 
-	@SuppressWarnings("rawtypes")
+	public static class Modeled<T> {
+		public Model choco = new Model();
+
+		//
+		// static data
+		//
+		public Indexer<T> idx;
+		public int source;
+		public int[][] distances;
+
+		public int[] edgeLength;
+
+		/**
+		 * for each vertex, the cluster it is added in, that is the vertex root of
+		 * that cluster
+		 */
+		public int[] clusters;
+
+		/**
+		 * the array of vertex indices that are root of a cluster.
+		 */
+		public int[] clustersRoot;
+
+		public int[] clusterMinIntra;
+
+		public int[] clusterMinInter;
+
+		public int minDistFromClusters;
+
+		//
+		// variable data
+		//
+
+		/** the route is the series of vertices index */
+		public IntVar[] route;
+
+		/**
+		 * for each vertex, its position in the route.
+		 */
+		public IntVar[] positions;
+
+		/**
+		 * for each vertex, its previous vertex in the route.
+		 */
+		public IntVar[] previousIdx;
+
+		/**
+		 * for each edge , set to 1 when this edge is used. the edge from vertex i
+		 * to vertex j, with j<i, is indexed with (i-1)*i/2+j.
+		 */
+		public IntVar[] edgeUsed;
+
+		/**
+		 * sum of the total distances of the edge used.
+		 */
+		public IntVar totalDist;
+	}
+
 	@Override
 	public <T> List<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
-		Model choco = new Model();
-		// make the route as the indexes. first one must be the source.
-		IntVar[] route = new IntVar[idx.size()];
-		for (int i = 0; i < idx.size(); i++) {
-			if (i == 0) {
-				route[i] = choco.intVar("route_" + i, sourceIdx);
-			} else {
-				route[i] = choco.intVar("route_" + i, 0, idx.size() - 1, false);
-			}
-		}
-		// force the ordering of the cycle : first index after the source is < last
-		// index
-		// that means we allow source, 1, 2 ; but not source, 2, 1.
-		if (idx.size() > 2) {
-			route[idx.size() - 1].lt(route[1]).post();
-		}
-		// each system appears only once
-		choco.allDifferent(route).post();
-		// create the positions for each system
-		IntVar[] positions = new IntVar[idx.size()];
-		// the index of the system in previous position
-		IntVar[] previousIdx = new IntVar[idx.size()];
-		for (int i = 0; i < idx.size(); i++) {
-			if (i == sourceIdx) {
-				positions[i] = choco.intVar(0);
-				previousIdx[i] = route[idx.size() - 1];
-			} else {
-				positions[i] = choco.intVar(idx.item(i).toString() + "_index", 1, idx.size() - 1, false);
-				choco.element(choco.intVar(i), route, positions[i], 0).post();
-				previousIdx[i] = choco.intVar(0, idx.size() - 1, false);
-				choco.element(previousIdx[i], route, positions[i], 1).post();
-			}
-		}
+		Modeled<T> model = new Modeled<>();
+		model.idx = idx;
+		model.distances = distances;
+		model.source = sourceIdx;
+		addRoute(model);
+		addPositions(model);
+		addEdges(model);
+		addClusters(model);
+		addObjective(model);
+		addSearch(model);
 
-		// work by edges. edge (i, j) is used if previous(i)=j or previous(j)=i.
-		IntVar[] edgeUsed = new IntVar[idx.size() * (idx.size() - 1) / 2];
-		int[] edgeLength = new int[edgeUsed.length];
-		for (int i = 1; i < idx.size(); i++) {
-			for (int j = 0; j < i; j++) {
-				// edge(1,0)=0
-				// edge(2,0)=1
-				// edge(2.1)=2
-				int edgeIdx = i * (i - 1) / 2 + j;
-				edgeLength[edgeIdx] = distances[i][j];
-				edgeUsed[edgeIdx] = choco
-						.boolVar(idx.item(i).toString() + "-" + idx.item(j).toString() + "[" + edgeLength[edgeIdx] + "]");
-				edgeUsed[edgeIdx].eq(previousIdx[i].eq(j).or(previousIdx[j].eq(i))).post();
-			}
-		}
+		// boolean exit = false;
+		// if (exit) {
+		// return null;
+		// }
 
-		// place constraints on the clusters.
-		// Let C be a sub-cluster of systems.
-		// Then there are at least two edges that exit this cluster that are used.
-		// Also there are at most 2×size of this clusters edges that exit that
-		// cluster.
-		// since with n systems, it means there are 2^n - 2 possible clusters (-2 to
-		// remove empty and full clusters) ; then we can't add constraints for 2^n .
-		// Instead, we create the clusters of systems that are close together, by
-		// aggregating the systems that are close to a cluster by a distance less
-		// than the median edge distance.
+		Solver solver = model.choco.getSolver();
+		solver.showSolutions();
+		solver.showDecisions();
+		// solver.showContradiction();
+		Solution solution = solver.findOptimalSolution(model.totalDist, false);
+		// Solution solution = solver.findSolution();
+		return Stream.of(model.route).map(iv -> idx.item(solution.getIntVal(iv))).collect(Collectors.toList());
+	}
 
-		int[] clusters = createClusters(distances, (int) Math.ceil(Math.sqrt(idx.size())));
-		int[] clustersRoot = IntStream.of(clusters).distinct().toArray();
-		int minDistFromClusters = 0;
-		if (clustersRoot.length > 1) {
-			for (int clusterRoot : clustersRoot) {
-				int[] clusterSystems = IntStream.range(clusterRoot, idx.size()).filter(sysi -> clusters[sysi] == clusterRoot)
-						.toArray();
-				logger.debug("cluster [" + idx.item(clusterRoot) + "] systems="
-						+ IntStream.of(clusterSystems).mapToObj(idx::item).collect(Collectors.toList()));
-				Set<IntVar> exitEdges = new HashSet<>();
-				// for each couple i,j with i in the cluster and j not in the cluster.
-				for (int i = 0; i < distances.length; i++) {
-					if (clusters[i] == clusterRoot) {
-						for (int j = 0; j < distances.length; j++) {
-							if (clusters[j] != clusterRoot) {
-								// same edge value as above
-								int edgeIdx = j < i ? i * (i - 1) / 2 + j : j * (j - 1) / 2 + i;
-								exitEdges.add(edgeUsed[edgeIdx]);
-							}
-						}
-					}
-				}
-				logger.debug("cluster [" + idx.item(clusterRoot) + "] exits=" + exitEdges);
-				IntVar exitEdgesUsed = choco.intVar("cl_" + idx.item(clusterRoot) + ".exitEdges", 2, distances.length);
-				choco.sum(exitEdges.toArray(IntVar[]::new), "=", exitEdgesUsed).post();
-			}
+	@SuppressWarnings("rawtypes")
+	protected <T> void addSearch(Modeled<T> model) {
+		var choco = model.choco;
 
-			// generate the min distance for systems internal to a cluster, and
-			// between
-			// system out of a cluster, for each cluster main system.
-			int[] clusterMinIntra = new int[idx.size()];
-			int[] clusterMinInter = new int[idx.size()];
-			for (int i = 0; i < idx.size(); i++) {
-				clusterMinIntra[i] = clusterMinInter[i] = Integer.MAX_VALUE;
+		IntStrategy nextRouteClosest = stratNextRouteClosest(model);
+		StrategiesSequencer optimalSearch = new StrategiesSequencer(
+				// removeHighEdges,
+				nextRouteClosest, Search.defaultSearch(choco));
+		@SuppressWarnings("unchecked")
+		FindAndProve<Variable> fap = new FindAndProve<Variable>(choco.getVars(), (AbstractStrategy) nextRouteClosest,
+				optimalSearch);
+		model.choco.getSolver().setSearch(fap);
+	}
+
+	protected <T> IntStrategy stratRemoveHighEdges(Modeled<T> model) {
+		var edgeLength = model.edgeLength;
+		var edgeUsed = model.edgeUsed;
+
+		// remove high edges strategy removes all the edges, from the highest to the
+		// lowest edge distance excluxed.
+		int lowestEdge = IntStream.of(edgeLength).sorted().limit(1).sum();
+		IntVar[] edges_by_length_desc = IntStream.range(0, edgeLength.length).boxed()
+				.filter(i -> edgeLength[i] > lowestEdge).sorted((i, j) -> edgeLength[j] - edgeLength[i]).map(i -> edgeUsed[i])
+				.toArray(IntVar[]::new);
+		return Search.inputOrderLBSearch(edges_by_length_desc);
+	}
+
+	protected <T> IntStrategy stratNextRouteClosest(Modeled<T> model) {
+		var route = model.route;
+		var choco = model.choco;
+		var distances = model.distances;
+
+		return Search.intVarSearch(new InputOrder<>(choco), var -> {
+			// find the actual index of the variable
+			int varIdx = 0;
+			for (; varIdx < route.length && route[varIdx] != var; varIdx++) {
 			}
-			for (int i = 0; i < idx.size(); i++) {
-				for (int j = 0; j < i; j++) {
-					int cl1 = clusters[i], cl2 = clusters[j], dist = distances[i][j];
-					if (cl1 == cl2) {
-						// update intra if needed
-						if (dist < clusterMinIntra[cl1]) {
-							clusterMinIntra[cl1] = dist;
-						}
-					} else {
-						// update intra for both if needed
-						if (dist < clusterMinInter[cl1]) {
-							clusterMinInter[cl1] = dist;
-						}
-						if (dist < clusterMinInter[cl2]) {
-							clusterMinInter[cl2] = dist;
-						}
-					}
+			int previous = route[varIdx - 1].getValue();
+			int ret = 0;
+			int dist = Integer.MAX_VALUE;
+			for (int j = 0; j < distances.length; j++) {
+				if (var.contains(j) && distances[previous][j] < dist) {
+					dist = distances[previous][j];
+					ret = j;
 				}
 			}
-			// now we can sum : for each cluster, the number of systems inside, -1 ;
-			// time the inter distance, plus the intra distance.
-			// that sum gives us a new minimum for distances
-			for (int clusterRoot : clustersRoot) {
-				int nb = (int) IntStream.of(clusters).filter(i -> i == clusterRoot).count();
-				int inter = clusterMinInter[clusterRoot];
-				int intra = 0;
-				if (nb > 1) {
-					intra = (nb - 1) * clusterMinIntra[clusterRoot];
-				}
-				logger.debug("cluster " + idx.item(clusterRoot) + "(" + nb + ") add inter=" + inter + " intra=" + intra);
-				minDistFromClusters += inter + intra;
-			}
-		}
+			return ret;
+		}, route);
+	}
+
+	protected <T> IntStrategy stratNextRouteFast(Modeled<T> model) {
+		return Search.inputOrderLBSearch(model.route);
+	}
+
+	protected <T> void addObjective(Modeled<T> model) {
+		var distances = model.distances;
+		var idx = model.idx;
+		var choco = model.choco;
+		var edgeUsed = model.edgeUsed;
+		var edgeLength = model.edgeLength;
+		var minDistFromClusters = model.minDistFromClusters;
 
 		// find a good min and max values for the objective.
 		// get the nth lowest, highest edges with n being the number of systems.
@@ -196,56 +210,168 @@ public class ChocoFondHamilton implements IFondHamilton {
 		logger.debug("variable objectif from " + lb + " (prox=" + sumLowProx + " edges=" + sumLowEdges + " clusters="
 				+ minDistFromClusters + ") to " + ub + " (prox=" + sumHigProx + " edges=" + sumHighEdges + ")");
 
-		IntVar totalDist = choco.intVar("totaldist", lb, ub);
+		IntVar totalDist = model.totalDist = choco.intVar("totaldist", lb, ub);
 		choco.scalar(edgeUsed, edgeLength, "=", totalDist).post();
 		choco.sum(edgeUsed, "=", idx.size()).post();
+	}
 
-		boolean exit = false;
-		if (exit) {
-			return null;
-		}
+	/**
+	 * place constraints on the clusters.
+	 * <p>
+	 * Let C be a sub-group of the vertices.<br />
+	 * Then there are at least two edges that exit this cluster that are used in
+	 * the solution.<br />
+	 * Also there are at most 2×size of this clusters edges that exit that
+	 * cluster.
+	 * </p>
+	 * <p>
+	 * Since with n systems, it means there are 2^n - 2 possible clusters (-2 to
+	 * remove empty and full clusters) ; then we can't add constraints for
+	 * 2^n.<br />
+	 * Instead, we create the clusters of systems that are close together, by
+	 * aggregating the systems that are close to a cluster by a distance less than
+	 * the median edge distance.
+	 * </p>
+	 */
+	protected <T> void addClusters(Modeled<T> model) {
+		var distances = model.distances;
+		var idx = model.idx;
+		var choco = model.choco;
+		var edgeUsed = model.edgeUsed;
 
-		Solver solver = choco.getSolver();
-
-		// remove high edges strategy removes all the edges, from the highest to the
-		// lowest edge distance excluxed.
-		int lowestEdge = IntStream.of(edgeLength).sorted().limit(1).sum();
-		IntVar[] edges_by_length_desc = IntStream.range(0, edgeLength.length).boxed()
-				.filter(i -> edgeLength[i] > lowestEdge)
-				.sorted((i, j) -> edgeLength[j] - edgeLength[i]).map(i -> edgeUsed[i]).toArray(IntVar[]::new);
-		IntStrategy removeHighEdges = Search.inputOrderLBSearch(edges_by_length_desc);
-		// IntStrategy nextRouteFast = Search.inputOrderLBSearch(route);
-		IntStrategy nextRouteClosest = Search.intVarSearch(new InputOrder<>(choco), var -> {
-			// find the actual index of the variable
-			int varIdx = 0;
-			for (; varIdx < route.length && route[varIdx] != var; varIdx++) {
+		int[] clusters = model.clusters = createClusters(distances, (int) Math.ceil(Math.sqrt(idx.size())));
+		int[] clustersRoot = model.clustersRoot = IntStream.of(clusters).distinct().toArray();
+		model.minDistFromClusters = 0;
+		if (clustersRoot.length > 1) {
+			for (int clusterRoot : clustersRoot) {
+				int[] clusterSystems = IntStream.range(clusterRoot, idx.size()).filter(sysi -> clusters[sysi] == clusterRoot)
+						.toArray();
+				logger.debug("cluster [" + idx.item(clusterRoot) + "] systems="
+						+ IntStream.of(clusterSystems).mapToObj(idx::item).collect(Collectors.toList()));
+				Set<IntVar> exitEdges = new HashSet<>();
+				// for each couple i,j with i in the cluster and j not in the cluster.
+				for (int i = 0; i < distances.length; i++) {
+					if (clusters[i] == clusterRoot) {
+						for (int j = 0; j < distances.length; j++) {
+							if (clusters[j] != clusterRoot) {
+								// same edge value as above
+								int edgeIdx = j < i ? i * (i - 1) / 2 + j : j * (j - 1) / 2 + i;
+								exitEdges.add(edgeUsed[edgeIdx]);
+							}
+						}
+					}
+				}
+				logger.debug("cluster [" + idx.item(clusterRoot) + "] exits=" + exitEdges);
+				IntVar exitEdgesUsed = choco.intVar("cl_" + idx.item(clusterRoot) + ".exitEdges", 2, distances.length);
+				choco.sum(exitEdges.toArray(IntVar[]::new), "=", exitEdgesUsed).post();
 			}
-			int previous = route[varIdx - 1].getValue();
-			int ret = 0;
-			int dist = Integer.MAX_VALUE;
-			for (int j = 0; j < distances.length; j++) {
-				if (var.contains(j) && distances[previous][j] < dist) {
-					dist = distances[previous][j];
-					ret = j;
+
+			// generate the min distance for systems internal to a cluster, and
+			// between
+			// system out of a cluster, for each cluster main system.
+			int[] clusterMinIntra = model.clusterMinIntra = new int[idx.size()];
+			int[] clusterMinInter = model.clusterMinInter = new int[idx.size()];
+			for (int i = 0; i < idx.size(); i++) {
+				clusterMinIntra[i] = clusterMinInter[i] = Integer.MAX_VALUE;
+			}
+			for (int i = 0; i < idx.size(); i++) {
+				for (int j = 0; j < i; j++) {
+					int cl1 = clusters[i], cl2 = clusters[j], dist = distances[i][j];
+					if (cl1 == cl2) {
+						// update intra if needed
+						if (dist < clusterMinIntra[cl1]) {
+							clusterMinIntra[cl1] = dist;
+						}
+					} else {
+						// update intra for both if needed
+						if (dist < clusterMinInter[cl1]) {
+							clusterMinInter[cl1] = dist;
+						}
+						if (dist < clusterMinInter[cl2]) {
+							clusterMinInter[cl2] = dist;
+						}
+					}
 				}
 			}
-			return ret;
-		}, route);
+			// now we can sum : for each cluster, the number of systems inside, -1 ;
+			// time the inter distance, plus the intra distance.
+			// that sum gives us a new minimum for distances
+			for (int clusterRoot : clustersRoot) {
+				int nb = (int) IntStream.of(clusters).filter(i -> i == clusterRoot).count();
+				int inter = clusterMinInter[clusterRoot];
+				int intra = 0;
+				if (nb > 1) {
+					intra = (nb - 1) * clusterMinIntra[clusterRoot];
+				}
+				logger.debug("cluster " + idx.item(clusterRoot) + "(" + nb + ") add inter=" + inter + " intra=" + intra);
+				model.minDistFromClusters += inter + intra;
+			}
+		}
+	}
 
-		StrategiesSequencer optimalSearch = new StrategiesSequencer(removeHighEdges, nextRouteClosest,
-				Search.defaultSearch(choco));
-		@SuppressWarnings("unchecked")
-		FindAndProve<Variable> fap = new FindAndProve<Variable>(choco.getVars(), (AbstractStrategy) nextRouteClosest,
-				optimalSearch);
-		solver.setSearch(fap);
-		// solver.setSearch(optimalSearch);
+	protected <T> void addEdges(Modeled<T> model) {
+		var idx = model.idx;
+		var distances = model.distances;
+		var previousIdx = model.previousIdx;
+		var choco = model.choco;
+		// work by edges. edge (i, j) is used if previous(i)=j or previous(j)=i.
+		IntVar[] edgeUsed = model.edgeUsed = new IntVar[idx.size() * (idx.size() - 1) / 2];
+		int[] edgeLength = model.edgeLength = new int[edgeUsed.length];
+		for (int i = 1; i < idx.size(); i++) {
+			for (int j = 0; j < i; j++) {
+				// edge(1,0)=0
+				// edge(2,0)=1
+				// edge(2.1)=2
+				int edgeIdx = i * (i - 1) / 2 + j;
+				edgeLength[edgeIdx] = distances[i][j];
+				edgeUsed[edgeIdx] = choco
+						.boolVar(idx.item(i).toString() + "-" + idx.item(j).toString() + "[" + edgeLength[edgeIdx] + "]");
+				edgeUsed[edgeIdx].eq(previousIdx[i].eq(j).or(previousIdx[j].eq(i))).post();
+			}
+		}
+	}
 
-		solver.showSolutions();
-		solver.showDecisions();
-		// solver.showContradiction();
-		Solution solution = solver.findOptimalSolution(totalDist, false);
-		// Solution solution = solver.findSolution();
-		return Stream.of(route).map(iv -> idx.item(solution.getIntVal(iv))).collect(Collectors.toList());
+	protected <T> void addPositions(Modeled<T> model) {
+		var choco = model.choco;
+		var idx = model.idx;
+		var route = model.route;
+		// create the positions for each system
+		IntVar[] positions = model.positions = new IntVar[idx.size()];
+		// the index of the system in previous position
+		IntVar[] previousIdx = model.previousIdx = new IntVar[idx.size()];
+		for (int i = 0; i < model.idx.size(); i++) {
+			if (i == model.source) {
+				positions[i] = choco.intVar(0);
+				previousIdx[i] = route[model.idx.size() - 1];
+			} else {
+				positions[i] = choco.intVar(idx.item(i).toString() + "_index", 1, idx.size() - 1, false);
+				choco.element(choco.intVar(i), route, positions[i], 0).post();
+				previousIdx[i] = choco.intVar(0, idx.size() - 1, false);
+				choco.element(previousIdx[i], route, positions[i], 1).post();
+			}
+		}
+	}
+
+	/** add the route to the choco model */
+	protected <T> void addRoute(Modeled<T> model) {
+		// make the route as the indexes. first one must be the source.
+		IntVar[] route = model.route = new IntVar[model.idx.size()];
+		for (int i = 0; i < model.idx.size(); i++) {
+			if (i == 0) {
+				route[i] = model.choco.intVar("route_" + i, model.source);
+			} else {
+				route[i] = model.choco.intVar("route_" + i, 0, model.idx.size() - 1, false);
+			}
+		}
+		// force the ordering of the cycle : first index after the source is < last
+		// index
+		// that means we allow source, 1, 2 ; but not source, 2, 1.
+		if (model.idx.size() > 2) {
+			route[model.idx.size() - 1].lt(route[1]).post();
+		}
+		// each system appears only once
+		model.choco.allDifferent(route).post();
+
 	}
 
 	public static int[] createClusters(int[][] distances, int maxClusters) {
@@ -280,6 +406,5 @@ public class ChocoFondHamilton implements IFondHamilton {
 		}
 		return clustering;
 	}
-
 
 }

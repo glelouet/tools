@@ -5,8 +5,8 @@ import fr.lelouet.tools.solver.SimpleGraph;
 public class ChocoFondHamiltonMain {
 
 	public static void main(String[] args) {
-		SimpleGraph<String> graph = SimpleGraph.castle(3);
-		ChocoFondHamilton.INSTANCE.solve(graph);
+		SimpleGraph<String> graph = SimpleGraph.castle(2);
+		System.out.println(ChocoFondHamilton.INSTANCE.solve(graph, "b", "c", "d", "f", "g", "h"));
 	}
 
 }
