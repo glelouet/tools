@@ -19,7 +19,8 @@ public class GreedyFondHamilton implements IFondHamilton {
 	}
 
 	@Override
-	public <T> List<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+		long timeStart = System.currentTimeMillis();
 		List<Edge> edges = new ArrayList<>();
 		for (int i = 0; i < idx.size(); i++) {
 			for (int j = 0; j < i; j++) {
@@ -62,7 +63,7 @@ public class GreedyFondHamilton implements IFondHamilton {
 		edge.i = remain[0];
 		edge.j = remain[1];
 		accepted.add(edge);
-		ArrayList<T> ret = new ArrayList<>();
+		ResultList<T> ret = new ResultList<>();
 		ret.add(idx.item(sourceIdx));
 		int lastIdx = sourceIdx;
 		Edge lastEdge = null;
@@ -81,6 +82,7 @@ public class GreedyFondHamilton implements IFondHamilton {
 			lastEdge = edge;
 			ret.add(idx.item(lastIdx));
 		}
+		ret.msBest = ret.msFirst = System.currentTimeMillis() - timeStart;
 		return ret;
 	}
 

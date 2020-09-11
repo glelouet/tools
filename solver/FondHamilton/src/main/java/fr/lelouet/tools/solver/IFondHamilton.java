@@ -1,9 +1,9 @@
 package fr.lelouet.tools.solver;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.function.Predicate;
 
 import fr.lelouet.tools.solver.SimpleGraph.Completion;
@@ -14,6 +14,29 @@ import fr.lelouet.tools.solver.SimpleGraph.Completion;
  *
  */
 public interface IFondHamilton {
+
+	public static class ResultList<T> extends ArrayList<T> {
+		private static final long serialVersionUID = 1L;
+		public long msFirst = 0l;
+		public long msBest = 0l;
+	}
+
+	public static class ResultMap<T> extends LinkedHashMap<T, Integer> {
+		private static final long serialVersionUID = 1L;
+		public long msFirst = 0l;
+		public long msBest = 0l;
+
+
+		public ResultMap(ResultList<T> list) {
+			msFirst = list.msFirst;
+			msBest = list.msBest;
+		}
+
+		@Override
+		public String toString() {
+			return msFirst + "/" + msBest + "ms " + super.toString();
+		}
+	}
 
 	/**
 	 * find a cycle starting from a source in a graph. The goal is usually to find
@@ -34,13 +57,13 @@ public interface IFondHamilton {
 	 *         will be done in the order of the vertices in the cycle. the source
 	 *         is always at the last position.
 	 */
-	public default <T> LinkedHashMap<T, Integer> solve(T source, SimpleGraph<T> graph, Predicate<T> allowed) {
+	public default <T> ResultMap<T> solve(T source, SimpleGraph<T> graph, Predicate<T> allowed) {
 		Completion<T> complete = graph.complete(source, allowed);
 		Indexer<T> idx = complete.index;
 		int[][] distances = complete.distances;
 		int sourceIdx = idx.position(source);
-		List<T> list = solve(complete.index, complete.distances, sourceIdx);
-		LinkedHashMap<T, Integer> ret = new LinkedHashMap<>();
+		ResultList<T> list = solve(complete.index, complete.distances, sourceIdx);
+		ResultMap<T> ret = new ResultMap<>(list);
 		int lastIdx = idx.position(source);
 		for (T vertex : list) {
 			if (vertex == source) {
@@ -66,7 +89,7 @@ public interface IFondHamilton {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public default <T> LinkedHashMap<T, Integer> solve(SimpleGraph<T> graph, T... allowed) {
+	public default <T> ResultMap<T> solve(SimpleGraph<T> graph, T... allowed) {
 		return solve(graph.vertices().findFirst().get(), graph,
 				allowed == null || allowed.length == 0 ? null : new HashSet(Arrays.asList(allowed))::contains);
 	}
@@ -79,7 +102,7 @@ public interface IFondHamilton {
 	 * @param distances
 	 * @return
 	 */
-	public <T> List<T> solve(Indexer<T> index, int[][] distances, int sourceIndex);
+	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex);
 
 
 }

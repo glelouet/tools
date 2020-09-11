@@ -1,7 +1,6 @@
 package fr.lelouet.tools.solver.fondhamilton;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -10,6 +9,7 @@ import java.util.stream.Stream;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.search.loop.monitors.IMonitorSolution;
 import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.search.strategy.selectors.variables.InputOrder;
 import org.chocosolver.solver.search.strategy.strategy.AbstractStrategy;
@@ -89,7 +89,8 @@ public class ChocoFondHamilton implements IFondHamilton {
 	}
 
 	@Override
-	public <T> List<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+		long timeStart = System.currentTimeMillis();
 		Modeled<T> model = new Modeled<>();
 		model.idx = idx;
 		model.distances = distances;
@@ -99,24 +100,27 @@ public class ChocoFondHamilton implements IFondHamilton {
 		addEdges(model);
 		addClusters(model);
 		addObjective(model);
-		addSearch(model);
 
-		// boolean exit = false;
-		// if (exit) {
-		// return null;
-		// }
+		model.choco.getSolver().setSearch(addSearch(model));
 
+		ResultList<T> ret = new ResultList<>();
 		Solver solver = model.choco.getSolver();
-		solver.showSolutions();
-		solver.showDecisions();
+		solver.plugMonitor((IMonitorSolution) () -> {
+			if (ret.msFirst == 0l) {
+				ret.msFirst = System.currentTimeMillis() - timeStart;
+			}
+		});
+		// solver.showSolutions();
+		// solver.showDecisions();
 		// solver.showContradiction();
 		Solution solution = solver.findOptimalSolution(model.totalDist, false);
-		// Solution solution = solver.findSolution();
-		return Stream.of(model.route).map(iv -> idx.item(solution.getIntVal(iv))).collect(Collectors.toList());
+		ret.msBest = System.currentTimeMillis() - timeStart;
+		Stream.of(model.route).map(iv -> idx.item(solution.getIntVal(iv))).forEach(ret::add);
+		return ret;
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected <T> void addSearch(Modeled<T> model) {
+	protected <T> AbstractStrategy[] addSearch(Modeled<T> model) {
 		var choco = model.choco;
 
 		IntStrategy nextRouteClosest = stratNextRouteClosest(model);
@@ -126,7 +130,7 @@ public class ChocoFondHamilton implements IFondHamilton {
 		@SuppressWarnings("unchecked")
 		FindAndProve<Variable> fap = new FindAndProve<Variable>(choco.getVars(), (AbstractStrategy) nextRouteClosest,
 				optimalSearch);
-		model.choco.getSolver().setSearch(fap);
+		return new AbstractStrategy[] { fap };
 	}
 
 	protected <T> IntStrategy stratRemoveHighEdges(Modeled<T> model) {

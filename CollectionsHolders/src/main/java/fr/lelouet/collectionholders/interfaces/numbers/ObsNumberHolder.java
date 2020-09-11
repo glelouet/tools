@@ -17,10 +17,9 @@ import javafx.beans.value.ObservableValue;
  * @param Contained
  *          the class of the boxified number to hold
  * @param SelfClass
- *          self class . It is used for the combination methods. eg a double
- *          holder would return a double holder, not a obsNumberHolder. That
- *          helps to keep the corect methods, eg a doublehodler has more methods
- *          than an obsobjholder.
+ *          self class. It is used for the combination methods, eg a double
+ *          holder would return a double holder, not a obsNumberHolder, for the
+ *          add etc. method.
  *
  */
 public interface ObsNumberHolder<Contained extends Number, SelfClass extends ObsNumberHolder<Contained, SelfClass>>

@@ -1,7 +1,5 @@
 package fr.lelouet.tools.solver.fondhamilton;
 
-import java.util.List;
-
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
@@ -16,7 +14,7 @@ public class BruteFondHamilton implements IFondHamilton {
 
 
 	@Override
-	public <T> List<T> solve(Indexer<T> index, int[][] distances, int sourceIndex) {
+	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex) {
 		// TODO Auto-generated method stub
 		return null;
 	}
