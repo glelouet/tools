@@ -71,7 +71,9 @@ implements ObsCollectionHolder<U, C, L> {
 		// propagate.
 		underlying().clear();
 		underlying().addAll(newlist);
-		transmitToListeners();
+		synchronized (underlying) {
+			transmitToListeners();
+		}
 		dataReceivedLatch.countDown();
 
 	}
@@ -120,7 +122,7 @@ implements ObsCollectionHolder<U, C, L> {
 	 * the items stored are consistent and can be used as a bulk.
 	 */
 	public void dataReceived() {
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+		LockWatchDog.BARKER.syncExecute(this, () -> {
 			dataReceivedLatch.countDown();
 			transmitToListeners();
 		});
