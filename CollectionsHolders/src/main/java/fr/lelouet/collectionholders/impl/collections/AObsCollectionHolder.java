@@ -10,24 +10,20 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
-import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
@@ -54,39 +50,37 @@ import javafx.collections.ObservableList;
  * @param <L>
  *          internal observer
  */
-public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L>
+public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L> extends ObsObjHolderSimple<C>
 implements ObsCollectionHolder<U, C, L> {
 
 	private static final Logger logger = LoggerFactory.getLogger(AObsCollectionHolder.class);
 
-	protected OC underlying;
+	private final OC underlying;
 
 	public OC underlying() {
 		return underlying;
 	}
 
 	public AObsCollectionHolder(OC underlying) {
-		this.underlying = underlying;
+		item = this.underlying = underlying;
 	}
 
-	/**
-	 * latch that is set to 0 (ready) once data is received.
-	 */
-	CountDownLatch dataReceivedLatch = new CountDownLatch(1);
+	@Override
+	public synchronized void set(C newlist) {
+		// if there was already a value set, and we set to this same value, don't
+		// propagate.
+		underlying().clear();
+		underlying().addAll(newlist);
+		transmitToListeners();
+		dataReceivedLatch.countDown();
 
-	public void waitData() {
-		try {
-			dataReceivedLatch.await();
-		} catch (InterruptedException e) {
-			throw new UnsupportedOperationException("catch this", e);
-		}
 	}
 
 	@Override
 	public void apply(Consumer<U> cons) {
 		waitData();
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			for (U u : underlying) {
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+			for (U u : underlying()) {
 				cons.accept(u);
 			}
 		});
@@ -121,41 +115,14 @@ implements ObsCollectionHolder<U, C, L> {
 		return isEmpty;
 	}
 
-	private ArrayList<Consumer<C>> receiveListeners;
-
-	@Override
-	public void follow(Consumer<C> callback) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			if (receiveListeners == null) {
-				receiveListeners = new ArrayList<>();
-			}
-			receiveListeners.add(callback);
-			if (dataReceivedLatch.getCount() == 0) {
-				callback.accept(underlying);
-			}
-		});
-	}
-
-	@Override
-	public void unfollow(Consumer<C> callback) {
-		synchronized (underlying) {
-			receiveListeners.remove(callback);
-		}
-	}
-
 	/**
 	 * called by the data fetcher when data has been received. This specifies that
 	 * the items stored are consistent and can be used as a bulk.
 	 */
 	public void dataReceived() {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
 			dataReceivedLatch.countDown();
-			if (receiveListeners != null) {
-				C consumed = underlying;
-				for (Consumer<C> r : receiveListeners) {
-					r.accept(consumed);
-				}
-			}
+			transmitToListeners();
 		});
 	}
 
@@ -248,57 +215,6 @@ implements ObsCollectionHolder<U, C, L> {
 		return ret;
 	}
 
-	@Override
-	public <V> ObsObjHolder<V> map(Function<C, V> mapper) {
-		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
-		follow((l) -> ret.set(mapper.apply(l)));
-		return ret;
-	}
-
-	@Override
-	public ObsBoolHolder test(Predicate<C> test) {
-		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		follow((newValue) -> ret.set(test.test(newValue)));
-		return ret;
-	}
-
-	@Override
-	public ObsIntHolder mapInt(ToIntFunction<C> mapper) {
-		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow((newValue) -> ret.set(mapper.applyAsInt(newValue)));
-		return ret;
-	}
-
-	@Override
-	public ObsLongHolder mapLong(ToLongFunction<C> mapper) {
-		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow((newValue) -> ret.set(mapper.applyAsLong(newValue)));
-		return ret;
-	}
-
-	@Override
-	public ObsDoubleHolder mapDouble(ToDoubleFunction<C> mapper) {
-		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)));
-		return ret;
-	}
-
-	@Override
-	public <V> ObsListHolder<V> toList(Function<C, Iterable<V>> generator) {
-		ObservableList<V> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
-		follow((newValue) -> {
-			List<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false)
-					.collect(Collectors.toList());
-			synchronized (internal) {
-				internal.clear();
-				internal.addAll(newlist);
-			}
-			ret.dataReceived();
-		});
-		return ret;
-	}
-
 	/**
 	 * Keep data about a converted element of a obsevableCollection that is
 	 * flattened.<br />
@@ -344,9 +260,8 @@ implements ObsCollectionHolder<U, C, L> {
 		protected void onDataReceived(C2 newCol) {
 			received = true;
 			if (debug != null) {
-				logger.debug(
-						debug + " flatten partial received new collection " + newCol + " had "
-								+ (lastReceived == null ? "null" : lastReceived));
+				logger.debug(debug + " flatten partial received new collection " + newCol + " had "
+						+ (lastReceived == null ? "null" : lastReceived));
 			}
 			lastReceived = newCol;
 			updater.run();
@@ -514,7 +429,7 @@ implements ObsCollectionHolder<U, C, L> {
 
 	@Override
 	public int hashCode() {
-		return dataReceivedLatch.getCount() == 0 ? 0 : underlying.hashCode();
+		return dataReceivedLatch.getCount() == 0 ? 0 : underlying().hashCode();
 	}
 
 	@Override
@@ -525,7 +440,7 @@ implements ObsCollectionHolder<U, C, L> {
 			// received.
 			return dataReceivedLatch.getCount() != 0 && other.dataReceivedLatch.getCount() != 0
 					|| dataReceivedLatch.getCount() == 0 && other.dataReceivedLatch.getCount() == 0
-					&& underlying.equals(other.underlying);
+					&& underlying().equals(other.underlying());
 		}
 		return false;
 	}

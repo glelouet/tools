@@ -51,37 +51,29 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 	}
 
 	@Override
-	public List<U> get() {
-		waitData();
-		return LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			return new ArrayList<>(underlying);
-		});
-	}
-
-	@Override
 	public void apply(BiConsumer<Integer, U> cons) {
 		waitData();
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			for (int i = 0; i < underlying.size(); i++) {
-				cons.accept(i, underlying.get(i));
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+			for (int i = 0; i < underlying().size(); i++) {
+				cons.accept(i, underlying().get(i));
 			}
 		});
 	}
 
 	@Override
 	public void followItems(ListChangeListener<? super U> listener) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
 			ObservableList<U> otherlist = FXCollections.observableArrayList();
 			otherlist.addListener(listener);
-			otherlist.addAll(underlying);
-			underlying.addListener(listener);
+			otherlist.addAll(underlying());
+			underlying().addListener(listener);
 		});
 	}
 
 	@Override
 	public void unfollowItems(ListChangeListener<? super U> change) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			underlying.removeListener(change);
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+			underlying().removeListener(change);
 		});
 	}
 

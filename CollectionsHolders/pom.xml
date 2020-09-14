@@ -27,6 +27,10 @@
 			<groupId>fr.lelouet.tools</groupId>
 			<artifactId>Synchronization</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.lelouet.tools</groupId>
+			<artifactId>LambdaRef</artifactId>
+		</dependency>
 	</dependencies>
 
 	<groupId>fr.lelouet.tools</groupId>

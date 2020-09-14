@@ -46,8 +46,23 @@ public interface ObsObjHolder<U> {
 	 * consumer receives that data before exiting this method
 	 *
 	 * @param cons
+	 *          the consumer that will receive new values.
+	 * @param holder
+	 *          the holder that ensure the consumer is useful. if omitted or set
+	 *          to null, "this" is used instead. Once the holder is no more weak
+	 *          reachable, the listener will be removed.
 	 */
-	public void follow(Consumer<U> cons);
+	public void follow(Consumer<U> cons, Object holder);
+
+	/**
+	 * add a consumer that follows the data inside. if there is already data, the
+	 * consumer receives that data before exiting this method
+	 *
+	 * @param cons
+	 */
+	public default void follow(Consumer<U> cons) {
+		follow(cons, this);
+	}
 
 	default ObsObjHolder<U> peek(Consumer<U> observer) {
 		follow(observer);

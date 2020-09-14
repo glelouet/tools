@@ -320,7 +320,7 @@ public class ObsMapHolderTest {
 		});
 
 		public void addType(long location, int type_id, long qtty) {
-			assetsHolder.underlying.add(new Flatten2Asset(location, type_id, qtty));
+			assetsHolder.underlying().add(new Flatten2Asset(location, type_id, qtty));
 			assetsHolder.dataReceived();
 		}
 	}

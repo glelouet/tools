@@ -47,25 +47,25 @@ implements ObsSetHolder<U> {
 	@Override
 	public Set<U> get() {
 		waitData();
-		return LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			return new HashSet<>(underlying);
+		return LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+			return new HashSet<>(underlying());
 		});
 	}
 
 	@Override
 	public void followItems(SetChangeListener<? super U> listener) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
 			ObservableSet<U> otherset = FXCollections.observableSet(new HashSet<>());
 			otherset.addListener(listener);
-			otherset.addAll(underlying);
-			underlying.addListener(listener);
+			otherset.addAll(underlying());
+			underlying().addListener(listener);
 		});
 	}
 
 	@Override
 	public void unfollowItems(SetChangeListener<? super U> change) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			underlying.removeListener(change);
+		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
+			underlying().removeListener(change);
 		});
 	}
 
@@ -120,7 +120,7 @@ implements ObsSetHolder<U> {
 		Set<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() >= 2) {
-				ret.set(underlying.contains(value.get()));
+				ret.set(underlying().contains(value.get()));
 			}
 		};
 		follow((t) -> {

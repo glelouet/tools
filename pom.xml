@@ -105,6 +105,11 @@
 				<artifactId>choco-solver</artifactId>
 				<version>${choco-version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>LambdaRef</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<distributionManagement>

@@ -103,15 +103,6 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	}
 
 	/**
-	 * add a callback that will be called everytime the map received a
-	 * dataReceived call. This is useful when you know the modifications are in
-	 * batches and rather recompute the whole data instead of manage all the small
-	 * modifications
-	 */
-	@Override
-	public void follow(Consumer<Map<K, V>> callback);
-
-	/**
 	 * remove a listener added through {@link #follow(Runnable)}
 	 *
 	 * @param callback

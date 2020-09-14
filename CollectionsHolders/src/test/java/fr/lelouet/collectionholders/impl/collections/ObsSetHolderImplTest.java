@@ -14,7 +14,7 @@ import javafx.collections.ObservableSet;
 
 public class ObsSetHolderImplTest {
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 1000)
 	public void testCreating() {
 		ObservableSet<String> internal = FXCollections.observableSet(new HashSet<>());
 		ObsSetHolderImpl<String> test = new ObsSetHolderImpl<>(internal);
@@ -63,7 +63,7 @@ public class ObsSetHolderImplTest {
 		Assert.assertTrue(filtered.contains("ab").get());
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 1000)
 	public void testFollow() {
 
 		ObservableSet<String> internal = FXCollections.observableSet(new HashSet<>());

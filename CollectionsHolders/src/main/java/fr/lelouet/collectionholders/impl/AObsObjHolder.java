@@ -13,6 +13,7 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
@@ -51,9 +52,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow(newValue -> {
-			ret.set(mapper.applyAsInt(newValue));
-		});
+		follow(newValue -> ret.set(mapper.applyAsInt(newValue)));
 		return ret;
 	}
 
@@ -75,11 +74,11 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>();
 		follow((newValue) -> {
-			ret.underlying().clear();
-			if (newValue != null) {
-				for (V v : generator.apply(newValue)) {
-					ret.underlying().add(v);
-				}
+			List<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false)
+					.collect(Collectors.toList());
+			synchronized (ret.underlying()) {
+				ret.underlying().clear();
+				ret.underlying().addAll(newlist);
 			}
 			ret.dataReceived();
 		});
