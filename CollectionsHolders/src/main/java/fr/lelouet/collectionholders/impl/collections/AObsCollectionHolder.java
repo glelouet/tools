@@ -377,6 +377,14 @@ implements ObsCollectionHolder<U, C, L> {
 		return ret;
 	}
 
+	/**
+	 * filter and applies the values
+	 *
+	 * @param onNewValue
+	 *          handler of the values that are accepted
+	 * @param filterer
+	 *          the function to follow the elements
+	 */
 	protected void filterWhen(Consumer<Stream<U>> onNewValue, Function<? super U, ObsBoolHolder> filterer) {
 		Map<U, ObsBoolHolder> filters = new LinkedHashMap<>();
 		Map<U, Boolean> elementsPredicate = new LinkedHashMap<>();

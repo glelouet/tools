@@ -8,7 +8,7 @@ package fr.lelouet.collectionholders.impl;
 public class NotNullObsObjHolderImpl<U> extends ObsObjHolderSimple<U> {
 
 	public NotNullObsObjHolderImpl() {
-		follow(newValue -> {
+		peek(newValue -> {
 			if (newValue == null) {
 				throw new NullPointerException("in observable " + this + " set value to " + newValue);
 			}

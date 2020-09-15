@@ -38,35 +38,35 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	@Override
 	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
-		follow(v -> ret.set(mapper.apply(v)));
+		follow(v -> ret.set(mapper.apply(v)), ret);
 		return ret;
 	}
 
 	@Override
 	public ObsBoolHolder test(Predicate<U> test) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		follow((newValue) -> ret.set(test.test(newValue)));
+		follow((newValue) -> ret.set(test.test(newValue)), ret);
 		return ret;
 	}
 
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow(newValue -> ret.set(mapper.applyAsInt(newValue)));
+		follow(newValue -> ret.set(mapper.applyAsInt(newValue)), ret);
 		return ret;
 	}
 
 	@Override
 	public ObsLongHolder mapLong(ToLongFunction<U> mapper) {
 		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow((newValue) -> ret.set(mapper.applyAsLong(newValue)));
+		follow((newValue) -> ret.set(mapper.applyAsLong(newValue)), ret);
 		return ret;
 	}
 
 	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)));
+		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)), ret);
 		return ret;
 	}
 
@@ -81,7 +81,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 				ret.underlying().addAll(newlist);
 			}
 			ret.dataReceived();
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -130,14 +130,14 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 				ah[0] = newValue;
 				update.run();
 			}
-		});
+		}, ret);
 		b.follow((newValue) -> {
 			synchronized (received) {
 				received.add(b);
 				bh[0] = newValue;
 				update.run();
 			}
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -184,7 +184,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 						ret.set(joined);
 					}
 				}
-			});
+			}, ret);
 		}
 		return ret;
 	}
@@ -212,7 +212,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		C ret = creator.get();
 		from.follow((newValue) -> {
 			ret.set(mapper.apply(newValue));
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -226,8 +226,8 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 				last[0].unfollow(cons);
 			}
 			last[0] = unpacker.apply(u);
-			last[0].follow(cons);
-		});
+			last[0].follow(cons, ret);
+		}, ret);
 		return ret;
 	}
 

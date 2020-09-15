@@ -65,7 +65,7 @@ public interface ObsObjHolder<U> {
 	}
 
 	default ObsObjHolder<U> peek(Consumer<U> observer) {
-		follow(observer);
+		follow(observer, this);
 		return this;
 	}
 
