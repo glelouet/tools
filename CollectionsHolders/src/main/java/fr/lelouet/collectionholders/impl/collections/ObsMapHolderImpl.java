@@ -155,6 +155,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	@Override
 	public void follow(Consumer<Map<K, V>> callback, Object holder) {
+		if (holder == null) {
+			holder=getClass();
+		}
 		HoldingRef<Consumer<Map<K, V>>> ref = new HoldingRef<>(callback, holder);
 		synchronized (underlying) {
 			if (receiveListeners == null) {

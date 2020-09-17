@@ -190,7 +190,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	}
 
 	/**
-	 * map an obs object with a specific constructor.
+	 * map into an obs object with a specific constructor.
 	 *
 	 * @param <U>
 	 *          The type of the object hold

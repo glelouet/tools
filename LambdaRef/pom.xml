@@ -16,4 +16,11 @@
 	</scm>
 	<name>LambdaRef</name>
 	<description>provide a way to have weakr references on lambda</description>
+	<dependencies>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
 </project>

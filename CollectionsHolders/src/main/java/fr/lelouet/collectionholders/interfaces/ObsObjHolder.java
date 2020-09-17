@@ -49,8 +49,8 @@ public interface ObsObjHolder<U> {
 	 *          the consumer that will receive new values.
 	 * @param holder
 	 *          the holder that ensure the consumer is useful. if omitted or set
-	 *          to null, "this" is used instead. Once the holder is no more weak
-	 *          reachable, the listener will be removed.
+	 *          to null, the class is used instead. Once the holder is no more
+	 *          weak reachable, the listener will be removed.
 	 */
 	public void follow(Consumer<U> cons, Object holder);
 
@@ -61,7 +61,7 @@ public interface ObsObjHolder<U> {
 	 * @param cons
 	 */
 	public default void follow(Consumer<U> cons) {
-		follow(cons, this);
+		follow(cons, getClass());
 	}
 
 	default ObsObjHolder<U> peek(Consumer<U> observer) {

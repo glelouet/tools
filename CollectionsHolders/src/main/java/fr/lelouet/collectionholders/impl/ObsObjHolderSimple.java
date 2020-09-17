@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import fr.lelouet.tools.lambdaref.HoldingRef;
 
@@ -12,6 +15,9 @@ import fr.lelouet.tools.lambdaref.HoldingRef;
  * an implementation that contains the item to return and the list of listeners;
  */
 public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjHolder<U> {
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(ObsObjHolderSimple.class);
 
 	public ObsObjHolderSimple() {
 	}
@@ -47,7 +53,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 	@Override
 	public synchronized void follow(Consumer<U> cons, Object holder) {
 		if (holder == null) {
-			holder = this;
+			holder = getClass();
 		}
 		followers.add(new HoldingRef<>(cons, holder));
 		if (dataReceivedLatch.getCount() == 0) {
@@ -88,6 +94,10 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 				cons.accept(item);
 			}
 		}
+	}
+
+	public int followers() {
+		return followers.size();
 	}
 
 }
