@@ -5,7 +5,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,6 +80,26 @@ public class SimpleGraph<T> {
 		edges.get(v1).add(v2);
 	}
 
+	/**
+	 *
+	 * @param v1
+	 * @param v2
+	 * @return true if v1!=v2 and there is an edge from v1 to v2.
+	 */
+	public boolean isAdjacent(T v1, T v2) {
+		int cmp = comparator.compare(v1, v2);
+		if (cmp == 0) {
+			return false;
+		}
+		// ensure v1 < v2
+		if (cmp > 0) {
+			T tmp = v1;
+			v1 = v2;
+			v2 = tmp;
+		}
+		return edges.getOrDefault(v1, Collections.emptySet()).contains(v2);
+	}
+
 	public Stream<T> vertices() {
 		return edges.keySet().stream().sorted(comparator);
 	}
@@ -101,9 +124,12 @@ public class SimpleGraph<T> {
 	 *
 	 * @param source
 	 *          a vertex of the graph
+	 * @param accepted
+	 *          a predicate on the vertices we are allowed to use. Use null to
+	 *          accept any vertex.
 	 * @return a new set containing all the vertices reached from the source
 	 */
-	public Set<T> connected(T source) {
+	public Set<T> connected(T source, Predicate<T> accepted) {
 		Set<T> done = new HashSet<>();
 		Set<T> frontier = new HashSet<>(Arrays.asList(source));
 		while (!frontier.isEmpty()) {
@@ -112,7 +138,9 @@ public class SimpleGraph<T> {
 			for (T t : frontier) {
 				adjacent(t).forEach(v -> {
 					if (!done.contains(v)) {
-						nextFrontier.add(v);
+						if (accepted == null || accepted.test(v)) {
+							nextFrontier.add(v);
+						}
 					}
 				});
 			}
@@ -125,12 +153,18 @@ public class SimpleGraph<T> {
 	 *
 	 * @param origin
 	 * @param destination
+	 * @param allowed
+	 *          predicate on the vertex we allow to use.
 	 * @return - 1 if no route from one to another.
 	 */
-	public int distance(T origin, T destination) {
+	public int distance(T origin, T destination, Predicate<T> allowed) {
 		if (origin == null || destination == null) {
 			return -1;
 		}
+		if (allowed == null) {
+			allowed = t->true;
+		}
+		Predicate<T> fallowed = allowed;
 		if (origin.equals(destination)) {
 			return 0;
 		}
@@ -146,7 +180,11 @@ public class SimpleGraph<T> {
 					if (v.equals(destination)) {
 						found[0] = true;
 					} else if (!done.contains(v)) {
-						nextFrontier.add(v);
+						if (fallowed.test(v)) {
+							nextFrontier.add(v);
+						} else {
+							done.add(v);
+						}
 					}
 				});
 				if (found[0]) {
@@ -159,6 +197,14 @@ public class SimpleGraph<T> {
 		return -1;
 	}
 
+	/**
+	 * Completion of a graph. For each vertex couple (u,v) there is a path from u
+	 * to v. Holds the distances of each couple in the {@link #distances} matrix.
+	 *
+	 * @author
+	 *
+	 * @param <T>
+	 */
 	public static class Completion<T> {
 		public int[][] distances;
 		public Indexer<T> index;
@@ -169,16 +215,16 @@ public class SimpleGraph<T> {
 	 *
 	 * @param source
 	 *          a vertex in this
-	 * @param predicate
+	 * @param retained
 	 *          predicate to accept vertices besides the source. if null, all
 	 *          vertices are accepted.
 	 * @return a new Completion that holds the vertices that are reachable from
 	 *         the source, and the distances between them.
 	 */
-	public Completion<T> complete(T source, Predicate<T> predicate) {
-		Predicate<T> withSource = predicate == null ? v -> true : predicate.or(v -> source.equals(v));
+	public Completion<T> complete(T source, Predicate<T> pass, Predicate<T> retained) {
+		Predicate<T> withSource = retained == null ? v -> true : retained.or(v -> source.equals(v));
 		Completion<T> ret = new Completion<>();
-		Set<T> allowed = connected(source).stream().filter(withSource)
+		Set<T> allowed = connected(source, pass).stream().filter(withSource)
 				.collect(Collectors.toSet());
 		Indexer<T> index = ret.index = new Indexer<>(comparator, allowed);
 		int[][] distances = ret.distances = new int[index.size()][];
@@ -187,13 +233,138 @@ public class SimpleGraph<T> {
 			distances[i][i] = 0;
 			T origin = index.item(i);
 			for (int j = 0; j < i; j++) {
-				distances[i][j] = distances[j][i] = distance(origin, index.item(j));
+				distances[i][j] = distances[j][i] = distance(origin, index.item(j), null);
 			}
 		}
 		return ret;
 	}
 
+	/**
+	 * find the groups of important vertices that have only one way out, so in an
+	 * optimal graph they follow each other. use the adjacent matrix for fast BFS.
+	 *
+	 * @param <T>
+	 * @param graph
+	 * @param important
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Set<Set<T>> deadEnds() {
+		Set<Set<T>> ret = new HashSet<>();
+		List<T> allVertices = vertices().collect(Collectors.toList());
+		AdjMatrix<T> matrix = toMatrix();
+		// for each vertex v, we create the connex subsets of the adjacent vertices,
+		// without this vertex.
+		vertices().forEach(v -> {
+			int vi= matrix.index.position(v);
+			IntPredicate notv = i -> i != vi;
+			Object[] adj = adjacent(v).sorted(Comparator.comparing(elem -> adjacent(elem).count())).toArray();
+			if (adj.length < 2) {
+				return;
+			}
+			// set of connected subGraph when removing v
+			Set<Set<T>> connectedSets = new HashSet<>();
+			Set<Set<T>> toAdd = new HashSet<>();
+			for (Object element : adj) {
+				T v1 = (T) element;
+				if (connectedSets.stream().filter(set -> set.contains(v1)).findAny().isEmpty()) {
+					boolean[] connected = matrix.connected(matrix.index.position(v1), notv);
+					Set<T> connectedV1 = new HashSet<>();
+					for (int i = 0; i < matrix.index.size(); i++) {
+						if (connected[i]) {
+							connectedV1.add(matrix.index.item(i));
+						}
+					}
+					connectedSets.add(connectedV1);
+					// if the connected subgraph is too big, don't add it in the deadends.
+					if (connectedV1.size() < allVertices.size() / 2) {
+						toAdd.add(connectedV1);
+					}
+				}
+			}
+			if (!toAdd.isEmpty()) {
+				// System.err.println(toAdd.size() + " deadends when removing " + v + "
+				// : " + toAdd);
+				ret.addAll(toAdd);
+			}
+		});
+		return ret;
+	}
+
+	public static class AdjMatrix<T> {
+		public final boolean[][] matrix;
+		public final Indexer<T> index;
+
+		protected AdjMatrix(Comparator<T> comparator, Stream<T> vertices, BiPredicate<T, T> isAdjacent) {
+			index = new Indexer<>(comparator, vertices.collect(Collectors.toList()));
+			matrix = new boolean[index.size()][index.size()];
+			for (int ti = 0; ti < index.size(); ti++) {
+				T t = index.item(ti);
+				for (int ui = 0; ui < ti; ui++) {
+					T u = index.item(ui);
+					if (isAdjacent.test(u, t)) {
+						matrix[ti][ui] = matrix[ui][ti] = true;
+					}
+				}
+			}
+		}
+
+		/**
+		 * BFS with the indices.
+		 *
+		 * @param source
+		 *          index of the source.
+		 * @param accepted
+		 *          predicate if a vertex indice is accepted.
+		 * @return a new boolean[i], with value true if the vertex of index i is
+		 *         reachable from source.
+		 */
+		public boolean[] connected(int source, IntPredicate accepted) {
+			boolean[] done = new boolean[index.size()];
+			int[] frontier = new int[index.size()];
+			int frontierSize = 1;
+			frontier[0] = source;
+			int[] nextFrontier = new int[index.size()];
+			while (frontierSize > 0) {
+				int nextFrontierSize = 0;
+				for (int i = 0; i < frontierSize; i++) {
+					done[frontier[i]] = true;
+				}
+				for (int fi = 0; fi < frontierSize; fi++) {
+					int i = frontier[fi];
+					for (int j = 0; j < index.size(); j++) {
+						if (i != j && matrix[i][j]) {
+							if (!done[j]) {
+								if (accepted == null || accepted.test(j)) {
+									nextFrontier[nextFrontierSize] = j;
+									nextFrontierSize++;
+								}
+							}
+						}
+					}
+				}
+				int[] tmp = frontier;
+				frontier = nextFrontier;
+				nextFrontier = tmp;
+				frontierSize = nextFrontierSize;
+			}
+			return done;
+		}
+
+	}
+
+	/**
+	 *
+	 * @return a new matrix that contains the boolean representation of adjacent
+	 *         between vertices.
+	 */
+	public AdjMatrix<T> toMatrix() {
+		return new AdjMatrix<>(comparator, vertices(), this::isAdjacent);
+	}
+
+	//
 	// useful graphs
+	//
 
 	/**
 	 *

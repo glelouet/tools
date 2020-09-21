@@ -49,16 +49,18 @@ public interface IFondHamilton {
 	 *          the graph to find a cycle in
 	 * @param source
 	 *          a vertex of the graph to start the exploration from.
-	 * @param allowed
-	 *          the predicate on vertices besides the source to be allowed in the
-	 *          graph. all vertices are allowed if null.
+	 * @param important
+	 *          the predicate on vertices besides the source to be present in the
+	 *          graph. all vertices are allowed if null. If a vertex is not
+	 *          important, it's not in the returned route
 	 * @return a new {@link LinkedHashMap} of the vertices, to the distance from
 	 *         the previous one in the cycle. The map is linked so iterating it
 	 *         will be done in the order of the vertices in the cycle. the source
 	 *         is always at the last position.
 	 */
-	public default <T> ResultMap<T> solve(T source, SimpleGraph<T> graph, Predicate<T> allowed) {
-		Completion<T> complete = graph.complete(source, allowed);
+	public default <T> ResultMap<T> solve(T source, SimpleGraph<T> graph, Predicate<T> important) {
+		System.err.println("deadends=" + graph.deadEnds());
+		Completion<T> complete = graph.complete(source, null, important);
 		Indexer<T> idx = complete.index;
 		int[][] distances = complete.distances;
 		int sourceIdx = idx.position(source);
