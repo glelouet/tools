@@ -57,7 +57,7 @@ public class SimpleGraphTest {
 		test.addEdge("a", "b");
 		test.addEdge("b", "c");
 		test.addVertex("d");
-		Assert.assertEquals(test.connected("a", null), new HashSet<>(Arrays.asList("a", "b", "c")));
+		Assert.assertEquals(test.toMatrix().connected("a", null), new HashSet<>(Arrays.asList("a", "b", "c")));
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class SimpleGraphTest {
 		test.addEdge("a", "b");
 		test.addEdge("b", "c");
 		test.addEdge("d", "e");
-		Assert.assertEquals(test.connected("a", null), new HashSet<>(Arrays.asList("a", "b", "c")));
+		Assert.assertEquals(test.toMatrix().connected("a", null), new HashSet<>(Arrays.asList("a", "b", "c")));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class SimpleGraphTest {
 	@Test
 	public void testConnected3() {
 		SimpleGraph<String> test = SimpleGraph.corridor(5);
-		Assert.assertEquals(test.connected("a", v -> !v.equals("c")), new HashSet<>(Arrays.asList("a", "b")));
+		Assert.assertEquals(test.toMatrix().connected("a", v -> !v.equals("c")), new HashSet<>(Arrays.asList("a", "b")));
 
 	}
 

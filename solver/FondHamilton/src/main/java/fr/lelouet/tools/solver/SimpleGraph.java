@@ -44,7 +44,7 @@ public class SimpleGraph<T> {
 	private final HashMap<T, Set<T>> edges = new HashMap<>();
 
 	public SimpleGraph(Comparator<T> comparator2) {
-		this.comparator = comparator2;
+		comparator = comparator2;
 	}
 
 	public static <U extends Comparable<U>> SimpleGraph<U> natural() {
@@ -119,37 +119,6 @@ public class SimpleGraph<T> {
 	}
 
 	/**
-	 * make a breadth-first traversal from a source, collecting all the vertices
-	 * met.
-	 *
-	 * @param source
-	 *          a vertex of the graph
-	 * @param accepted
-	 *          a predicate on the vertices we are allowed to use. Use null to
-	 *          accept any vertex.
-	 * @return a new set containing all the vertices reached from the source
-	 */
-	public Set<T> connected(T source, Predicate<T> accepted) {
-		Set<T> done = new HashSet<>();
-		Set<T> frontier = new HashSet<>(Arrays.asList(source));
-		while (!frontier.isEmpty()) {
-			Set<T> nextFrontier = new HashSet<>();
-			done.addAll(frontier);
-			for (T t : frontier) {
-				adjacent(t).forEach(v -> {
-					if (!done.contains(v)) {
-						if (accepted == null || accepted.test(v)) {
-							nextFrontier.add(v);
-						}
-					}
-				});
-			}
-			frontier = nextFrontier;
-		}
-		return done;
-	}
-
-	/**
 	 *
 	 * @param origin
 	 * @param destination
@@ -162,7 +131,7 @@ public class SimpleGraph<T> {
 			return -1;
 		}
 		if (allowed == null) {
-			allowed = t->true;
+			allowed = t -> true;
 		}
 		Predicate<T> fallowed = allowed;
 		if (origin.equals(destination)) {
@@ -224,8 +193,8 @@ public class SimpleGraph<T> {
 	public Completion<T> complete(T source, Predicate<T> pass, Predicate<T> retained) {
 		Predicate<T> withSource = retained == null ? v -> true : retained.or(v -> source.equals(v));
 		Completion<T> ret = new Completion<>();
-		Set<T> allowed = connected(source, pass).stream().filter(withSource)
-				.collect(Collectors.toSet());
+		AdjMatrix<T> matrix = toMatrix();
+		Set<T> allowed = matrix.connected(source, pass).stream().filter(withSource).collect(Collectors.toSet());
 		Indexer<T> index = ret.index = new Indexer<>(comparator, allowed);
 		int[][] distances = ret.distances = new int[index.size()][];
 		for (int i = 0; i < index.size(); i++) {
@@ -256,7 +225,7 @@ public class SimpleGraph<T> {
 		// for each vertex v, we create the connex subsets of the adjacent vertices,
 		// without this vertex.
 		vertices().forEach(v -> {
-			int vi= matrix.index.position(v);
+			int vi = matrix.index.position(v);
 			IntPredicate notv = i -> i != vi;
 			Object[] adj = adjacent(v).sorted(Comparator.comparing(elem -> adjacent(elem).count())).toArray();
 			if (adj.length < 2) {
@@ -351,6 +320,16 @@ public class SimpleGraph<T> {
 			return done;
 		}
 
+		public Set<T> connected(T source, Predicate<T> accepted) {
+			boolean[] arr = connected(index.position(source), it -> accepted.test(index.item(it)));
+			Set<T> ret = new HashSet<>();
+			for (int i = 0; i < index.size(); i++) {
+				if (arr[i]) {
+					ret.add(index.item(i));
+				}
+			}
+			return ret;
+		}
 	}
 
 	/**
@@ -459,15 +438,15 @@ public class SimpleGraph<T> {
 	 */
 	public static SimpleGraph<String> castle(int towers) {
 		SimpleGraph<String> ret = SimpleGraph.natural();
-		int length=(int) Math.ceil(Math.log(towers*				3) / Math.log(26));
-		String first=null;
-		String last=null;
-		for(int i=0;i<towers;i++) {
-			String base=name(i*3, length);
-			if(last!=null) {
+		int length = (int) Math.ceil(Math.log(towers * 3) / Math.log(26));
+		String first = null;
+		String last = null;
+		for (int i = 0; i < towers; i++) {
+			String base = name(i * 3, length);
+			if (last != null) {
 				ret.addEdge(last, base);
 			} else {
-				first=base;
+				first = base;
 			}
 			String angle1 = name(i * 3 + 1, length);
 			String angle2 = name(i * 3 + 2, length);
