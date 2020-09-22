@@ -321,7 +321,7 @@ public class SimpleGraph<T> {
 		}
 
 		public Set<T> connected(T source, Predicate<T> accepted) {
-			boolean[] arr = connected(index.position(source), it -> accepted.test(index.item(it)));
+			boolean[] arr = connected(index.position(source), it -> accepted == null || accepted.test(index.item(it)));
 			Set<T> ret = new HashSet<>();
 			for (int i = 0; i < index.size(); i++) {
 				if (arr[i]) {

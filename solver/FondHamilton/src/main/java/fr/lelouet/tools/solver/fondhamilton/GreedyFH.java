@@ -2,6 +2,7 @@ package fr.lelouet.tools.solver.fondhamilton;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,30 +10,35 @@ import java.util.Set;
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
-public class GreedyFondHamilton implements IFondHamilton {
+public class GreedyFH implements IFondHamilton {
 
-	public static final GreedyFondHamilton INSTANCE = new GreedyFondHamilton();
+	public static final GreedyFH INSTANCE = new GreedyFH();
 
-	private static class Edge {
+	public static class Edge {
 		public int i, j;
 		public int dist;
 	}
 
-	@Override
-	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
-		long timeStart = System.currentTimeMillis();
-		List<Edge> edges = new ArrayList<>();
+	public <T> List<? extends Edge> makeEdgesList(Indexer<T> idx, int[][] distances, Set<Set<Integer>> deadends) {
+		List<Edge> ret = new ArrayList<>();
 		for (int i = 0; i < idx.size(); i++) {
 			for (int j = 0; j < i; j++) {
 				Edge edge = new Edge();
 				edge.i = i;
 				edge.j = j;
 				edge.dist = distances[i][j];
-				edges.add(edge);
+				ret.add(edge);
 			}
 		}
-		Collections.sort(edges, (e1, e2) -> e1.dist - e2.dist);
-		// System.err.println("dist 0 =" + edges.get(0).dist);
+		Comparator<Edge> comp = Comparator.comparing(edge -> edge.dist);
+		Collections.sort(ret,comp);
+		return ret;
+	}
+
+	@Override
+	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx, Set<Set<Integer>> deadends) {
+		long timeStart = System.currentTimeMillis();
+		List<? extends Edge> edges = makeEdgesList(idx, distances, deadends);
 		Set<Integer> reached = new HashSet<>();
 		Set<Integer> inside = new HashSet<>();
 		Edge edge = edges.get(0);

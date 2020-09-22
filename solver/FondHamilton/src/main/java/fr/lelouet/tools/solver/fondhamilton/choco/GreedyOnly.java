@@ -5,9 +5,9 @@ import org.chocosolver.solver.search.strategy.strategy.AbstractStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.lelouet.tools.solver.fondhamilton.ChocoFondHamilton;
+import fr.lelouet.tools.solver.fondhamilton.ChocoFH;
 
-public class GreedyOnly extends ChocoFondHamilton {
+public class GreedyOnly extends ChocoFH {
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(GreedyOnly.class);

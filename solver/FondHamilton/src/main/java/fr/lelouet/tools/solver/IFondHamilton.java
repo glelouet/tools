@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import fr.lelouet.tools.solver.SimpleGraph.Completion;
 
@@ -59,12 +61,19 @@ public interface IFondHamilton {
 	 *         is always at the last position.
 	 */
 	public default <T> ResultMap<T> solve(T source, SimpleGraph<T> graph, Predicate<T> important) {
-		System.err.println("deadends=" + graph.deadEnds());
+
 		Completion<T> complete = graph.complete(source, null, important);
 		Indexer<T> idx = complete.index;
 		int[][] distances = complete.distances;
 		int sourceIdx = idx.position(source);
-		ResultList<T> list = solve(complete.index, complete.distances, sourceIdx);
+
+		Set<Set<T>> deadendsBase = graph.deadEnds();
+		Set<Set<Integer>> deadendsComplete = deadendsBase.stream()
+				.map(set -> set.stream().filter(important).map(idx::position).collect(Collectors.toSet()))
+				.filter(set -> set.size() > 0)
+				.collect(Collectors.toSet());
+
+		ResultList<T> list = solve(complete.index, complete.distances, sourceIdx, deadendsComplete);
 		ResultMap<T> ret = new ResultMap<>(list);
 		int lastIdx = idx.position(source);
 		for (T vertex : list) {
@@ -104,7 +113,7 @@ public interface IFondHamilton {
 	 * @param distances
 	 * @return
 	 */
-	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex);
+	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex, Set<Set<Integer>> deadends);
 
 
 }

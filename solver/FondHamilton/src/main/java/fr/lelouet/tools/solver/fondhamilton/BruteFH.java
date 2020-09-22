@@ -1,5 +1,7 @@
 package fr.lelouet.tools.solver.fondhamilton;
 
+import java.util.Set;
+
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
@@ -10,11 +12,11 @@ import fr.lelouet.tools.solver.Indexer;
  * iterate over the N-1 other. so that makes (N-1)! possible enumerations.
  *
  */
-public class BruteFondHamilton implements IFondHamilton {
+public class BruteFH implements IFondHamilton {
 
 
 	@Override
-	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex) {
+	public <T> ResultList<T> solve(Indexer<T> index, int[][] distances, int sourceIndex, Set<Set<Integer>> deadends) {
 		// TODO Auto-generated method stub
 		return null;
 	}

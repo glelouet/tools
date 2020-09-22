@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
-public class GeneticFondHamilton implements IFondHamilton {
+public class GeneticFH implements IFondHamilton {
 
-	private static final Logger logger = LoggerFactory.getLogger(GeneticFondHamilton.class);
+	private static final Logger logger = LoggerFactory.getLogger(GeneticFH.class);
 
 	public long seed = 1;
 
@@ -73,9 +73,10 @@ public class GeneticFondHamilton implements IFondHamilton {
 		return ret;
 	}
 
-	public static <T> Solution fromGreedy(Indexer<T> idx, int[][] distances, int sourceIdx) {
+	public static <T> Solution fromGreedy(Indexer<T> idx, int[][] distances, int sourceIdx, Set<Set<Integer>> deadends) {
 		Solution ret = new Solution();
-		ret.ordering = GreedyFondHamilton.INSTANCE.solve(idx, distances, sourceIdx).stream().skip(1).mapToInt(idx::position)
+		ret.ordering = GreedyFH.INSTANCE.solve(idx, distances, sourceIdx, deadends).stream().skip(1)
+				.mapToInt(idx::position)
 				.toArray();
 		ret.evaluate(sourceIdx, distances);
 		return ret;
@@ -115,13 +116,13 @@ public class GeneticFondHamilton implements IFondHamilton {
 	}
 
 	@Override
-	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx, Set<Set<Integer>> deadends) {
 		ResultList<T> ret = new ResultList<>();
 		long start = System.currentTimeMillis();
 		Random rd = new Random(seed);
 		List<Solution> pool = new ArrayList<>();
 		pool.add(init(rd, sourceIdx, distances));
-		pool.add(fromGreedy(idx, distances, sourceIdx));
+		pool.add(fromGreedy(idx, distances, sourceIdx, deadends));
 		int poolSize = idx.size();
 		Set<Solution> toAdd = new HashSet<>();
 		Solution bestFound = null;

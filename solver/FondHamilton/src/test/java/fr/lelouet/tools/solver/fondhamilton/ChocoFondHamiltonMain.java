@@ -7,7 +7,7 @@ import fr.lelouet.tools.solver.fondhamilton.choco.GreedyOnly;
 public class ChocoFondHamiltonMain {
 
 	public static void main(String[] args) {
-		IFondHamilton[] solvers = { GreedyOnly.INSTANCE, ChocoFondHamilton.INSTANCE };
+		IFondHamilton[] solvers = { GreedyOnly.INSTANCE, ChocoFH.INSTANCE };
 		for (int i = 2; i < 5; i++) {
 			System.out.println("" + i + ":");
 			SimpleGraph<String> graph = SimpleGraph.castle(i);

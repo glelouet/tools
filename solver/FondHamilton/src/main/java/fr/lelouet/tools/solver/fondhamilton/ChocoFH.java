@@ -24,11 +24,11 @@ import org.slf4j.LoggerFactory;
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
-public class ChocoFondHamilton implements IFondHamilton {
+public class ChocoFH implements IFondHamilton {
 
-	private static final Logger logger = LoggerFactory.getLogger(ChocoFondHamilton.class);
+	private static final Logger logger = LoggerFactory.getLogger(ChocoFH.class);
 
-	public static final ChocoFondHamilton INSTANCE = new ChocoFondHamilton();
+	public static final ChocoFH INSTANCE = new ChocoFH();
 
 	public static class Modeled<T> {
 		public Model choco = new Model();
@@ -89,7 +89,7 @@ public class ChocoFondHamilton implements IFondHamilton {
 	}
 
 	@Override
-	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx) {
+	public <T> ResultList<T> solve(Indexer<T> idx, int[][] distances, int sourceIdx, Set<Set<Integer>> deadends) {
 		long timeStart = System.currentTimeMillis();
 		Modeled<T> model = new Modeled<>();
 		model.idx = idx;
