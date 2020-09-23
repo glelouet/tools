@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.lelouet.tools.solver.Indexer;
 
 /**
@@ -18,6 +21,9 @@ import fr.lelouet.tools.solver.Indexer;
  *
  */
 public class GreedyDeadEndFH extends GreedyFH {
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(GreedyDeadEndFH.class);
 
 	public static final GreedyDeadEndFH INSTANCE = new GreedyDeadEndFH();
 

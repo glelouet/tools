@@ -7,10 +7,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.lelouet.tools.solver.IFondHamilton;
 import fr.lelouet.tools.solver.Indexer;
 
 public class GreedyFH implements IFondHamilton {
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(GreedyFH.class);
 
 	public static final GreedyFH INSTANCE = new GreedyFH();
 

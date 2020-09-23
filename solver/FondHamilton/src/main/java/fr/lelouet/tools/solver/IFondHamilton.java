@@ -61,8 +61,7 @@ public interface IFondHamilton {
 	 *         is always at the last position.
 	 */
 	public default <T> ResultMap<T> solve(T source, SimpleGraph<T> graph, Predicate<T> important) {
-
-		Completion<T> complete = graph.complete(source, null, important);
+		Completion<T> complete = graph.complete(source, important);
 		Indexer<T> idx = complete.index;
 		int[][] distances = complete.distances;
 		int sourceIdx = idx.position(source);

@@ -1,6 +1,5 @@
 package fr.lelouet.tools.solver;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,6 +11,9 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * represents a Simple graph :
@@ -38,6 +40,9 @@ public class SimpleGraph<T> {
 
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(SimpleGraph.class);
 
 	private final Comparator<T> comparator;
 
@@ -119,54 +124,6 @@ public class SimpleGraph<T> {
 	}
 
 	/**
-	 *
-	 * @param origin
-	 * @param destination
-	 * @param allowed
-	 *          predicate on the vertex we allow to use.
-	 * @return - 1 if no route from one to another.
-	 */
-	public int distance(T origin, T destination, Predicate<T> allowed) {
-		if (origin == null || destination == null) {
-			return -1;
-		}
-		if (allowed == null) {
-			allowed = t -> true;
-		}
-		Predicate<T> fallowed = allowed;
-		if (origin.equals(destination)) {
-			return 0;
-		}
-		int distance = 1;
-		Set<T> done = new HashSet<>();
-		Set<T> frontier = new HashSet<>(Arrays.asList(origin));
-		boolean[] found = new boolean[] { false };
-		while (!frontier.isEmpty()) {
-			Set<T> nextFrontier = new HashSet<>();
-			done.addAll(frontier);
-			for (T t : frontier) {
-				adjacent(t).forEach(v -> {
-					if (v.equals(destination)) {
-						found[0] = true;
-					} else if (!done.contains(v)) {
-						if (fallowed.test(v)) {
-							nextFrontier.add(v);
-						} else {
-							done.add(v);
-						}
-					}
-				});
-				if (found[0]) {
-					return distance;
-				}
-			}
-			frontier = nextFrontier;
-			distance++;
-		}
-		return -1;
-	}
-
-	/**
 	 * Completion of a graph. For each vertex couple (u,v) there is a path from u
 	 * to v. Holds the distances of each couple in the {@link #distances} matrix.
 	 *
@@ -190,22 +147,8 @@ public class SimpleGraph<T> {
 	 * @return a new Completion that holds the vertices that are reachable from
 	 *         the source, and the distances between them.
 	 */
-	public Completion<T> complete(T source, Predicate<T> pass, Predicate<T> retained) {
-		Predicate<T> withSource = retained == null ? v -> true : retained.or(v -> source.equals(v));
-		Completion<T> ret = new Completion<>();
-		AdjMatrix<T> matrix = toMatrix();
-		Set<T> allowed = matrix.connected(source, pass).stream().filter(withSource).collect(Collectors.toSet());
-		Indexer<T> index = ret.index = new Indexer<>(comparator, allowed);
-		int[][] distances = ret.distances = new int[index.size()][];
-		for (int i = 0; i < index.size(); i++) {
-			distances[i] = new int[index.size()];
-			distances[i][i] = 0;
-			T origin = index.item(i);
-			for (int j = 0; j < i; j++) {
-				distances[i][j] = distances[j][i] = distance(origin, index.item(j), null);
-			}
-		}
-		return ret;
+	public Completion<T> complete(T source, Predicate<T> retained) {
+		return toMatrix().complete(source, retained);
 	}
 
 	/**
@@ -263,10 +206,12 @@ public class SimpleGraph<T> {
 	public static class AdjMatrix<T> {
 		public final boolean[][] matrix;
 		public final Indexer<T> index;
+		public final Comparator<T> comparator;
 
 		protected AdjMatrix(Comparator<T> comparator, Stream<T> vertices, BiPredicate<T, T> isAdjacent) {
 			index = new Indexer<>(comparator, vertices.collect(Collectors.toList()));
 			matrix = new boolean[index.size()][index.size()];
+			this.comparator = comparator;
 			for (int ti = 0; ti < index.size(); ti++) {
 				T t = index.item(ti);
 				for (int ui = 0; ui < ti; ui++) {
@@ -326,6 +271,105 @@ public class SimpleGraph<T> {
 			for (int i = 0; i < index.size(); i++) {
 				if (arr[i]) {
 					ret.add(index.item(i));
+				}
+			}
+			return ret;
+		}
+
+		/**
+		 *
+		 * @param origin
+		 * @param destination
+		 * @return - 1 if no route from one to another.
+		 */
+		public int distance(int origin, int destination) {
+			if (origin == destination) {
+				return 0;
+			}
+			boolean[] done = new boolean[index.size()];
+			int[] frontier = new int[index.size()];
+			int frontierSize = 1;
+			frontier[0] = origin;
+			int[] nextFrontier = new int[index.size()];
+			for (int distance = 1; frontierSize > 0; distance++) {
+				for (int fi = 0; fi < frontierSize; fi++) {
+					done[frontier[fi]] = true;
+				}
+				int nextFrontierSize = 0;
+				for (int fi = 0; fi < frontierSize; fi++) {
+					int visited = frontier[fi];
+					for (int possiblei = 0; possiblei < matrix.length; possiblei++) {
+						if (possiblei != visited && !done[possiblei] && matrix[visited][possiblei]) {
+							if (possiblei == destination) {
+								return distance;
+							}
+							nextFrontier[nextFrontierSize] = possiblei;
+							nextFrontierSize++;
+						}
+					}
+				}
+				int[] tmp = frontier;
+				frontier = nextFrontier;
+				nextFrontier = tmp;
+				frontierSize = nextFrontierSize;
+			}
+			return -1;
+		}
+
+		public int distance(T origin, T destination) {
+			return distance(index.position(origin), index.position(destination));
+		}
+
+		public int[][] distances() {
+			int[][] ret = new int[matrix.length][];
+			for (int i = 0; i < ret.length; i++) {
+				ret[i] = new int[matrix.length];
+				for (int j = 0; j < matrix.length; j++) {
+					ret[i][j] = matrix[i][j] ? 1 : -1;
+				}
+			}
+			boolean change = true;
+			while (change) {
+				change = false;
+				for (int i = 0; i < ret.length; i++) {
+					for (int j = 0; j < i; j++) {
+						int dist = ret[i][j];
+						for (int intermediate = 0; intermediate < ret.length; intermediate++) {
+							if (intermediate != i && intermediate != j && ret[i][intermediate] != -1 && ret[j][intermediate] != -1) {
+								int interDist = ret[i][intermediate] + ret[j][intermediate];
+								if (dist == -1 || dist > interDist) {
+									dist=interDist;
+								}
+							}
+						}
+						if (ret[i][j] != dist) {
+							ret[i][j] = ret[j][i] = dist;
+							change = true;
+						}
+					}
+				}
+			}
+			return ret;
+		}
+
+		public Completion<T> complete(T source, Predicate<T> retained) {
+			Completion<T> ret = new Completion<>();
+			Stream<T> stream = index.stream();
+			if (retained != null) {
+				stream = stream.filter(retained);
+			}
+			ret.index = new Indexer<>(comparator, stream.collect(Collectors.toList()));
+			int[][] distances = distances();
+			if (ret.index.size() == index.size()) {
+				ret.distances = distances;
+			} else {
+				ret.distances = new int[ret.index.size()][ret.index.size()];
+				for (int i = 1; i < ret.index.size(); i++) {
+					int oldi = index.position(ret.index.item(i));
+					for (int j = 0; j < i; j++) {
+						int oldj = index.position(ret.index.item(j));
+						ret.distances[i][j] = ret.distances[j][i] = distances[oldi][oldj];
+					}
 				}
 			}
 			return ret;
