@@ -65,6 +65,9 @@ public interface IFondHamilton {
 		Indexer<T> idx = complete.index;
 		int[][] distances = complete.distances;
 		int sourceIdx = idx.position(source);
+		if (sourceIdx == -1) {
+			throw new UnsupportedOperationException("no index for " + source);
+		}
 
 		Set<Set<T>> deadendsBase = graph.deadEnds();
 		Set<Set<Integer>> deadendsComplete = deadendsBase.stream()

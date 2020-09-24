@@ -358,7 +358,8 @@ public class SimpleGraph<T> {
 			if (retained != null) {
 				stream = stream.filter(retained);
 			}
-			ret.index = new Indexer<>(comparator, stream.collect(Collectors.toList()));
+			stream = Stream.concat(stream, Stream.of(source));
+			ret.index = new Indexer<>(comparator, stream.collect(Collectors.toSet()));
 			int[][] distances = distances();
 			if (ret.index.size() == index.size()) {
 				ret.distances = distances;

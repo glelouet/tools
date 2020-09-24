@@ -75,7 +75,7 @@ public class GeneticFH implements IFondHamilton {
 
 	public static <T> Solution fromGreedy(Indexer<T> idx, int[][] distances, int sourceIdx, Set<Set<Integer>> deadends) {
 		Solution ret = new Solution();
-		ret.ordering = GreedyFH.INSTANCE.solve(idx, distances, sourceIdx, deadends).stream().skip(1)
+		ret.ordering = GreedyDeadEndFH.INSTANCE.solve(idx, distances, sourceIdx, deadends).stream().skip(1)
 				.mapToInt(idx::position)
 				.toArray();
 		ret.evaluate(sourceIdx, distances);
@@ -127,7 +127,7 @@ public class GeneticFH implements IFondHamilton {
 		Set<Solution> toAdd = new HashSet<>();
 		Solution bestFound = null;
 		int generationsWithoutImprovement = 0;
-		int maxGenWithoutImprovement = 10 + idx.size() / 2;
+		int maxGenWithoutImprovement = 1 + (int) Math.sqrt(idx.size());
 		for (int generation = 0; generationsWithoutImprovement <= maxGenWithoutImprovement; generation++) {
 			toAdd.clear();
 			for (int j = 0; j < poolSize; j++) {
