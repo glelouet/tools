@@ -353,14 +353,15 @@ public class SimpleGraph<T> {
 		}
 
 		public Completion<T> complete(T source, Predicate<T> retained) {
-			Completion<T> ret = new Completion<>();
-			Stream<T> stream = index.stream();
+			int sourcei = index.position(source);
+			int[][] distances = distances();
+			Stream<T> stream = index.stream().filter(t -> distances[index.position(t)][sourcei] > -1);
 			if (retained != null) {
 				stream = stream.filter(retained);
 			}
 			stream = Stream.concat(stream, Stream.of(source));
+			Completion<T> ret = new Completion<>();
 			ret.index = new Indexer<>(comparator, stream.collect(Collectors.toSet()));
-			int[][] distances = distances();
 			if (ret.index.size() == index.size()) {
 				ret.distances = distances;
 			} else {
