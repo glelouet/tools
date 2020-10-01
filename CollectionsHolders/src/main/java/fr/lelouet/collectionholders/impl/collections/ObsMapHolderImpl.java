@@ -38,7 +38,9 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import fr.lelouet.tools.lambdaref.HoldingRef;
+import fr.lelouet.tools.lambdaref.withstore.references.IRef;
+import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
+import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
 import fr.lelouet.tools.synchronization.LockWatchDog;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -109,7 +111,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 */
 	private CountDownLatch dataReceivedLatch = new CountDownLatch(1);
 
-	private ArrayList<HoldingRef<Consumer<Map<K, V>>>> receiveListeners;
+	private ArrayList<IRef<Consumer<Map<K, V>>>> receiveListeners;
 
 	@Override
 	public void waitData() {
@@ -153,12 +155,18 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return underlying;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void follow(Consumer<Map<K, V>> callback, Object holder) {
-		if (holder == null) {
-			holder=getClass();
+	public void follow(Consumer<Map<K, V>> callback, Consumer<Object>... holders) {
+		IRef<Consumer<Map<K, V>>> ref = null;
+		if (holders == null || holders.length == 0) {
+			ref = new UsualRef<>(callback);
+		} else {
+			for (Consumer<Object> holder : holders) {
+				holder.accept(callback);
+			}
+			ref = new WeakRef<>(callback);
 		}
-		HoldingRef<Consumer<Map<K, V>>> ref = new HoldingRef<>(callback, holder);
 		synchronized (underlying) {
 			if (receiveListeners == null) {
 				receiveListeners = new ArrayList<>();
@@ -184,7 +192,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		dataReceivedLatch.countDown();
 		if (receiveListeners != null) {
 			Map<K, V> consumed = underlying;
-			for (Iterator<HoldingRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
+			for (Iterator<IRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
 				Consumer<Map<K, V>> ref = it.next().get();
 				if (ref == null) {
 					it.remove();

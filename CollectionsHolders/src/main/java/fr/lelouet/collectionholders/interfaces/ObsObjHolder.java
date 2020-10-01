@@ -52,7 +52,8 @@ public interface ObsObjHolder<U> {
 	 *          to null, the class is used instead. Once the holder is no more
 	 *          weak reachable, the listener will be removed.
 	 */
-	public void follow(Consumer<U> cons, Object holder);
+	@SuppressWarnings("unchecked")
+	public void follow(Consumer<U> cons, Consumer<Object>... holders);
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
@@ -61,11 +62,11 @@ public interface ObsObjHolder<U> {
 	 * @param cons
 	 */
 	public default void follow(Consumer<U> cons) {
-		follow(cons, getClass());
+		follow(cons, (Consumer<Object>[]) null);
 	}
 
 	default ObsObjHolder<U> peek(Consumer<U> observer) {
-		follow(observer, this);
+		follow(observer, (Consumer<Object>[]) null);
 		return this;
 	}
 

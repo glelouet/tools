@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
-import fr.lelouet.tools.lambdaref.HoldingRef;
+import fr.lelouet.tools.lambdaref.withstore.references.IRef;
+import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
+import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
 
 /**
  * an implementation that contains the item to return and the list of listeners;
  */
-public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjHolder<U> {
+public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjHolder<U>, Consumer<Object> {
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ObsObjHolderSimple.class);
@@ -48,14 +50,19 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 		return item;
 	}
 
-	private LinkedList<HoldingRef<Consumer<U>>> followers = new LinkedList<>();
+	private LinkedList<IRef<Consumer<U>>> followers = new LinkedList<>();
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void follow(Consumer<U> cons, Object holder) {
-		if (holder == null) {
-			holder = getClass();
+	public synchronized void follow(Consumer<U> cons, Consumer<Object>... holders) {
+		if (holders == null || holders.length == 0) {
+			followers.add(new UsualRef<>(cons));
+		} else {
+			for (Consumer<Object> holder : holders) {
+				holder.accept(cons);
+			}
+			followers.add(new WeakRef<>(cons));
 		}
-		followers.add(new HoldingRef<>(cons, holder));
 		if (dataReceivedLatch.getCount() == 0) {
 			cons.accept(item);
 		}
@@ -86,7 +93,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 	 * call.
 	 */
 	protected void transmitToListeners() {
-		for (Iterator<HoldingRef<Consumer<U>>> it = followers.iterator(); it.hasNext();) {
+		for (Iterator<IRef<Consumer<U>>> it = followers.iterator(); it.hasNext();) {
 			Consumer<U> cons = it.next().get();
 			if (cons == null) {
 				it.remove();
@@ -98,6 +105,15 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 
 	public int followers() {
 		return followers.size();
+	}
+
+	private final transient LinkedList<Object> stored = new LinkedList<>();
+
+	@Override
+	public void accept(Object t) {
+		synchronized (stored) {
+			stored.add(t);
+		}
 	}
 
 }

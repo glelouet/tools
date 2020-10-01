@@ -18,11 +18,12 @@ public class StringHolder implements WeakListener<String> {
 	}
 
 	@Override
-	public void listen(Consumer<String> listener, RefStore holder) {
-		holder.store(listener);
+	public void listen(Consumer<String> listener, Consumer<Object> holder) {
+		holder.accept(listener);
 		listeners.add(new WeakRef<>(listener));
 	}
 
+	@Override
 	public void listen(Consumer<String> listener) {
 		listeners.add(new UsualRef<>(listener));
 	}

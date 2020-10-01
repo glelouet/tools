@@ -11,14 +11,14 @@ import fr.lelouet.tools.lambdaref.withstore.references.IRef;
 import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
 import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
 
-public class RWHolder<U> implements WeakListener<U>, RefStore {
+public class RWHolder<U> implements WeakListener<U>, Consumer<Object> {
 
 	private U value;
 
 	private transient LinkedList<Object> stored = new LinkedList<>();
 
 	@Override
-	public void store(Object o) {
+	public void accept(Object o) {
 		stored.add(o);
 	}
 
@@ -45,8 +45,8 @@ public class RWHolder<U> implements WeakListener<U>, RefStore {
 	}
 
 	@Override
-	public void listen(Consumer<U> listener, RefStore holder) {
-		holder.store(listener);
+	public void listen(Consumer<U> listener, Consumer<Object> holder) {
+		holder.accept(listener);
 		listeners.add(new WeakRef<>(listener));
 	}
 

@@ -35,6 +35,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
  */
 public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
@@ -42,6 +43,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsBoolHolder test(Predicate<U> test) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
@@ -49,6 +51,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
@@ -56,6 +59,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsLongHolder mapLong(ToLongFunction<U> mapper) {
 		ObsLongHolderImpl ret = new ObsLongHolderImpl();
@@ -63,6 +67,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
@@ -70,6 +75,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>();
@@ -111,7 +117,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 * @return a new variable bound to the application of the joiner on a and b.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AType, Btype, ResType, HolderType extends RWObsObjHolder<ResType>> HolderType join(
+	public static <AType, Btype, ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>> HolderType join(
 			ObsObjHolder<AType> a, ObsObjHolder<Btype> b, Supplier<HolderType> creator,
 			BiFunction<AType, Btype, ResType> joiner) {
 		HolderType ret = creator.get();
@@ -161,8 +167,9 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 *          the holders we want to join.
 	 * @return a new variable bound to the application of the joiner on a and b.
 	 */
+	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public static <ResType, HolderType extends RWObsObjHolder<ResType>, JoinerType> HolderType join(
+	public static <ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>, JoinerType> HolderType join(
 			Supplier<HolderType> creator, Function<List<JoinerType>, ResType> joiner,
 			ObsObjHolder<? extends JoinerType>... holders) {
 		if (holders == null) {
@@ -207,7 +214,8 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 *          the function to translate a U into a V
 	 * @return a new constrained variable.
 	 */
-	public static <U, V, C extends RWObsObjHolder<V>> C map(ObsObjHolder<U> from, Supplier<C> creator,
+	@SuppressWarnings("unchecked")
+	public static <U, V, C extends RWObsObjHolder<V> & Consumer<Object>> C map(ObsObjHolder<U> from, Supplier<C> creator,
 			Function<U, V> mapper) {
 		C ret = creator.get();
 		from.follow((newValue) -> {
@@ -216,9 +224,9 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <V, W> ObsObjHolder<W> unPack(ObsObjHolder<V> target, Function<V, ObsObjHolder<W>> unpacker) {
 		ObsObjHolderSimple<W> ret = new ObsObjHolderSimple<>();
-		@SuppressWarnings("unchecked")
 		ObsObjHolder<W>[] last = new ObsObjHolder[1];
 		Consumer<W> cons = v -> ret.set(v);
 		target.follow(u -> {
