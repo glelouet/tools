@@ -18,7 +18,6 @@ import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
  */
 public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjHolder<U>, Consumer<Object> {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ObsObjHolderSimple.class);
 
 	public ObsObjHolderSimple() {
@@ -62,6 +61,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 				holder.accept(cons);
 			}
 			followers.add(new WeakRef<>(cons));
+			followers.add(new UsualRef<>(cons));
 		}
 		if (dataReceivedLatch.getCount() == 0) {
 			cons.accept(item);
@@ -88,6 +88,12 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 		dataReceivedLatch.countDown();
 	}
 
+	private String debugName = null;
+
+	public void setName(String name) {
+		this.debugName = name;
+	}
+
 	/**
 	 * transmit the item to the listeners. Should be called inside a synchronized
 	 * call.
@@ -96,6 +102,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 		for (Iterator<IRef<Consumer<U>>> it = followers.iterator(); it.hasNext();) {
 			Consumer<U> cons = it.next().get();
 			if (cons == null) {
+				logger.debug("remove listener from " + (debugName == null ? this : debugName));
 				it.remove();
 			} else {
 				cons.accept(item);

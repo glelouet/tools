@@ -51,7 +51,6 @@ import javafx.collections.ObservableSet;
 
 public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ObsMapHolderImpl.class);
 
 	/**
@@ -188,6 +187,12 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		}
 	}
 
+	private String debugName = null;
+
+	public void setName(String name) {
+		this.debugName = name;
+	}
+
 	public void dataReceived() {
 		dataReceivedLatch.countDown();
 		if (receiveListeners != null) {
@@ -195,6 +200,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 			for (Iterator<IRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
 				Consumer<Map<K, V>> ref = it.next().get();
 				if (ref == null) {
+					logger.debug("removed listener from " + (debugName == null ? this : debugName));
 					it.remove();
 				} else {
 					ref.accept(consumed);
