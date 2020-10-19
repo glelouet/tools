@@ -67,8 +67,6 @@ implements ObsCollectionHolder<U, C, L> {
 
 	@Override
 	public synchronized void set(C newlist) {
-		// if there was already a value set, and we set to this same value, don't
-		// propagate.
 		underlying().clear();
 		underlying().addAll(newlist);
 		synchronized (underlying) {

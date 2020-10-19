@@ -252,6 +252,7 @@ public class SimpleGraph<T> {
 								if (accepted == null || accepted.test(j)) {
 									nextFrontier[nextFrontierSize] = j;
 									nextFrontierSize++;
+									done[j] = true;
 								}
 							}
 						}

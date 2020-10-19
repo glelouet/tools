@@ -195,15 +195,17 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 
 	public void dataReceived() {
 		dataReceivedLatch.countDown();
-		if (receiveListeners != null) {
-			Map<K, V> consumed = underlying;
-			for (Iterator<IRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
-				Consumer<Map<K, V>> ref = it.next().get();
-				if (ref == null) {
-					logger.debug("removed listener from " + (debugName == null ? this : debugName));
-					it.remove();
-				} else {
-					ref.accept(consumed);
+		synchronized (underlying) {
+			if (receiveListeners != null) {
+				Map<K, V> consumed = underlying;
+				for (Iterator<IRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
+					Consumer<Map<K, V>> ref = it.next().get();
+					if (ref == null) {
+						logger.debug("removed listener from " + (debugName == null ? this : debugName));
+						it.remove();
+					} else {
+						ref.accept(consumed);
+					}
 				}
 			}
 		}
