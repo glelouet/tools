@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -19,6 +20,14 @@ import javafx.collections.SetChangeListener;
 
 public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>, ObservableSet<U>, SetChangeListener<? super U>>
 implements ObsSetHolder<U> {
+
+	@Override
+	public Set<U> copy() {
+		ObservableSet<U> underlying = underlying();
+		synchronized (underlying) {
+			return new LinkedHashSet<>(underlying);
+		}
+	}
 
 	/**
 	 * create a unmodifiable observable set of items
@@ -41,7 +50,7 @@ implements ObsSetHolder<U> {
 	}
 
 	public ObsSetHolderImpl() {
-		this(FXCollections.observableSet(new HashSet<>()));
+		this(FXCollections.observableSet(new LinkedHashSet<>()));
 	}
 
 	@Override

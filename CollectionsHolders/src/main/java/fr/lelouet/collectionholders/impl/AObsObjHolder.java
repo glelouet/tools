@@ -126,7 +126,26 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		HashSet<Object> received = new HashSet<>();
 		Runnable update = () -> {
 			if (received.size() == 2) {
-				ResType joined = joiner.apply(ah[0], bh[0]);
+				ResType joined = null;
+				if (ah[0] != null) {
+					synchronized (ah[0]) {
+						if (bh[0] != null) {
+							synchronized (bh[0]) {
+								joined = joiner.apply(ah[0], bh[0]);
+							}
+						} else {
+							joined = joiner.apply(ah[0], bh[0]);
+						}
+					}
+				} else {
+					if (bh[0] != null) {
+						synchronized (bh[0]) {
+							joined = joiner.apply(ah[0], bh[0]);
+						}
+					} else {
+						joined = joiner.apply(ah[0], bh[0]);
+					}
+				}
 				ret.set(joined);
 			}
 		};

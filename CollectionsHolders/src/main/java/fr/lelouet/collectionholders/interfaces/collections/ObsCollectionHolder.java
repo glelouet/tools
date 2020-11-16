@@ -32,6 +32,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsObjHolder<C> {
 
 	/**
+	 *
+	 * @return a new copy of the internal collection
+	 */
+	public C copy();
+
+	/**
 	 * iterate over all the elements in the collections, after it's been set, and
 	 * apply a consumer on each
 	 *

@@ -26,6 +26,14 @@ import javafx.collections.ObservableSet;
 public class ObsListHolderImpl<U> extends
 AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>> implements ObsListHolder<U> {
 
+	@Override
+	public List<U> copy() {
+		ObservableList<U> underlying = underlying();
+		synchronized (underlying) {
+			return new ArrayList<>(underlying);
+		}
+	}
+
 	/**
 	 * create an unmodifiable list of items
 	 *
