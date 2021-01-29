@@ -1,57 +1,29 @@
 package fr.lelouet.collectionholders.impl.collections;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
-import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import fr.lelouet.tools.lambdaref.withstore.references.IRef;
-import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
-import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
-import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
-import javafx.collections.ObservableSet;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
-public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
-
-	private static final Logger logger = LoggerFactory.getLogger(ObsMapHolderImpl.class);
+public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implements ObsMapHolder<K, V> {
 
 	/**
 	 * create an unmodifiable map of items. Will fail if keyvals is not exactly an
@@ -70,156 +42,14 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	public static <K, V> ObsMapHolderImpl<K, V> of(Object[][] keyvals) {
 		@SuppressWarnings("unchecked")
 		Map<K, V> mapped = Stream.of(keyvals).collect(Collectors.toMap(arr -> (K) arr[0], arr -> (V) arr[1]));
-		return new ObsMapHolderImpl<>(FXCollections.observableMap(mapped), true);
+		return new ObsMapHolderImpl<>(mapped);
 	}
 
-	private ObservableMap<K, V> underlying;
-
-	public ObservableMap<K, V> underlying() {
-		return underlying;
-	}
-
-	public ObsMapHolderImpl(ObservableMap<K, V> underlying) {
-		this(underlying, false);
-	}
-
-	/**
-	 * crate a new {@link ObsMapHolderImpl} backing on an underlying
-	 * {@link ObservableMap}
-	 *
-	 * @param underlying
-	 *          the map to back to
-	 * @param datareceived
-	 *          whether the map already contains all the information possible. if
-	 *          not, call to synchronized method will wait until the data is
-	 *          received
-	 */
-	public ObsMapHolderImpl(ObservableMap<K, V> underlying, boolean datareceived) {
-		this.underlying = underlying;
-		if (datareceived) {
-			dataReceived();
-		}
+	public ObsMapHolderImpl(Map<K, V> map) {
+		super(map);
 	}
 
 	public ObsMapHolderImpl() {
-		this(FXCollections.observableHashMap(), false);
-	}
-
-	/**
-	 * is set to 0 once data is received.
-	 */
-	private CountDownLatch dataReceivedLatch = new CountDownLatch(1);
-
-	private ArrayList<IRef<Consumer<Map<K, V>>>> receiveListeners;
-
-	@Override
-	public void waitData() {
-		try {
-			dataReceivedLatch.await();
-		} catch (InterruptedException e) {
-			throw new UnsupportedOperationException("catch this", e);
-		}
-	}
-
-	@Override
-	public Map<K, V> get() {
-		waitData();
-		return LockWatchDog.BARKER.syncExecute(underlying, () -> Collections.unmodifiableMap(underlying));
-	}
-
-	@Override
-	public V get(K key) {
-		waitData();
-		return underlying.get(key);
-	}
-
-	@Override
-	public V getOrDefault(K key, V defaultValue) {
-		waitData();
-		return underlying.getOrDefault(key, defaultValue);
-	}
-
-	@Override
-	public void followEntries(MapChangeListener<? super K, ? super V> listener) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			ObservableMap<K, V> othermap = FXCollections.observableHashMap();
-			othermap.addListener(listener);
-			othermap.putAll(underlying);
-			underlying.addListener(listener);
-		});
-	}
-
-	@Override
-	public Observable asObservable() {
-		return underlying;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void follow(Consumer<Map<K, V>> callback, Consumer<Object>... holders) {
-		IRef<Consumer<Map<K, V>>> ref = null;
-		if (holders == null || holders.length == 0) {
-			ref = new UsualRef<>(callback);
-		} else {
-			for (Consumer<Object> holder : holders) {
-				holder.accept(callback);
-			}
-			ref = new WeakRef<>(callback);
-		}
-		synchronized (underlying) {
-			if (receiveListeners == null) {
-				receiveListeners = new ArrayList<>();
-			}
-			receiveListeners.add(ref);
-			if (isDataReceived()) {
-				callback.accept(underlying);
-			}
-		}
-	}
-
-	@Override
-	public void unfollow(Consumer<Map<K, V>> callback) {
-		synchronized (underlying) {
-			receiveListeners.removeIf(h -> {
-				Consumer<Map<K, V>> ref = h.get();
-				return ref == null || ref == callback;
-			});
-		}
-	}
-
-	private String debugName = null;
-
-	public void setName(String name) {
-		this.debugName = name;
-	}
-
-	public void dataReceived() {
-		dataReceivedLatch.countDown();
-		synchronized (underlying) {
-			if (receiveListeners != null) {
-				Map<K, V> consumed = underlying;
-				for (Iterator<IRef<Consumer<Map<K, V>>>> it = receiveListeners.iterator(); it.hasNext();) {
-					Consumer<Map<K, V>> ref = it.next().get();
-					if (ref == null) {
-						logger.debug("removed listener from " + (debugName == null ? this : debugName));
-						it.remove();
-					} else {
-						ref.accept(consumed);
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public void unfollowEntries(MapChangeListener<? super K, ? super V> change) {
-		LockWatchDog.BARKER.syncExecute(underlying, () -> {
-			underlying.removeListener(change);
-		});
-	}
-
-	public boolean isDataReceived() {
-		return dataReceivedLatch.getCount() == 0;
 	}
 
 	//
@@ -227,41 +57,15 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	//
 
 	/**
-	 * create a new observableMap that map each entry in the source to an entry in
-	 * the ret. creation and deletion of key are mappecd accordingly.
-	 *
-	 * @param source
-	 * @param mapping
-	 * @return
-	 */
-	public static <K, S, T> ObsMapHolderImpl<K, T> map(ObsMapHolder<K, S> source, Function<S, T> mapping) {
-		ObservableMap<K, T> containedTarget = FXCollections.observableHashMap();
-		ObsMapHolderImpl<K, T> ret = new ObsMapHolderImpl<>(containedTarget);
-		source.followEntries(c -> {
-			if (c.wasRemoved() && !c.wasAdded()) {
-				synchronized (containedTarget) {
-					containedTarget.remove(c.getKey());
-				}
-			} else {
-				synchronized (containedTarget) {
-					containedTarget.put(c.getKey(), mapping.apply(c.getValueAdded()));
-				}
-			}
-		});
-		source.follow(l -> ret.dataReceived());
-		return ret;
-	}
-
-	/**
 	 * transforms an observable list into a map, by extracting the key from the
 	 * new elements.
 	 *
-	 * @param list
+	 * @param collection
 	 * @param keyExtractor
 	 * @return
 	 */
-	public static <K, V> ObsMapHolderImpl<K, V> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor) {
-		return toMap(list, keyExtractor, o -> o, (a, b) -> b);
+	public static <K, V> ObsMapHolderImpl<K, V> toMap(ObsCollectionHolder<V, ?> collection, Function<V, K> keyExtractor) {
+		return toMap(collection, keyExtractor, o -> o, (a, b) -> b);
 	}
 
 	/**
@@ -275,17 +79,12 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	 *          function to create the new values of the map
 	 * @return
 	 */
-	public static <K, V, L> ObsMapHolderImpl<K, L> toMap(ObsCollectionHolder<V, ?, ?> list, Function<V, K> keyExtractor,
+	public static <K, V, L> ObsMapHolderImpl<K, L> toMap(ObsCollectionHolder<V, ?> list, Function<V, K> keyExtractor,
 			Function<V, L> remapper, BinaryOperator<L> mergeFunction) {
-		ObservableMap<K, L> internal = FXCollections.observableHashMap();
-		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>(internal);
+		ObsMapHolderImpl<K, L> ret = new ObsMapHolderImpl<>();
 		list.follow((l) -> {
 			Map<K, L> newmap = l.stream().collect(Collectors.toMap(keyExtractor, remapper, mergeFunction));
-			synchronized (internal) {
-				internal.keySet().retainAll(newmap.keySet());
-				internal.putAll(newmap);
-			}
-			ret.dataReceived();
+			ret.set(newmap);
 		});
 		return ret;
 	}
@@ -318,8 +117,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		if (array.length == 1) {
 			return array[0];
 		}
-		ObservableMap<K, V> internal = FXCollections.observableHashMap();
-		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>();
 		LinkedHashMap<Integer, Map<K, V>> alreadyreceived = new LinkedHashMap<>();
 		for (int i = 0; i < array.length; i++) {
 			ObsMapHolder<K, V> m = array[i];
@@ -331,11 +129,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 					if (alreadyreceived.size() == array.length) {
 						Map<K, V> newmap = alreadyreceived.values().stream().flatMap(m2 -> m2.entrySet().stream())
 								.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), merger));
-						synchronized (internal) {
-							internal.keySet().retainAll(newmap.keySet());
-							internal.putAll(newmap);
-						}
-						ret.dataReceived();
+						ret.set(newmap);
 					} else {
 					}
 				}
@@ -350,24 +144,32 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return merge(merger, this, maps);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsObjHolder<V> at(ObsObjHolder<K> key, V defaultValue) {
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
-		HashSet<Object> received = new HashSet<>();
+		boolean[] receipt = new boolean[] { false, false };
+		Object[] receivedKey = new Object[1];
+		Object[] receivedMap = new Object[1];
 		Runnable updateValue = () -> {
-			if (received.size() == 2) {
-				ret.set(getOrDefault(key.get(), defaultValue));
+			if (receipt[0] && receipt[1]) {
+				K rkey = (K) receivedKey[0];
+				Map<K, V> rmap = (Map<K, V>) receivedMap[0];
+				V newval = rmap.getOrDefault(rkey, defaultValue);
+				ret.set(newval);
 			}
 		};
 		follow(t -> {
-			synchronized (received) {
-				received.add(this);
+			synchronized (receipt) {
+				receipt[0] = true;
+				receivedMap[0] = t;
 				updateValue.run();
 			}
 		});
 		key.follow((newValue) -> {
-			synchronized (received) {
-				received.add(key);
+			synchronized (receipt) {
+				receipt[1] = true;
+				receivedKey[0] = newValue;
 				updateValue.run();
 			}
 		});
@@ -383,146 +185,50 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 		return ret;
 	}
 
-	private ObsIntHolderImpl size = null;
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsIntHolder size = mapInt(Map::size);
 
-	@Override
-	public ObsIntHolder size() {
-		if (size == null) {
-			synchronized (this) {
-				if (size == null) {
-					ObsIntHolderImpl ret = new ObsIntHolderImpl();
-					follow(c -> ret.set(c.size()));
-					size = ret;
-				}
-			}
-		}
-		return size;
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsBoolHolder isEmpty = test(Map::isEmpty);
 
-	private ObsBoolHolder isEmpty = null;
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsSetHolder<K> keys = toSet(Map::keySet);
 
-	@Override
-	public ObsBoolHolder isEmpty() {
-		if (isEmpty == null) {
-			ObsIntHolder msize = size();
-			synchronized (this) {
-				if (isEmpty == null) {
-					isEmpty = msize.eq(0);
-				}
-			}
-		}
-		return isEmpty;
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsListHolder<V> values = toList(Map::values);
 
-	private ObsSetHolder<K> keys = null;
-
-	@Override
-	public ObsSetHolder<K> keys() {
-		if (keys == null) {
-			synchronized (this) {
-				if (keys == null) {
-					ObservableSet<K> internal = FXCollections.observableSet(new HashSet<>());
-					ObsSetHolderImpl<K> ret = new ObsSetHolderImpl<>(internal);
-					follow(m -> {
-						synchronized (internal) {
-							internal.retainAll(m.keySet());
-							internal.addAll(m.keySet());
-						}
-						ret.dataReceived();
-					});
-					keys = ret;
-				}
-			}
-		}
-		return keys;
-	}
-
-	private ObsListHolder<V> values = null;
-
-	@Override
-	public ObsCollectionHolder<V, ?, ?> values() {
-		if (values == null) {
-			synchronized (this) {
-				if (values == null) {
-					ObservableList<V> internal = FXCollections.observableArrayList();
-					ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(internal);
-					follow(m -> {
-						synchronized (internal) {
-							internal.clear();
-							internal.addAll(m.values());
-						}
-						ret.dataReceived();
-					});
-					values = ret;
-				}
-			}
-		}
-		return values;
-	}
-
-	ObsListHolderImpl<Entry<K, V>> entries = null;
-
-	@Override
-	public ObsCollectionHolder<Entry<K, V>, ?, ?> entries() {
-		if (entries == null) {
-			synchronized (this) {
-				if (entries == null) {
-					ObservableList<Entry<K, V>> internal = FXCollections.observableArrayList();
-					ObsListHolderImpl<Entry<K, V>> ret = new ObsListHolderImpl<>(internal);
-					follow(m -> {
-						synchronized (internal) {
-							internal.clear();
-							internal.addAll(m.entrySet());
-						}
-						ret.dataReceived();
-					});
-					entries = ret;
-				}
-			}
-		}
-		return entries;
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsSetHolder<Entry<K, V>> entries = toSet(Map::entrySet);
 
 	@Override
 	public ObsMapHolder<K, V> filter(Predicate<K> keyFilter, Predicate<V> valueFilter) {
 		if (keyFilter == null && valueFilter == null) {
 			return this;
 		}
-		ObservableMap<K, V> internal = FXCollections.observableHashMap();
-		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
-		followEntries(change -> {
-			if (change.wasRemoved()) {
-				synchronized (internal) {
-					internal.remove(change.getKey());
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>();
+		follow(map -> {
+			Map<K, V> newMap = new HashMap<>();
+			for (Entry<K, V> e : map.entrySet()) {
+				K k = e.getKey();
+				V v = e.getValue();
+				if ((keyFilter == null || keyFilter.test(k)) && (valueFilter == null || valueFilter.test(v))) {
+					newMap.put(k, v);
 				}
 			}
-			if (change.wasAdded()) {
-				if (keyFilter != null) {
-					if (!keyFilter.test(change.getKey())) {
-						return;
-					}
-				}
-				if (valueFilter != null) {
-					if (!valueFilter.test(change.getValueAdded())) {
-						return;
-					}
-				}
-				synchronized (internal) {
-					internal.put(change.getKey(), change.getValueAdded());
-				}
-			}
-		});
-		follow(m -> {
-			ret.dataReceived();
+			ret.set(newMap);
 		});
 		return ret;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?, ?> allowedKeys) {
-		ObservableMap<K, V> internal = FXCollections.observableHashMap();
-		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>(internal);
+	public ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?> allowedKeys) {
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>();
 		Map<K, V>[] lastMap = new Map[1];
 		Collection<K>[] lastCol = new Collection[1];
 		Runnable update = () -> {
@@ -530,11 +236,7 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 				if (lastMap[0] != null && lastCol[0] != null) {
 					Map<K, V> newMap = new HashMap<>(lastMap[0]);
 					newMap.keySet().retainAll(lastCol[0]);
-					synchronized (internal) {
-						internal.keySet().retainAll(newMap.keySet());
-						internal.putAll(newMap);
-					}
-					ret.dataReceived();
+					ret.set(newMap);
 				}
 			}
 		};
@@ -555,82 +257,9 @@ public class ObsMapHolderImpl<K, V> implements ObsMapHolder<K, V> {
 	}
 
 	@Override
-	public int hashCode() {
-		return dataReceivedLatch.getCount() == 0 ? 0 : underlying.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj.getClass() == this.getClass()) {
-			ObsMapHolderImpl<?, ?> other = (ObsMapHolderImpl<?, ?>) obj;
-			// equals if same status of data received AND same data received, if
-			// received.
-			return dataReceivedLatch.getCount() != 0 && other.dataReceivedLatch.getCount() != 0
-					|| dataReceivedLatch.getCount() == 0 && other.dataReceivedLatch.getCount() == 0
-					&& underlying.equals(other.underlying);
-		}
-		return false;
-	}
-
-	@Override
-	public <U> ObsObjHolder<U> map(Function<Map<K, V>, U> mapper) {
-		ObsObjHolderSimple<U> ret = new ObsObjHolderSimple<>();
-		follow(m -> ret.set(mapper.apply(m)));
-		return ret;
-	}
-
-	@Override
-	public ObsIntHolder mapInt(ToIntFunction<Map<K, V>> mapper) {
-		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow(m -> ret.set(mapper.applyAsInt(m)));
-		return ret;
-	}
-
-	@Override
-	public ObsLongHolder mapLong(ToLongFunction<Map<K, V>> mapper) {
-		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow(m -> ret.set(mapper.applyAsLong(m)));
-		return ret;
-	}
-
-	@Override
-	public ObsDoubleHolder mapDouble(ToDoubleFunction<Map<K, V>> mapper) {
-		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow(m -> ret.set(mapper.applyAsDouble(m)));
-		return ret;
-	}
-
-	@Override
-	public ObsBoolHolder test(Predicate<Map<K, V>> test) {
-		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		follow(m -> ret.set(test.test(m)));
-		return ret;
-	}
-
-	@Override
-	public <U> ObsListHolder<U> toList(Function<Map<K, V>, Iterable<U>> generator) {
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
-		follow((newValue) -> {
-			ret.underlying().clear();
-			if (newValue != null) {
-				for (U v : generator.apply(newValue)) {
-					ret.underlying().add(v);
-				}
-			}
-			ret.dataReceived();
-		});
-		return ret;
-	}
-
-	@Override
 	public ObsMapHolderImpl<K, V> peek(Consumer<Map<K, V>> observer) {
 		follow(observer);
 		return this;
-	}
-
-	@Override
-	public <T> ObsObjHolder<T> unPack(Function<Map<K, V>, ObsObjHolder<T>> unpacker) {
-		return AObsObjHolder.unPack(this, unpacker);
 	}
 
 }

@@ -7,7 +7,7 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
 public class ObsDoubleHolderImplTest {
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testCreation() {
 		ObsDoubleHolderImpl twenty = new ObsDoubleHolderImpl(20.0);
 		Assert.assertEquals((double) twenty.add(4.0).get(), 24.0);
@@ -32,7 +32,7 @@ public class ObsDoubleHolderImplTest {
 
 	}
 
-	@Test(timeOut = 5000)
+	@Test(timeOut = 500)
 	public void testCeilFloor() {
 		ObsDoubleHolderImpl pi = new ObsDoubleHolderImpl(3.14);
 		Assert.assertEquals((int) pi.ceil().get(), 4);

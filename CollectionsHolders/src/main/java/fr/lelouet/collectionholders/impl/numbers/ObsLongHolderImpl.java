@@ -3,17 +3,17 @@ package fr.lelouet.collectionholders.impl.numbers;
 import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.value.ObservableLongValue;
 
 public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder> implements ObsLongHolder {
 
+	public static ObsLongHolderImpl of(long value) {
+		return new ObsLongHolderImpl(value);
+	}
 	public ObsLongHolderImpl() {
 	}
 
 	public ObsLongHolderImpl(long value) {
-		this();
-		set(value);
+		super(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -65,22 +65,6 @@ public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder>
 	@Override
 	public boolean eq(Long a, Long b) {
 		return a == b;
-	}
-
-	private SimpleLongProperty obs = null;
-
-	@Override
-	public ObservableLongValue asObservableNumber() {
-		if (obs == null) {
-			waitData();
-			synchronized (this) {
-				if (obs == null) {
-					obs = new SimpleLongProperty();
-					follow(obs::set);
-				}
-			}
-		}
-		return obs;
 	}
 
 	@Override

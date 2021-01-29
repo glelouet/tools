@@ -1,100 +1,43 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class AObsCollectionHolderTest {
 
 	@Test(timeOut = 500)
-	public void testFlattenNotReceived() {
-		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
-		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
+	public void testFlatten() {
+		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>();
 		ObsListHolder<Character> flattened = test.flatten(l -> l);
 
-		ObservableList<Character> charList = FXCollections.observableArrayList('c', 'h', 'a', 'r');
+		List<Character> charList = Arrays.asList('c', 'h', 'a', 'r');
 		ObsListHolderImpl<Character> charObs = new ObsListHolderImpl<>(charList);
 
-		underlying.add(charObs);
-		test.dataReceived();
-		charObs.dataReceived();
+
+		test.set(Arrays.asList(charObs));
 
 		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r'));
 	}
 
 	@Test(timeOut = 500)
-	public void testFlattenReceived() {
-		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
-		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
+	public void testFlattenConcat() {
+		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>();
 
-		ObservableList<Character> charList = FXCollections.observableArrayList('c', 'h', 'a', 'r');
-		ObsListHolderImpl<Character> charObs = new ObsListHolderImpl<>(charList);
-
-		underlying.add(charObs);
-		test.dataReceived();
-		charObs.dataReceived();
-
-		ObsListHolder<Character> flattened = test.flatten(l -> l);
-		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r'));
-
-		charList.set(3, 't');
-		charObs.dataReceived();
-		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 't'));
-
-	}
-
-	@Test(timeOut = 500)
-	public void testConcat() {
-		ObservableList<ObsListHolder<Character>> underlying = FXCollections.observableArrayList();
-		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>(underlying);
-
-		ObservableList<Character> list1 = FXCollections.observableArrayList('c', 'h', 'a', 'r');
-		ObsListHolderImpl<Character> list1Obs = new ObsListHolderImpl<>(list1);
-		list1Obs.dataReceived();
-
-		ObservableList<Character> list2 = FXCollections.observableArrayList('i', 's', 'm');
-		ObsListHolderImpl<Character> list2Obs = new ObsListHolderImpl<>(list2);
-		list2Obs.dataReceived();
-
-		underlying.add(list1Obs);
-		underlying.add(list2Obs);
-		test.dataReceived();
+		ObsListHolderImpl<Character> list1 = new ObsListHolderImpl<>(Arrays.asList('c', 'h', 'a', 'r'));
+		ObsListHolderImpl<Character> list2 = new ObsListHolderImpl<>(Arrays.asList('i', 's', 'm'));
+		test.set(Arrays.asList(list1, list2));
 
 		ObsListHolder<Character> flattened = test.flatten(l -> l);
 		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r', 'i', 's', 'm'));
 
-		list2.setAll('a', 'c', 't', 'e', 'r');
-		list2Obs.dataReceived();
+		list2.set(Arrays.asList('a', 'c', 't', 'e', 'r'));
 
 		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'));
-	}
-
-	@Test(timeOut = 500)
-	public void testRemove() {
-		ObsListHolderImpl<ObsListHolder<Character>> test = new ObsListHolderImpl<>();
-
-		ObsListHolderImpl<Character> list1Obs = ObsListHolderImpl.of('c', 'h', 'a', 'r');
-		list1Obs.dataReceived();
-
-		ObsListHolderImpl<Character> list2Obs = ObsListHolderImpl.of('i', 's', 'm');
-		list2Obs.dataReceived();
-
-		test.underlying().add(list1Obs);
-		test.underlying().add(list2Obs);
-		test.dataReceived();
-
-		ObsListHolder<Character> flattened = test.flatten(l -> l);
-		Assert.assertEquals(flattened.get(), Arrays.asList('c', 'h', 'a', 'r', 'i', 's', 'm'), "got" + flattened.get());
-
-		test.underlying().remove(0);
-		test.dataReceived();
-
-		Assert.assertEquals(flattened.get(), Arrays.asList('i', 's', 'm'), "got " + flattened.get());
 	}
 
 }

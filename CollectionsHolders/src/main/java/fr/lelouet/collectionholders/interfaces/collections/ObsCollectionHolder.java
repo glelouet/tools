@@ -6,17 +6,14 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 
 /**
  * common interface for set and list.
@@ -25,25 +22,8 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
  *          class of the item in the collection
  * @param <C>
  *          Collection type to hold the data (eg List&lt;U&gt;)
- * @param <L>
- *          Listener type passed to observe the internal data (eg
- *          ListEventListener&lt;U&gt;)
  */
-public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsObjHolder<C> {
-
-	/**
-	 *
-	 * @return a new copy of the internal collection
-	 */
-	public C copy();
-
-	/**
-	 * iterate over all the elements in the collections, after it's been set, and
-	 * apply a consumer on each
-	 *
-	 * @param cons
-	 */
-	public void apply(Consumer<U> cons);
+public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjHolder<C> {
 
 	/**
 	 *
@@ -57,20 +37,10 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	public ObsBoolHolder isEmpty();
 
 	@Override
-	default ObsCollectionHolder<U, C, L> peek(Consumer<C> observer) {
+	default ObsCollectionHolder<U, C> peek(Consumer<C> observer) {
 		follow(observer);
 		return this;
 	}
-
-	/**
-	 * apply all existing values to the change listener, and register it as a
-	 * listener of the underlying list.
-	 *
-	 * @param listener
-	 */
-	void followItems(L listener);
-
-	void unfollowItems(L change);
 
 	/**
 	 * create a filtered collection working on bulk process
@@ -79,7 +49,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *          the predicate to select the items
 	 * @return a new collection with same parameterized signature.
 	 */
-	public ObsCollectionHolder<U, C, L> filter(Predicate<? super U> predicate);
+	public ObsCollectionHolder<U, C> filter(Predicate<? super U> predicate);
 
 	/**
 	 * create a filtered collection on an observable predicate.
@@ -98,7 +68,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *          the mapping of items to their observable filter
 	 * @return a new collection with same parameterized signature.
 	 */
-	public ObsCollectionHolder<U, C, L> filterWhen(Function<? super U, ObsBoolHolder> filterer);
+	public ObsCollectionHolder<U, C> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
 	/**
 	 * map each item in this to a new item in another collection
@@ -107,7 +77,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @param <D>
 	 * @return
 	 */
-	public <K> ObsCollectionHolder<K, ?, ?> mapItems(Function<U, K> mapper);
+	public <K> ObsCollectionHolder<K, ?> mapItems(Function<U, K> mapper);
 
 	/**
 	 * map this collection to a new Map. In case of collision in the key function,
@@ -176,7 +146,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @return a new variable V, only modified when this receives data.
 	 */
 	public default <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral) {
-		return reduce(l -> l.stream().map(mapper).collect(Collectors.reducing(neutral, joiner)));
+		return map(l -> l.stream().map(mapper).collect(Collectors.reducing(neutral, joiner)));
 	}
 
 	/**
@@ -190,44 +160,12 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @return a new variable U, only modified when this receives data.
 	 */
 	public default ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral) {
-		return reduce(l -> l.stream().collect(Collectors.reducing(neutral, joiner)));
+		return map(l -> l.stream().collect(Collectors.reducing(neutral, joiner)));
 	}
 
-	/**
-	 *
-	 * @param <V>
-	 *          type of returned holder
-	 * @param collectionReducer
-	 *          function that is applied to the collection whenever data is
-	 *          received
-	 * @return a new variable containing the reduced value when data is received.
-	 */
-	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer);
-
-	/**
-	 *
-	 * @param collectionReducer
-	 *          function that is applied to the collection whenever data is
-	 *          received
-	 * @return a new variable containing the reduced value when data is received.
-	 */
-	public ObsIntHolder reduceInt(ToIntFunction<C> collectionReducer);
-
-	/**
-	 * @param collectionReducer
-	 *          function that is applied to the collection whenever data is
-	 *          received
-	 * @return a new variable containing the reduced value when data is received.
-	 */
-	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer);
-
-	/**
-	 * @param collectionReducer
-	 *          function that is applied to the collection whenever data is
-	 *          received
-	 * @return a new variable containing the reduced value when data is received.
-	 */
-	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer);
+	public default ObsIntHolder reduceInt(ToIntFunction<U> mapper, IntBinaryOperator joiner, int neutral) {
+		return mapInt(l -> l.stream().mapToInt(mapper).reduce(neutral, joiner));
+	}
 
 	/**
 	 *
@@ -256,7 +194,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 *          collection × the other collection
 	 * @return a new list
 	 */
-	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand);
+	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?> right, BiFunction<U, V, O> operand);
 
 	/**
 	 * flatten this by converting all the elements to {@link ObsCollectionHolder}
@@ -271,6 +209,6 @@ public interface ObsCollectionHolder<U, C extends Collection<U>, L> extends ObsO
 	 * @return a new collectionholder that contains the items holds in the sub
 	 *         collections.
 	 */
-	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper);
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2>> mapper);
 
 }

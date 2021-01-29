@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
-import javafx.beans.value.ObservableValue;
 
 /**
  * common methods for double, long and int observable holders. <br />
@@ -165,16 +164,6 @@ extends ObsObjHolder<Contained> {
 	public default ObsBoolHolder eq(Contained other) {
 		return test(this::eq, other);
 	}
-
-	/**
-	 * create and cache an observable variable that reflect the value hold in
-	 * this. The value is not created until the data is hold, so it may wait for
-	 * long.
-	 *
-	 * @return a cached internal value always mirroting the data contained in
-	 *         this.
-	 */
-	public ObservableValue<? extends Number> asObservableNumber();
 
 	@Override
 	ObsNumberHolder<Contained, SelfClass> peek(Consumer<Contained> observer);

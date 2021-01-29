@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,15 +17,19 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
+import fr.lelouet.collectionholders.impl.collections.ObsSetHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
+import fr.lelouet.collectionholders.impl.numbers.ObsFloatHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsFloatHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 
@@ -69,6 +74,14 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
 	@SuppressWarnings("unchecked")
 	@Override
+	public ObsFloatHolder mapFloat(ToDoubleFunction<U> mapper) {
+		ObsFloatHolderImpl ret = new ObsFloatHolderImpl();
+		follow((newValue) -> ret.set((float) mapper.applyAsDouble(newValue)), ret);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
 		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)), ret);
@@ -82,11 +95,18 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		follow((newValue) -> {
 			List<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false)
 					.collect(Collectors.toList());
-			synchronized (ret.underlying()) {
-				ret.underlying().clear();
-				ret.underlying().addAll(newlist);
-			}
-			ret.dataReceived();
+			ret.set(newlist);
+		}, ret);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <V> ObsSetHolder<V> toSet(Function<U, Iterable<V>> generator) {
+		ObsSetHolderImpl<V> ret = new ObsSetHolderImpl<>();
+		follow((newValue) -> {
+			Set<V> newlist = StreamSupport.stream(generator.apply(newValue).spliterator(), false).collect(Collectors.toSet());
+			ret.set(newlist);
 		}, ret);
 		return ret;
 	}

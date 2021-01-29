@@ -7,9 +7,8 @@ import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import javafx.collections.SetChangeListener;
 
-public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>, SetChangeListener<? super U>> {
+public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>> {
 
 	@Override
 	default ObsSetHolder<U> peek(Consumer<Set<U>> observer) {

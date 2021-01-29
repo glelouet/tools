@@ -1,7 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -13,97 +13,47 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
-import javafx.collections.SetChangeListener;
 
-public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>, ObservableSet<U>, SetChangeListener<? super U>>
+public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>>
 implements ObsSetHolder<U> {
-
-	@Override
-	public Set<U> copy() {
-		ObservableSet<U> underlying = underlying();
-		synchronized (underlying) {
-			return new LinkedHashSet<>(underlying);
-		}
-	}
 
 	/**
 	 * create a unmodifiable observable set of items
 	 *
 	 * @param <U>
 	 *          type of the items
-	 * @param args
+	 * @param items
 	 *          items to add.
 	 * @return a new observable set
 	 */
 	@SafeVarargs
-	public static <U> ObsSetHolderImpl<U> of(U... args) {
-		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(FXCollections.observableSet(args));
-		ret.dataReceived();
-		return ret;
+	public static <U> ObsSetHolderImpl<U> of(U... items) {
+		return new ObsSetHolderImpl<>(new HashSet<>(Arrays.asList(items)));
 	}
 
-	public ObsSetHolderImpl(ObservableSet<U> underlying) {
-		super(underlying);
+	public ObsSetHolderImpl(Set<U> set) {
+		super(set);
 	}
 
 	public ObsSetHolderImpl() {
-		this(FXCollections.observableSet(new LinkedHashSet<>()));
-	}
-
-	@Override
-	public Set<U> get() {
-		waitData();
-		return LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			return new HashSet<>(underlying());
-		});
-	}
-
-	@Override
-	public void followItems(SetChangeListener<? super U> listener) {
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			ObservableSet<U> otherset = FXCollections.observableSet(new HashSet<>());
-			otherset.addListener(listener);
-			otherset.addAll(underlying());
-			underlying().addListener(listener);
-		});
-	}
-
-	@Override
-	public void unfollowItems(SetChangeListener<? super U> change) {
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			underlying().removeListener(change);
-		});
 	}
 
 	@Override
 	public ObsSetHolderImpl<U> filter(Predicate<? super U> predicate) {
-		ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
-		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>();
 		follow((t) -> {
 			Set<U> filteredSet = t.stream().filter(predicate).collect(Collectors.toSet());
-			synchronized (internal) {
-				internal.retainAll(filteredSet);
-				internal.addAll(filteredSet);
-			}
-			ret.dataReceived();
+			ret.set(filteredSet);
 		});
 		return ret;
 	}
 
 	@Override
 	public ObsSetHolderImpl<U> filterWhen(Function<? super U, ObsBoolHolder> filterer) {
-		ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
-		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>();
 		filterWhen(filteredStream -> {
 			Set<U> filteredSet = filteredStream.collect(Collectors.toSet());
-			synchronized (internal) {
-				internal.retainAll(filteredSet);
-				internal.addAll(filteredSet);
-			}
-			ret.dataReceived();
+			ret.set(filteredSet);
 		}, filterer);
 		return ret;
 	}
@@ -123,22 +73,33 @@ implements ObsSetHolder<U> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ObsBoolHolderImpl contains(ObsObjHolder<U> value) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
-		Set<Object> received = new HashSet<>();
+		Object[] recVal = new Object[1];
+		Object[] recSet = new Object[1];
+		boolean[] receipt = new boolean[] { false, false };
 		Runnable update = () -> {
-			if (received.size() >= 2) {
-				ret.set(underlying().contains(value.get()));
+			if (receipt[0] && receipt[1]) {
+				U val = (U) recVal[0];
+				Set<U> set = (Set<U>) recSet[0];
+				ret.set(set.contains(val));
 			}
 		};
 		follow((t) -> {
-			received.add(this);
-			update.run();
+			synchronized (receipt) {
+				receipt[0] = true;
+				recSet[0] = t;
+				update.run();
+			}
 		});
 		value.follow((newValue) -> {
-			received.add(value);
-			update.run();
+			synchronized (receipt) {
+				receipt[1] = true;
+				recVal[0] = newValue;
+				update.run();
+			}
 		});
 		return ret;
 	}

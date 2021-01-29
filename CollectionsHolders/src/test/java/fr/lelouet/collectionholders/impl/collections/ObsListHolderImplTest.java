@@ -1,7 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.testng.Assert;
@@ -12,154 +12,117 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 
 public class ObsListHolderImplTest {
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testCreation() {
 		@SuppressWarnings("unchecked")
 		List<String>[] last = new List[1];
-		ArrayList<ListChangeListener.Change<? extends String>> modifs = new ArrayList<>();
 		ObsListHolderImpl<String> test = new ObsListHolderImpl<>();
-		ObservableList<String> internal = test.underlying();
 		test.follow(o -> last[0] = o);
-		test.followItems(l -> modifs.add(l));
 
 		Assert.assertNull(last[0]);
-		Assert.assertEquals(modifs.size(), 0);
 
-		internal.addAll("a", "b");
-		Assert.assertNull(last[0]);
-		Assert.assertEquals(modifs.size(), 1);
-		test.dataReceived();
+		test.set(Arrays.asList("a", "b"));
 		Assert.assertNotNull(last[0]);
-		Assert.assertEquals(modifs.size(), 1);
 		Assert.assertEquals(test.get(), Arrays.asList("a", "b"));
 
-		internal.addAll("a", "b");
-		test.dataReceived();
+		test.set(Arrays.asList("a", "b", "a", "b"));
 		Assert.assertNotNull(last[0]);
-		Assert.assertEquals(modifs.size(), 2);
 		Assert.assertEquals(test.get(), Arrays.asList("a", "b", "a", "b"));
 
 	}
 
-	@Test(dependsOnMethods = "testCreation", timeOut = 1000)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testMap() {
-		ObservableList<String> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<String> test = new ObsListHolderImpl<>();
 		ObsMapHolder<Integer, String> mapSize2String = test.toMap(s -> s.length());
 		ObsMapHolder<String, Integer> mapString2Size = test.toMap(s -> s, s -> s.length());
 
-		internal.addAll("a", "bb");
-		test.dataReceived();
+		test.set(Arrays.asList("a", "bb"));
 
 		ObsMapHolder<Integer, String> mapSize2StringLate = test.toMap(s -> s.length());
 		ObsMapHolder<String, Integer> mapString2SizeLate = test.toMap(s -> s, s -> s.length());
 
-		Assert.assertEquals(mapSize2String.get(1), "a");
-		Assert.assertEquals(mapSize2String.get(2), "bb");
+		Assert.assertEquals(mapSize2String.at(1), "a");
+		Assert.assertEquals(mapSize2String.at(2), "bb");
 
-		Assert.assertEquals(mapSize2StringLate.get(1), "a");
-		Assert.assertEquals(mapSize2StringLate.get(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.at(1), "a");
+		Assert.assertEquals(mapSize2StringLate.at(2), "bb");
 
-		Assert.assertEquals(mapString2Size.get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.at("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.at("bb"), (Integer) 2);
 
-		Assert.assertEquals(mapString2SizeLate.get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.at("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.at("bb"), (Integer) 2);
 
-		internal.addAll("c", "ddd");
-		test.dataReceived();
+		test.set(Arrays.asList("a", "bb", "c", "ddd"));
 
-		Assert.assertEquals(mapSize2String.get(1), "c");
-		Assert.assertEquals(mapSize2String.get(2), "bb");
-		Assert.assertEquals(mapSize2String.get(3), "ddd");
+		Assert.assertEquals(mapSize2String.at(1), "c");
+		Assert.assertEquals(mapSize2String.at(2), "bb");
+		Assert.assertEquals(mapSize2String.at(3), "ddd");
 
-		Assert.assertEquals(mapSize2StringLate.get(1), "c");
-		Assert.assertEquals(mapSize2StringLate.get(2), "bb");
-		Assert.assertEquals(mapSize2StringLate.get(3), "ddd");
+		Assert.assertEquals(mapSize2StringLate.at(1), "c");
+		Assert.assertEquals(mapSize2StringLate.at(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.at(3), "ddd");
 
-		Assert.assertEquals(mapString2Size.get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2Size.get("c"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2Size.at("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.at("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.at("c"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.at("ddd"), (Integer) 3);
 
-		Assert.assertEquals(mapString2SizeLate.get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2SizeLate.get("c"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2SizeLate.at("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.at("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.at("c"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.at("ddd"), (Integer) 3);
 	}
 
-	@Test(dependsOnMethods = "testCreation", timeOut = 1000)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testFilter() {
-		ObservableList<String> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<String> test = new ObsListHolderImpl<>();
 		ObsListHolderImpl<String> filtered = test.filter(s -> s.length() > 1);
 
-		internal.addAll("a", "bb", "ccc");
-		test.dataReceived();
-
+		test.set(Arrays.asList("a", "bb", "ccc"));
 		Assert.assertEquals(filtered.get(), Arrays.asList("bb", "ccc"));
 
 		ObsListHolderImpl<String> filtered2 = test.filter(s -> s.length() > 1);
 		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc"));
 
-		internal.addAll("dddd");
-		test.dataReceived();
+		test.set(Arrays.asList("a", "bb", "ccc", "dddd"));
 
 		Assert.assertEquals(filtered.get(), Arrays.asList("bb", "ccc", "dddd"));
 		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc", "dddd"));
 	}
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testProdList() {
-		ObservableList<String> internal1 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
-		internal1.addAll("a", "b");
-		test1.dataReceived();
-
-		ObservableList<String> internal2 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>(internal2);
-		internal2.addAll("1", "2");
-		test2.dataReceived();
+		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("a", "b");
+		ObsListHolderImpl<String> test2 = ObsListHolderImpl.of("1", "2");
 
 		ObsListHolder<Object> prod = test1.prodList(test2, (s1, s2) -> s1 + s2);
 		Assert.assertEquals(prod.get(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testSort() {
-		ObservableList<String> internal1 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
-		internal1.addAll("d", "a", "c", "b");
-		test1.dataReceived();
+		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("d", "a", "c", "b");
 
 		ObsListHolder<String> sorted = test1.sorted(String::compareTo);
 		Assert.assertEquals(sorted.get(), Arrays.asList("a", "b", "c", "d"));
 	}
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testReverse() {
-		ObservableList<String> internal1 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
-		internal1.addAll("a", "b", "c", "d");
-		test1.dataReceived();
+		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("a", "b", "c", "d");
 
 		ObsListHolder<String> reversed = test1.reverse();
 		Assert.assertEquals(reversed.get(), Arrays.asList("d", "c", "b", "a"));
 	}
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testReduce() {
-		ObservableList<String> internal1 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test1 = new ObsListHolderImpl<>(internal1);
-		internal1.addAll("d", "a", "c", "b");
-		test1.dataReceived();
+		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("d", "a", "c", "b");
 
 		ObsObjHolder<String> concat = test1.reduce(String::concat, "");
 		Assert.assertEquals(concat.get(), "dacb");
@@ -167,7 +130,7 @@ public class ObsListHolderImplTest {
 		ObsObjHolder<Integer> size = test1.reduce(s -> s.length(), Integer::sum, 0);
 		Assert.assertEquals((int) size.get(), 4);
 
-		ObsIntHolder size2 = test1.reduceInt(l -> l.stream().mapToInt(String::length).sum());
+		ObsIntHolder size2 = test1.mapInt(l -> l.stream().mapToInt(String::length).sum());
 		Assert.assertEquals((int) size2.get(), 4);
 
 		/**
@@ -175,68 +138,44 @@ public class ObsListHolderImplTest {
 		 * 2 on the list of vectors
 		 */
 		ObsDoubleHolder dist = test1
-				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
+				.mapDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
 		Assert.assertEquals((double) dist.get(), 2.0);
 
-		ObservableList<String> internal2 = FXCollections.observableArrayList();
-		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>(internal2);
+		ObsListHolderImpl<String> test2 = new ObsListHolderImpl<>();
 
 		// same but with 4 strings of size 2 (so distance is sqrt(4*2²)=2*2 = 4
 		ObsDoubleHolder dist2 = test2
-				.reduceDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
-		internal2.addAll("aa", "bb", "cc", "dd");
-		test2.dataReceived();
+				.mapDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
+		test2.set(Arrays.asList("aa", "bb", "cc", "dd"));
 		Assert.assertEquals((double) dist2.get(), 4.0);
 	}
 
-	@Test(timeOut = 1000)
+	@Test(timeOut = 500)
 	public void testFilterWhen() {
+		ObsListHolderImpl<ObsMapHolder<String, Integer>> source = ObsListHolderImpl.of();
 
-		// System.err.println("creation");
-		ObservableList<ObsMapHolder<String, Integer>> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<ObsMapHolder<String, Integer>> source = new ObsListHolderImpl<>(internal);
-		// source.peek(l -> System.err.println("received new test list : " + l));
-
-		// System.err.println();
-		// System.err.println("test empty");
-		ObsListHolderImpl<ObsMapHolder<String, Integer>> test = source.filterWhen(m -> m.isEmpty().not());
-		source.dataReceived();
+		ObsListHolder<ObsMapHolder<String, Integer>> test = source.filterWhen(m -> m.isEmpty().not());
 		Assert.assertTrue(test.isEmpty().get());
 
-		// System.err.println();
-		// System.err.println(" test with empty map");
-		ObservableMap<String, Integer> imap1 = FXCollections.observableHashMap();
-		ObsMapHolderImpl<String, Integer> map1 = new ObsMapHolderImpl<>(imap1);
-		map1.dataReceived();
-		internal.add(map1);
-		source.dataReceived();
+		ObsMapHolderImpl<String, Integer> map1 = new ObsMapHolderImpl<>();
+		source.set(Arrays.asList(map1));
 		Assert.assertTrue(test.isEmpty().get());
 
-		// System.err.println();
-		// System.err.println("add value in map");
-		imap1.put("a", 1);
-		map1.dataReceived();
+		HashMap<String, Integer> mm1 = new HashMap<>();
+		mm1.put("a", 1);
+		map1.set(mm1);
 		Assert.assertFalse(test.isEmpty().get());
 
-		// System.err.println();
-		// System.err.println("add second map, empty");
-		ObservableMap<String, Integer> imap2 = FXCollections.observableHashMap();
-		ObsMapHolderImpl<String, Integer> map2 = new ObsMapHolderImpl<>(imap2);
-		map2.dataReceived();
-		internal.add(map2);
-		source.dataReceived();
+		ObsMapHolderImpl<String, Integer> map2 = new ObsMapHolderImpl<>();
+		source.set(Arrays.asList(map1, map2));
 		Assert.assertEquals(test.get().size(), 1, "got : " + test.get());
 
-		// System.err.println();
-		// System.err.println("add value in second map");
-		imap2.put("bb", 2);
-		map2.dataReceived();
+		HashMap<String, Integer> mm2 = new HashMap<>();
+		mm2.put("bb", 2);
+		map2.set(mm2);
 		Assert.assertEquals(test.get().size(), 2, "got : " + test.get());
 
-		// System.err.println();
-		// System.err.println("remove first map");
-		internal.remove(map1);
-		source.dataReceived();
+		source.set(Arrays.asList(map2));
 		Assert.assertEquals(test.get().size(), 1, "got : " + test.get());
 
 	}

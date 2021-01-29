@@ -8,11 +8,18 @@ package fr.lelouet.collectionholders.impl;
 public class NotNullObsObjHolderImpl<U> extends ObsObjHolderSimple<U> {
 
 	public NotNullObsObjHolderImpl() {
-		peek(newValue -> {
-			if (newValue == null) {
-				throw new NullPointerException("in observable " + this + " set value to " + newValue);
-			}
-		});
+	}
+
+	public NotNullObsObjHolderImpl(U u) {
+		super(u);
+	}
+
+	@Override
+	public synchronized void set(U newitem) {
+		if(newitem==null) {
+			throw new UnsupportedOperationException("null item forbidden");
+		}
+		super.set(newitem);
 	}
 
 }

@@ -2,19 +2,22 @@ package fr.lelouet.collectionholders.impl.numbers;
 
 import java.util.function.Consumer;
 
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ObservableDoubleValue;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleHolder> implements ObsDoubleHolder {
+
+	public static ObsDoubleHolderImpl of(double value) {
+		return new ObsDoubleHolderImpl(value);
+	}
 
 	public ObsDoubleHolderImpl() {
 	}
 
 	public ObsDoubleHolderImpl(double value) {
-		this();
-		set(value);
+		super(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -23,33 +26,14 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 		return new ObsDoubleHolderImpl();
 	}
 
-	private ObsIntHolderImpl ceil = null;
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsIntHolder ceil = mapInt(d -> (int) Math.ceil(d));
 
-	@Override
-	public ObsIntHolderImpl ceil() {
-		if (ceil == null) {
-			synchronized (this) {
-				if (ceil == null) {
-					ceil = AObsObjHolder.map(this, ObsIntHolderImpl::new, a -> (int) Math.ceil(a));
-				}
-			}
-		}
-		return ceil;
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsIntHolder floor = mapInt(d -> (int) Math.floor(d));
 
-	private ObsIntHolderImpl floor = null;
-
-	@Override
-	public ObsIntHolderImpl floor() {
-		if (floor == null) {
-			synchronized (this) {
-				if (floor == null) {
-					floor = AObsObjHolder.map(this, ObsIntHolderImpl::new, a -> (int) Math.floor(a));
-				}
-			}
-		}
-		return floor;
-	}
 
 	@Override
 	public Double add(Double a, Double b) {
@@ -94,22 +78,6 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 	@Override
 	public boolean eq(Double a, Double b) {
 		return a == b;
-	}
-
-	private SimpleDoubleProperty obs = null;
-
-	@Override
-	public ObservableDoubleValue asObservableNumber() {
-		if (obs == null) {
-			waitData();
-			synchronized (this) {
-				if (obs == null) {
-					obs = new SimpleDoubleProperty();
-					follow(obs::set);
-				}
-			}
-		}
-		return obs;
 	}
 
 	@Override

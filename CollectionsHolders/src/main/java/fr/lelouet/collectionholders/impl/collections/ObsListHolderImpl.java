@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -17,22 +18,12 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 public class ObsListHolderImpl<U> extends
-AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U>> implements ObsListHolder<U> {
+AObsCollectionHolder<U, List<U>> implements ObsListHolder<U> {
 
-	@Override
-	public List<U> copy() {
-		ObservableList<U> underlying = underlying();
-		synchronized (underlying) {
-			return new ArrayList<>(underlying);
-		}
-	}
 
 	/**
 	 * create an unmodifiable list of items
@@ -45,101 +36,54 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 	 */
 	@SafeVarargs
 	public static <U> ObsListHolderImpl<U> of(U... args) {
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(FXCollections.observableArrayList(args));
-		ret.dataReceived();
-		return ret;
-	}
-
-	public ObsListHolderImpl(ObservableList<U> underlying) {
-		super(underlying);
+		return new ObsListHolderImpl<>(Arrays.asList(args));
 	}
 
 	public ObsListHolderImpl() {
-		this(FXCollections.observableArrayList());
+	}
+
+	public ObsListHolderImpl(List<U> list) {
+		super(list);
 	}
 
 	@Override
 	public void apply(BiConsumer<Integer, U> cons) {
-		waitData();
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			for (int i = 0; i < underlying().size(); i++) {
-				cons.accept(i, underlying().get(i));
-			}
-		});
-	}
-
-	@Override
-	public void followItems(ListChangeListener<? super U> listener) {
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			ObservableList<U> otherlist = FXCollections.observableArrayList();
-			otherlist.addListener(listener);
-			otherlist.addAll(underlying());
-			underlying().addListener(listener);
-		});
-	}
-
-	@Override
-	public void unfollowItems(ListChangeListener<? super U> change) {
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			underlying().removeListener(change);
-		});
+		List<U> list = get();
+		for (int i = 0; i < list.size(); i++) {
+			cons.accept(i, list.get(i));
+		}
 	}
 
 	@Override
 	public ObsListHolderImpl<U> filter(Predicate<? super U> predicate) {
-		ObservableList<U> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
 		follow((t) -> {
 			List<U> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
-			synchronized (internal) {
-				internal.clear();
-				internal.addAll(filteredList);
-			}
-			ret.dataReceived();
+			ret.set(filteredList);
 		});
 		return ret;
 	}
 
 	@Override
 	public ObsListHolderImpl<U> filterWhen(Function<? super U, ObsBoolHolder> filterer) {
-		ObservableList<U> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
 		filterWhen(filteredStream -> {
 			List<U> filteredList = filteredStream.collect(Collectors.toList());
-			synchronized (internal) {
-				internal.clear();
-				internal.addAll(filteredList);
-			}
-			ret.dataReceived();
+			ret.set(filteredList);
 		}, filterer);
 		return ret;
 	}
 
-	private ObsSetHolder<U> distinct = null;
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsSetHolder<U> distinct = makeDistinct();
 
-	@Override
-	public ObsSetHolder<U> distinct() {
-		if (distinct == null) {
-			synchronized (this) {
-				if (distinct == null) {
-					ObservableSet<U> internal = FXCollections.observableSet(new HashSet<>());
-					ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>(internal);
-					follow((l) -> {
-						boolean modified = false;
-						synchronized (internal) {
-							modified = internal.isEmpty();
-							modified = internal.retainAll(l) ? true : modified;
-							modified = internal.addAll(l) ? true : modified;
-						}
-						if (modified) {
-							ret.dataReceived();
-						}
-					});
-					distinct = ret;
-				}
-			}
-		}
-		return distinct;
+	protected ObsSetHolder<U> makeDistinct() {
+		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>();
+		follow((l) -> {
+			ret.set(new HashSet<>(l));
+		});
+		return ret;
 	}
 
 	@Override
@@ -155,16 +99,11 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		if (reverse == null) {
 			synchronized (this) {
 				if (reverse == null) {
-					ObservableList<U> internal = FXCollections.observableArrayList();
-					ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+					ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
 					follow((o) -> {
 						List<U> reverseList = new ArrayList<>(o);
 						Collections.reverse(reverseList);
-						synchronized (internal) {
-							internal.clear();
-							internal.addAll(reverseList);
-						}
-						ret.dataReceived();
+						ret.set(reverseList);
 					});
 					ret.reverse = this;
 					reverse = ret;
@@ -182,8 +121,7 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 		}
 		ObsListHolder<U>[] array = Stream.concat(Stream.of(this), lists == null ? Stream.empty() : Stream.of(lists))
 				.filter(m -> m != null).toArray(ObsListHolder[]::new);
-		ObservableList<U> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
 		LinkedHashMap<ObsListHolder<U>, List<U>> alreadyreceived = new LinkedHashMap<>();
 		for (ObsListHolder<U> m : array) {
 			m.follow(list -> {
@@ -192,11 +130,7 @@ AObsCollectionHolder<U, List<U>, ObservableList<U>, ListChangeListener<? super U
 					alreadyreceived.put(m, list);
 					if (alreadyreceived.size() == array.length) {
 						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
-						synchronized (internal) {
-							internal.clear();
-							internal.addAll(newList);
-						}
-						ret.dataReceived();
+						ret.set(newList);
 					}
 				}
 			});

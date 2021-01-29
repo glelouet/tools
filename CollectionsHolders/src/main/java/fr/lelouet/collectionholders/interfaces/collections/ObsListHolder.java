@@ -7,8 +7,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 
 /**
  * holder on an observable list. All calls should be synchronized.
@@ -30,7 +28,7 @@ import javafx.collections.ObservableList;
  * <p>
  *
  */
-public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>, ListChangeListener<? super U>> {
+public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>> {
 
 
 	@Override

@@ -5,20 +5,21 @@ import java.util.function.Consumer;
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ObservableBooleanValue;
 
 public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implements ObsBoolHolder {
+
+	public static ObsBoolHolderImpl of(boolean value) {
+		return new ObsBoolHolderImpl(value);
+	}
 
 	public ObsBoolHolderImpl() {
 	}
 
 	public ObsBoolHolderImpl(boolean value) {
-		this();
-		set(value);
+		super(value);
 	}
 
-	ObsBoolHolder not = null;
+	private ObsBoolHolder not = null;
 
 	@Override
 	public ObsBoolHolder not() {
@@ -32,22 +33,6 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 			}
 		}
 		return not;
-	}
-
-	private SimpleBooleanProperty obs = null;
-
-	@Override
-	public ObservableBooleanValue asObservableBool() {
-		if (obs == null) {
-			waitData();
-			synchronized (this) {
-				if (obs == null) {
-					obs = new SimpleBooleanProperty();
-					follow(obs::set);
-				}
-			}
-		}
-		return obs;
 	}
 
 	@SuppressWarnings("unchecked")

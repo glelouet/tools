@@ -8,8 +8,10 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsFloatHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 
@@ -40,6 +42,15 @@ public interface ObsObjHolder<U> {
 
 	/** return the internal object once it's retrieved. If this */
 	public U get();
+
+	/**
+	 *
+	 * @param defaultValue
+	 *          value to hold until this' data is available
+	 * @return a new object holder that contains the default value until it's
+	 *         replaced by this' value.
+	 */
+	public ObsObjHolder<U> or(U defaultValue);
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
@@ -119,6 +130,8 @@ public interface ObsObjHolder<U> {
 	 */
 	ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper);
 
+	ObsFloatHolder mapFloat(ToDoubleFunction<U> mapper);
+
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
 	 * into a boolean.
@@ -141,6 +154,19 @@ public interface ObsObjHolder<U> {
 	 * @return a new list holder.
 	 */
 	<V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator);
+
+	/**
+	 * create a new observable set that mirrors the value hold in this, after
+	 * transforming it into a set
+	 *
+	 * @param <V>
+	 *          the internal type of the set we generate
+	 * @param generator
+	 *          the function that transforms the value hold, in an iterable over
+	 *          the set type.
+	 * @return a new set holder.
+	 */
+	<V> ObsSetHolder<V> toSet(Function<U, Iterable<V>> generator);
 
 	/**
 	 * unpack the internal value into an internal observable field.

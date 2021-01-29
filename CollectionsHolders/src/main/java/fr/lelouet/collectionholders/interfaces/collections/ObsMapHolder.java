@@ -4,13 +4,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import javafx.beans.Observable;
-import javafx.collections.MapChangeListener;
 
 /**
  * Holder on an underlying observable map. All calls should be synchronized on
@@ -21,33 +20,16 @@ import javafx.collections.MapChangeListener;
  */
 public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 
-	/**
-	 * wait for at least one data to be received, then returns a copy of the
-	 * underlying map
-	 *
-	 * @return
-	 */
-	@Override
-	Map<K, V> get();
-
-	/**
-	 * synchronized call to the underlying map get, after the data is received.
-	 *
-	 * @param key
-	 * @return
-	 */
-	V get(K key);
-
-	V getOrDefault(K key, V defaultValue);
+	public default V at(K key) {
+		return get().get(key);
+	}
 
 	/**
 	 * create a new variable bound to the value mapped to a key
 	 *
 	 * @param key
 	 * @param defaultValue
-	 *          the value to be used in case the key is not present. Not null,
-	 *          otherwise the returned holder would not be notified the value has
-	 *          been set.
+	 *          the value to be used in case the key is not present.
 	 * @return a new variable
 	 */
 	ObsObjHolder<V> at(K key, V defaultValue);
@@ -76,47 +58,8 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	public ObsBoolHolder isEmpty();
 
 	/**
-	 * apply all existing values to the change listener, and register it as a
-	 * listener of the underlying map.
-	 *
-	 * @param change
-	 */
-	void followEntries(MapChangeListener<? super K, ? super V> change);
-
-	void unfollowEntries(MapChangeListener<? super K, ? super V> change);
-
-	void waitData();
-
-	/**
-	 * register a runnable to be run once, next time {@link #dataReceived()} is
-	 * called. The call is made in a new thread.
-	 *
-	 * @param callback
-	 *          the function to call once data is available. if data is already
-	 *          available, this callback will be called at once.
-	 */
-	public default void onWaitEnd(Runnable callback) {
-		new Thread(() -> {
-			waitData();
-			callback.run();
-		}).start();
-	}
-
-	/**
-	 * remove a listener added through {@link #follow(Runnable)}
-	 *
-	 * @param callback
-	 * @return true if the callback was added.
-	 */
-	@Override
-	public void unfollow(Consumer<Map<K, V>> callback);
-
-	/** return an observable to be notified when values are changed */
-	Observable asObservable();
-
-	/**
 	 * merge this map with other. In case of collision, use the value from the map
-	 * which has received data the last. Operates in bulk mode.
+	 * which has received data the last.
 	 *
 	 * @param m1
 	 * @param maps
@@ -147,19 +90,35 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	 */
 	ObsSetHolder<K> keys();
 
+	default ObsBoolHolder containsKey(K key) {
+		return keys().contains(key);
+	}
+
 	/**
 	 *
 	 * @return a collection holder that contains all the values contained in the
 	 *         internal collections
 	 */
-	ObsCollectionHolder<V, ?, ?> values();
+	ObsCollectionHolder<V, ?> values();
 
 	/**
 	 *
 	 * @return a collection holder that contains all the entries of the internal
 	 *         Map.
 	 */
-	ObsCollectionHolder<Entry<K, V>, ?, ?> entries();
+	ObsCollectionHolder<Entry<K, V>, ?> entries();
+
+	/**
+	 * remap the values.
+	 *
+	 * @param <U>
+	 * @param mapper
+	 *          remapper
+	 * @return a new remapped map.
+	 */
+	default <U> ObsMapHolder<K, U> mapValues(Function<V, U> mapper) {
+		return entries().toMap(Entry::getKey, e -> mapper.apply(e.getValue()));
+	}
 
 	/**
 	 * create a filtered map of this. The (key, val) couples are duplicated in the
@@ -186,7 +145,7 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	 *          null.
 	 * @return a new Observable map holder.
 	 */
-	ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?, ?> allowedKeys);
+	ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?> allowedKeys);
 
 	@Override
 	default ObsMapHolder<K, V> peek(Consumer<Map<K, V>> observer) {

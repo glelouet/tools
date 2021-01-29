@@ -13,9 +13,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,144 +21,68 @@ import org.slf4j.LoggerFactory;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
-import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsIntHolderImpl;
-import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
-import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
-import fr.lelouet.tools.synchronization.LockWatchDog;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
- *
  *
  * @param <U>
  *          The type of object hold inside
  * @param <C>
  *          The type of collection, eg list
- * @param <OC>
- *          the type of observable collection
- * @param <L>
- *          internal observer
  */
-public abstract class AObsCollectionHolder<U, C extends Collection<U>, OC extends C, L> extends ObsObjHolderSimple<C>
-implements ObsCollectionHolder<U, C, L> {
+public abstract class AObsCollectionHolder<U, C extends Collection<U>> extends ObsObjHolderSimple<C>
+implements ObsCollectionHolder<U, C> {
 
 	private static final Logger logger = LoggerFactory.getLogger(AObsCollectionHolder.class);
 
-	private final OC underlying;
-
-	public OC underlying() {
-		return underlying;
+	public AObsCollectionHolder(C item) {
+		super(item);
 	}
 
-	public AObsCollectionHolder(OC underlying) {
-		item = this.underlying = underlying;
+	public AObsCollectionHolder() {
 	}
 
-	@Override
-	public synchronized void set(C newlist) {
-		underlying().clear();
-		underlying().addAll(newlist);
-		synchronized (underlying) {
-			transmitToListeners();
-		}
-		dataReceivedLatch.countDown();
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsIntHolder size = mapInt(Collection::size);
 
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final ObsBoolHolder isEmpty = test(Collection::isEmpty);
 
-	@Override
-	public void apply(Consumer<U> cons) {
-		waitData();
-		LockWatchDog.BARKER.syncExecute(underlying(), () -> {
-			for (U u : underlying()) {
-				cons.accept(u);
-			}
-		});
-	}
 
-	private ObsIntHolder size = null;
-
-	@Override
-	public ObsIntHolder size() {
-		if (size == null) {
-			synchronized (this) {
-				if (size == null) {
-					size = mapInt(c -> c.size());
-				}
-			}
-		}
-		return size;
-	}
-
-	private ObsBoolHolder isEmpty = null;
-
-	@Override
-	public ObsBoolHolder isEmpty() {
-		if (isEmpty == null) {
-			ObsIntHolder msize = size();
-			synchronized (this) {
-				if (isEmpty == null) {
-					isEmpty = msize.eq(0);
-				}
-			}
-		}
-		return isEmpty;
-	}
-
-	/**
-	 * called by the data fetcher when data has been received. This specifies that
-	 * the items stored are consistent and can be used as a bulk.
-	 */
-	public void dataReceived() {
-		LockWatchDog.BARKER.syncExecute(this, () -> {
-			dataReceivedLatch.countDown();
-			transmitToListeners();
-		});
-	}
 
 	@Override
 	public <K> ObsListHolderImpl<K> mapItems(Function<U, K> mapper) {
-		ObservableList<K> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>();
 		follow((o) -> {
 			List<K> mappedList = o.stream().map(mapper).collect(Collectors.toList());
-			synchronized (internal) {
-				internal.clear();
-				internal.addAll(mappedList);
-			}
-			ret.dataReceived();
+			ret.set(mappedList);
 		});
 		return ret;
 	}
 
 	@Override
 	public ObsListHolder<U> sorted(Comparator<U> comparator) {
-		ObservableList<U> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>(internal);
+		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
 		follow((o) -> {
 			List<U> sortedList = new ArrayList<>(o);
 			Collections.sort(sortedList, comparator);
-			synchronized (internal) {
-				internal.clear();
-				internal.addAll(sortedList);
-			}
-			ret.dataReceived();
+			ret.set(sortedList);
 		});
 		return ret;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?, ?> right, BiFunction<U, V, O> operand) {
-		ObservableList<O> internal = FXCollections.observableArrayList();
-		ObsListHolderImpl<O> ret = new ObsListHolderImpl<>(internal);
+	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?> right, BiFunction<U, V, O> operand) {
+		ObsListHolderImpl<O> ret = new ObsListHolderImpl<>();
 		Collection<U>[] leftCollection = new Collection[1];
 		Collection<V>[] rightCollection = new Collection[1];
 		Runnable update = () -> {
@@ -169,49 +90,17 @@ implements ObsCollectionHolder<U, C, L> {
 				List<O> newproduct = leftCollection[0].stream()
 						.flatMap(leftElem -> rightCollection[0].stream().map(rightElem -> operand.apply(leftElem, rightElem)))
 						.collect(Collectors.toList());
-				synchronized (internal) {
-					internal.clear();
-					internal.addAll(newproduct);
-				}
-				ret.dataReceived();
+				ret.set(newproduct);
 			}
 		};
-		follow((o) -> {
-			leftCollection[0] = o;
+		follow((lo) -> {
+			leftCollection[0] = lo;
 			update.run();
 		});
-		right.follow((o) -> {
-			rightCollection[0] = o;
+		right.follow((ro) -> {
+			rightCollection[0] = ro;
 			update.run();
 		});
-		return ret;
-	}
-
-	@Override
-	public <V> ObsObjHolder<V> reduce(Function<C, V> collectionReducer) {
-		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
-		follow((l) -> ret.set(collectionReducer.apply(l)));
-		return ret;
-	}
-
-	@Override
-	public ObsIntHolderImpl reduceInt(ToIntFunction<C> collectionReducer) {
-		ObsIntHolderImpl ret = new ObsIntHolderImpl();
-		follow((l) -> ret.set(collectionReducer.applyAsInt(l)));
-		return ret;
-	}
-
-	@Override
-	public ObsDoubleHolder reduceDouble(ToDoubleFunction<C> collectionReducer) {
-		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
-		follow((l) -> ret.set(collectionReducer.applyAsDouble(l)));
-		return ret;
-	}
-
-	@Override
-	public ObsLongHolder reduceLong(ToLongFunction<C> collectionReducer) {
-		ObsLongHolderImpl ret = new ObsLongHolderImpl();
-		follow((l) -> ret.set(collectionReducer.applyAsLong(l)));
 		return ret;
 	}
 
@@ -237,7 +126,7 @@ implements ObsCollectionHolder<U, C, L> {
 	 */
 	private class ObsFlattenData<V, C2 extends Collection<V>> {
 
-		private ObsCollectionHolder<V, C2, ?> observed = null;
+		private ObsCollectionHolder<V, C2> observed = null;
 
 		private C2 lastReceived = null;
 
@@ -249,7 +138,7 @@ implements ObsCollectionHolder<U, C, L> {
 
 		private String debug = null;
 
-		public ObsFlattenData(ObsCollectionHolder<V, C2, ?> observed, Runnable updater, String debug) {
+		public ObsFlattenData(ObsCollectionHolder<V, C2> observed, Runnable updater, String debug) {
 			this.observed = observed;
 			this.updater = updater;
 			this.debug = debug;
@@ -290,14 +179,13 @@ implements ObsCollectionHolder<U, C, L> {
 	}
 
 	@Override
-	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper) {
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2>> mapper) {
 		return flatten(mapper, null);
 	}
 
-	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2, ?>> mapper,
+	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2>> mapper,
 			String debuger) {
-		ObservableList<V> underlying = FXCollections.observableArrayList();
-		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>(underlying);
+		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>();
 
 		/**
 		 * for each item of the collection, the known corresponding obsmapholder we
@@ -321,10 +209,7 @@ implements ObsCollectionHolder<U, C, L> {
 					if (debuger != null) {
 						logger.debug(debuger + " flatten got all collections, propagating data " + newlist);
 					}
-					synchronized (underlying) {
-						underlying.setAll(newlist);
-					}
-					ret.dataReceived();
+					ret.set(newlist);
 				} else {
 					// some data did not produce a collection yet.
 					if (debuger != null) {
@@ -357,7 +242,7 @@ implements ObsCollectionHolder<U, C, L> {
 				}
 			}
 			for (U u : toAdd) {
-				ObsCollectionHolder<V, C2, ?> converted = mapper.apply(u);
+				ObsCollectionHolder<V, C2> converted = mapper.apply(u);
 				ObsFlattenData<V, C2> holder = new ObsFlattenData<>(converted, tryUpdate, debuger);
 				synchronized (mappedvalues) {
 					mappedvalues.put(u, holder);
@@ -437,18 +322,18 @@ implements ObsCollectionHolder<U, C, L> {
 
 	@Override
 	public int hashCode() {
-		return dataReceivedLatch.getCount() == 0 ? 0 : underlying().hashCode();
+		return isDataAvailable() ? 0 : get().hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj.getClass() == this.getClass()) {
-			AObsCollectionHolder<?, ?, ?, ?> other = (AObsCollectionHolder<?, ?, ?, ?>) obj;
+			AObsCollectionHolder<?, ?> other = (AObsCollectionHolder<?, ?>) obj;
 			// equals if same status of data received AND same data received, if
 			// received.
-			return dataReceivedLatch.getCount() != 0 && other.dataReceivedLatch.getCount() != 0
-					|| dataReceivedLatch.getCount() == 0 && other.dataReceivedLatch.getCount() == 0
-					&& underlying().equals(other.underlying());
+			return !isDataAvailable() && !other.isDataAvailable()
+					|| isDataAvailable() && other.isDataAvailable()
+					&& get().equals(other.get());
 		}
 		return false;
 	}

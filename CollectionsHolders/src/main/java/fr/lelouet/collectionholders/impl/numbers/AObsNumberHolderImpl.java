@@ -11,6 +11,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsNumberHolder;
 public abstract class AObsNumberHolderImpl<Contained extends Number, Self extends ObsNumberHolder<Contained, Self>>
 extends NotNullObsObjHolderImpl<Contained> implements ObsNumberHolder<Contained, Self> {
 
+	public AObsNumberHolderImpl() {
+	}
+
+	public AObsNumberHolderImpl(Contained value) {
+		super(value);
+	}
 
 	@Override
 	public ObsBoolHolder test(Predicate<Contained> test) {

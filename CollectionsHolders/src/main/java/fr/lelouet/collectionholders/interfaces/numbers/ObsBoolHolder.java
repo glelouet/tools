@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
-import javafx.beans.value.ObservableBooleanValue;
 
 /**
  * holder over a boolean. Contains logical values, like and or not xor.
@@ -44,8 +43,6 @@ public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 	 * @return
 	 */
 	public ObsBoolHolder not();
-
-	public ObservableBooleanValue asObservableBool();
 
 	@Override
 	ObsBoolHolder peek(Consumer<Boolean> observer);
