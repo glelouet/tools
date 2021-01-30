@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -14,8 +15,30 @@ import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
-public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>>
-implements ObsSetHolder<U> {
+/**
+ *
+ * /** implementation of the writable Set holder.
+ * <p>
+ * the set methods modifies the stored data : a null data is translated to
+ * {@link Collections.#emptySet()}, while a non null map is translated to
+ * {@link Collections.#unmodifiableSet(Set)}.
+ * </p>
+ *
+ * @param <U>
+ */
+public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> implements ObsSetHolder<U> {
+
+	public ObsSetHolderImpl(Set<U> set) {
+		super(set);
+	}
+
+	public ObsSetHolderImpl() {
+	}
+
+	@Override
+	public synchronized void set(Set<U> newitem) {
+		super.set(newitem == null ? Collections.emptySet() : Collections.unmodifiableSet(newitem));
+	}
 
 	/**
 	 * create a unmodifiable observable set of items
@@ -29,13 +52,6 @@ implements ObsSetHolder<U> {
 	@SafeVarargs
 	public static <U> ObsSetHolderImpl<U> of(U... items) {
 		return new ObsSetHolderImpl<>(new HashSet<>(Arrays.asList(items)));
-	}
-
-	public ObsSetHolderImpl(Set<U> set) {
-		super(set);
-	}
-
-	public ObsSetHolderImpl() {
 	}
 
 	@Override

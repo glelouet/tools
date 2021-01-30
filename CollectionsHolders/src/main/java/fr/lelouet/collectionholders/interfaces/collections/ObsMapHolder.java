@@ -12,17 +12,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 
 /**
- * Holder on an underlying observable map. All calls should be synchronized on
- * the underlying observable map.
+ * Holder on an underlying observable map.
  *
  * @param <K>
  * @param <V>
  */
 public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
-
-	public default V at(K key) {
-		return get().get(key);
-	}
 
 	/**
 	 * create a new variable bound to the value mapped to a key
@@ -55,6 +50,11 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	 */
 	public ObsIntHolder size();
 
+	/**
+	 *
+	 * @return an internal cached variable constraiend to be true when the data is
+	 *         an empyt list, false otherwise.
+	 */
 	public ObsBoolHolder isEmpty();
 
 	/**

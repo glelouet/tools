@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,9 +20,30 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
-public class ObsListHolderImpl<U> extends
-AObsCollectionHolder<U, List<U>> implements ObsListHolder<U> {
+/**
+ *
+ * implementation of the writable List holder.
+ * <p>
+ * the {@link #set(List)} methods modifies the stored data : a null data is
+ * translated to {@link Collections.#emptyList()}, while a non null map is
+ * translated to {@link Collections.#unmodifiableList(List)}
+ * </p>
+ *
+ * @param <U>
+ */
+public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> implements ObsListHolder<U> {
 
+	public ObsListHolderImpl() {
+	}
+
+	public ObsListHolderImpl(List<U> list) {
+		super(list);
+	}
+
+	@Override
+	public synchronized void set(List<U> newitem) {
+		super.set(newitem == null ? Collections.emptyList() : Collections.unmodifiableList(newitem));
+	}
 
 	/**
 	 * create an unmodifiable list of items
@@ -37,21 +57,6 @@ AObsCollectionHolder<U, List<U>> implements ObsListHolder<U> {
 	@SafeVarargs
 	public static <U> ObsListHolderImpl<U> of(U... args) {
 		return new ObsListHolderImpl<>(Arrays.asList(args));
-	}
-
-	public ObsListHolderImpl() {
-	}
-
-	public ObsListHolderImpl(List<U> list) {
-		super(list);
-	}
-
-	@Override
-	public void apply(BiConsumer<Integer, U> cons) {
-		List<U> list = get();
-		for (int i = 0; i < list.size(); i++) {
-			cons.accept(i, list.get(i));
-		}
 	}
 
 	@Override

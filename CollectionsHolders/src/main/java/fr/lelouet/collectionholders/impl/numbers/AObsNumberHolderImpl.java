@@ -1,7 +1,6 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
@@ -16,11 +15,6 @@ extends NotNullObsObjHolderImpl<Contained> implements ObsNumberHolder<Contained,
 
 	public AObsNumberHolderImpl(Contained value) {
 		super(value);
-	}
-
-	@Override
-	public ObsBoolHolder test(Predicate<Contained> test) {
-		return AObsObjHolder.map(this, ObsBoolHolderImpl::new, a -> test.test(a));
 	}
 
 	@Override

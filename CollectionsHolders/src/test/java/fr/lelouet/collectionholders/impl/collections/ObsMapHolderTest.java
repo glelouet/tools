@@ -50,9 +50,9 @@ public class ObsMapHolderTest {
 
 		ObsMapHolder<String, String> merged = m1.merge((a, b) -> a + b, m2);
 
-		Assert.assertEquals(merged.at("a"), "a");
-		Assert.assertEquals(merged.at("b"), "ab");
-		Assert.assertEquals(merged.at("c"), "b");
+		Assert.assertEquals(merged.get().get("a"), "a");
+		Assert.assertEquals(merged.get().get("b"), "ab");
+		Assert.assertEquals(merged.get().get("c"), "b");
 
 	}
 
@@ -100,8 +100,8 @@ public class ObsMapHolderTest {
 	public void testOf() {
 		String[][] map = { { "a", "aa" }, { "b", "bb" } };
 		ObsMapHolderImpl<String, String> test = ObsMapHolderImpl.of(map);
-		Assert.assertEquals(test.at("a"), "aa");
-		Assert.assertEquals(test.at("b"), "bb");
+		Assert.assertEquals(test.get().get("a"), "aa");
+		Assert.assertEquals(test.get().get("b"), "bb");
 		Assert.assertEquals(test.at("a", "n").get(), "aa");
 		Assert.assertEquals(test.at("b", "n").get(), "bb");
 	}
@@ -129,9 +129,9 @@ public class ObsMapHolderTest {
 		imap.put("b1", "bb");
 		map.set(imap);
 		Assert.assertEquals(test.size().get(), (Integer) 1);
-		Assert.assertEquals(test.at("a1"), "aa");
-		Assert.assertEquals(test.at("a2"), null);
-		Assert.assertEquals(test.at("b1"), null);
+		Assert.assertEquals(test.get().get("a1"), "aa");
+		Assert.assertEquals(test.get().get("a2"), null);
+		Assert.assertEquals(test.get().get("b1"), null);
 	}
 
 }

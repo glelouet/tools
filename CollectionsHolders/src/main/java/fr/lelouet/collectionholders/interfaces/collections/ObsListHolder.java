@@ -1,49 +1,40 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
 /**
- * holder on an observable list. All calls should be synchronized.
- * <p>
- * an {@link ObsListHolder} is a layer over a {@link ObservableList}. It
- * provides methods to
- * <ul>
- * <li>{@link #followItems(ListChangeListener)} and
- * {@link #unfollowItems(ListChangeListener)} the events in the underlying list.
- * Already processed events are processed again, so existing items will trigger
- * an event</li>
- * <li>{@link #get()} the internal data or {@link #apply(BiConsumer)} a
- * consumer.</li>
- * <li>{@link #waitData() wait} for data to be acquired at least once. Typically
- * a call to {@link #get()} or to {@link #apply(BiConsumer)} results in a call
- * to this method, but {@link #followItems(ListChangeListener)} does not, so a result
- * produced by using follow should be used after a call to this method.</li>
- * </ul>
- * <p>
+ * holder on an observable list.
  *
  */
 public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>> {
 
+	/**
+	 * map the list to a specific index, or a default value in case the list is
+	 * too small.
+	 *
+	 * @param position
+	 *          index in the list if positive, from the end if negative.
+	 * @param oob
+	 *          default value to return when the list size is too small.
+	 * @return a new holder linked to the item at the given position.
+	 */
+	public default ObsObjHolder<U> pos(int position, U oob) {
+		return map(
+				l -> position < l.size() && -position <= l.size() ? l.get(position >= 0 ? position : l.size() - 1 - position)
+						: oob);
+	}
 
 	@Override
 	default ObsListHolder<U> peek(Consumer<List<U>> observer) {
 		follow(observer);
 		return this;
 	}
-
-	/**
-	 * wait for at least one element to be added, then apply the consumer to the
-	 * (index,elements) couples.
-	 *
-	 * @param cons
-	 */
-	public void apply(BiConsumer<Integer, U> cons);
 
 	/**
 	 *

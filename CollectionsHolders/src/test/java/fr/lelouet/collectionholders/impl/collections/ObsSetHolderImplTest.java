@@ -58,7 +58,7 @@ public class ObsSetHolderImplTest {
 		ObsSetHolderImpl<String> test = new ObsSetHolderImpl<>(internal);
 
 		ObsMapHolder<String, Integer> sizes = test.toMap(s -> s, s -> s.length());
-		Assert.assertEquals((int) sizes.at("a"), 1);
+		Assert.assertEquals((int) sizes.get().get("a"), 1);
 	}
 
 }

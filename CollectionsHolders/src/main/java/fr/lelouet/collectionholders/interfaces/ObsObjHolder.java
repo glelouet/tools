@@ -40,7 +40,10 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
  */
 public interface ObsObjHolder<U> {
 
-	/** return the internal object once it's retrieved. If this */
+	/**
+	 * return the internal object once it's available. If this is not available,
+	 * blocks until then
+	 */
 	public U get();
 
 	/**
@@ -51,6 +54,24 @@ public interface ObsObjHolder<U> {
 	 *         replaced by this' value.
 	 */
 	public ObsObjHolder<U> or(U defaultValue);
+
+	/**
+	 *
+	 * @param <V>
+	 *          returned hold type
+	 * @param condition
+	 *          a condition on this' data
+	 * @param whentrue
+	 *          converter of the data when the condition is met.
+	 * @param whenFalse
+	 *          converter of the data when the condition is not met.
+	 * @return a new object holder that will contain a the application of whentrue
+	 *         to this' data when the condition is met, or the application of
+	 *         whenfalse otherwise
+	 */
+	public default <V> ObsObjHolder<V> when(Predicate<U> condition, Function<U, V> whentrue, Function<U, V> whenFalse) {
+		return map(o -> condition.test(o) ? whentrue.apply(o) : whenFalse.apply(o));
+	}
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the

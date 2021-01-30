@@ -56,8 +56,6 @@ implements ObsCollectionHolder<U, C> {
 	@Accessors(fluent = true)
 	private final ObsBoolHolder isEmpty = test(Collection::isEmpty);
 
-
-
 	@Override
 	public <K> ObsListHolderImpl<K> mapItems(Function<U, K> mapper) {
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>();
@@ -332,8 +330,7 @@ implements ObsCollectionHolder<U, C> {
 			// equals if same status of data received AND same data received, if
 			// received.
 			return !isDataAvailable() && !other.isDataAvailable()
-					|| isDataAvailable() && other.isDataAvailable()
-					&& get().equals(other.get());
+					|| isDataAvailable() && other.isDataAvailable() && get().equals(other.get());
 		}
 		return false;
 	}

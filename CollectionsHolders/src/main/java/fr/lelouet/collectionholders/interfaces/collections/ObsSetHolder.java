@@ -43,4 +43,5 @@ public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>> {
 	@Override
 	ObsSetHolder<U> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
+
 }

@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,7 +24,34 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+/**
+ * implementation of the writable Map holder.
+ * <p>
+ * the set methods modifies the stored data : a null data is translated to
+ * {@link Collections.#emptyMap()}, while a non null map is translated to
+ * {@link Collections.#unmodifiableMap(Map)}.
+ * </p>
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implements ObsMapHolder<K, V> {
+
+	public ObsMapHolderImpl(Map<K, V> map) {
+		super(map);
+	}
+
+	public ObsMapHolderImpl() {
+	}
+
+	@Override
+	public synchronized void set(Map<K, V> newitem) {
+		super.set(newitem == null ? Collections.emptyMap() : Collections.unmodifiableMap(newitem));
+	}
+
+	//
+	// tools
+	//
 
 	/**
 	 * create an unmodifiable map of items. Will fail if keyvals is not exactly an
@@ -44,17 +72,6 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 		Map<K, V> mapped = Stream.of(keyvals).collect(Collectors.toMap(arr -> (K) arr[0], arr -> (V) arr[1]));
 		return new ObsMapHolderImpl<>(mapped);
 	}
-
-	public ObsMapHolderImpl(Map<K, V> map) {
-		super(map);
-	}
-
-	public ObsMapHolderImpl() {
-	}
-
-	//
-	// tools
-	//
 
 	/**
 	 * transforms an observable list into a map, by extracting the key from the

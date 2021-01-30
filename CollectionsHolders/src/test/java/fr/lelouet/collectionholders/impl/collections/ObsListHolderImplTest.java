@@ -45,37 +45,37 @@ public class ObsListHolderImplTest {
 		ObsMapHolder<Integer, String> mapSize2StringLate = test.toMap(s -> s.length());
 		ObsMapHolder<String, Integer> mapString2SizeLate = test.toMap(s -> s, s -> s.length());
 
-		Assert.assertEquals(mapSize2String.at(1), "a");
-		Assert.assertEquals(mapSize2String.at(2), "bb");
+		Assert.assertEquals(mapSize2String.get().get(1), "a");
+		Assert.assertEquals(mapSize2String.get().get(2), "bb");
 
-		Assert.assertEquals(mapSize2StringLate.at(1), "a");
-		Assert.assertEquals(mapSize2StringLate.at(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.get().get(1), "a");
+		Assert.assertEquals(mapSize2StringLate.get().get(2), "bb");
 
-		Assert.assertEquals(mapString2Size.at("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.at("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.get().get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get().get("bb"), (Integer) 2);
 
-		Assert.assertEquals(mapString2SizeLate.at("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.at("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.get().get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get().get("bb"), (Integer) 2);
 
 		test.set(Arrays.asList("a", "bb", "c", "ddd"));
 
-		Assert.assertEquals(mapSize2String.at(1), "c");
-		Assert.assertEquals(mapSize2String.at(2), "bb");
-		Assert.assertEquals(mapSize2String.at(3), "ddd");
+		Assert.assertEquals(mapSize2String.get().get(1), "c");
+		Assert.assertEquals(mapSize2String.get().get(2), "bb");
+		Assert.assertEquals(mapSize2String.get().get(3), "ddd");
 
-		Assert.assertEquals(mapSize2StringLate.at(1), "c");
-		Assert.assertEquals(mapSize2StringLate.at(2), "bb");
-		Assert.assertEquals(mapSize2StringLate.at(3), "ddd");
+		Assert.assertEquals(mapSize2StringLate.get().get(1), "c");
+		Assert.assertEquals(mapSize2StringLate.get().get(2), "bb");
+		Assert.assertEquals(mapSize2StringLate.get().get(3), "ddd");
 
-		Assert.assertEquals(mapString2Size.at("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.at("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2Size.at("c"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.at("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2Size.get().get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get().get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2Size.get().get("c"), (Integer) 1);
+		Assert.assertEquals(mapString2Size.get().get("ddd"), (Integer) 3);
 
-		Assert.assertEquals(mapString2SizeLate.at("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.at("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2SizeLate.at("c"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.at("ddd"), (Integer) 3);
+		Assert.assertEquals(mapString2SizeLate.get().get("a"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get().get("bb"), (Integer) 2);
+		Assert.assertEquals(mapString2SizeLate.get().get("c"), (Integer) 1);
+		Assert.assertEquals(mapString2SizeLate.get().get("ddd"), (Integer) 3);
 	}
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
