@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
+import fr.lelouet.collectionholders.impl.collections.ObsMapHolderImpl;
 import fr.lelouet.collectionholders.impl.collections.ObsSetHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.impl.numbers.ObsDoubleHolderImpl;
@@ -26,6 +28,7 @@ import fr.lelouet.collectionholders.impl.numbers.ObsLongHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
@@ -85,6 +88,28 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
 		follow((newValue) -> ret.set(mapper.applyAsDouble(newValue)), ret);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <K> ObsListHolder<K> mapList(Function<U, List<K>> mapper) {
+		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>();
+		follow((newValue) -> {
+			List<K> newlist = mapper.apply(newValue);
+			ret.set(newlist);
+		}, ret);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <K, V> ObsMapHolder<K, V> mapMap(Function<U, Map<K, V>> mapper) {
+		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>();
+		follow((newValue) -> {
+			Map<K, V> newlist = mapper.apply(newValue);
+			ret.set(newlist);
+		}, ret);
 		return ret;
 	}
 

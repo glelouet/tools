@@ -1,5 +1,7 @@
 package fr.lelouet.collectionholders.interfaces;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -8,6 +10,7 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
+import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
@@ -152,6 +155,10 @@ public interface ObsObjHolder<U> {
 	ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper);
 
 	ObsFloatHolder mapFloat(ToDoubleFunction<U> mapper);
+
+	<K, V> ObsMapHolder<K, V> mapMap(Function<U, Map<K, V>> mapper);
+
+	<K> ObsListHolder<K> mapList(Function<U, List<K>> mapper);
 
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
