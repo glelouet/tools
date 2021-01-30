@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -209,4 +210,6 @@ public interface ObsObjHolder<U> {
 	 * @return
 	 */
 	<V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker);
+
+	public <V, R> ObsObjHolder<R> with(ObsObjHolder<V> other, BiFunction<U, V, R> mapper);
 }

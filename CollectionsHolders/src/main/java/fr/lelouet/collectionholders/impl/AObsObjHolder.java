@@ -168,47 +168,32 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		HolderType ret = creator.get();
 		AType[] ah = (AType[]) new Object[1];
 		Btype[] bh = (Btype[]) new Object[1];
-		HashSet<Object> received = new HashSet<>();
+		boolean[] receipt = new boolean[] { false, false };
 		Runnable update = () -> {
-			if (received.size() == 2) {
-				ResType joined = null;
-				if (ah[0] != null) {
-					synchronized (ah[0]) {
-						if (bh[0] != null) {
-							synchronized (bh[0]) {
-								joined = joiner.apply(ah[0], bh[0]);
-							}
-						} else {
-							joined = joiner.apply(ah[0], bh[0]);
-						}
-					}
-				} else {
-					if (bh[0] != null) {
-						synchronized (bh[0]) {
-							joined = joiner.apply(ah[0], bh[0]);
-						}
-					} else {
-						joined = joiner.apply(ah[0], bh[0]);
-					}
-				}
-				ret.set(joined);
+			if (receipt[0] && receipt[1]) {
+				ret.set(joiner.apply(ah[0], bh[0]));
 			}
 		};
 		a.follow((newValue) -> {
-			synchronized (received) {
-				received.add(a);
+			synchronized (receipt) {
+				receipt[0] = true;
 				ah[0] = newValue;
 				update.run();
 			}
 		}, ret);
 		b.follow((newValue) -> {
-			synchronized (received) {
-				received.add(b);
+			synchronized (receipt) {
+				receipt[1] = true;
 				bh[0] = newValue;
 				update.run();
 			}
 		}, ret);
 		return ret;
+	}
+
+	@Override
+	public <V, R> ObsObjHolder<R> with(ObsObjHolder<V> other, BiFunction<U, V, R> mapper) {
+		return join(this, other, ObsObjHolderSimple::new, mapper);
 	}
 
 	/**
@@ -307,23 +292,5 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	public <V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker) {
 		return unPack(this, unpacker);
 	}
-
-	// public static <V, W> ObsCollectionHolder<W, ?, ?> unPackCol(ObsObjHolder<V>
-	// target,
-	// Function<V, ObsCollectionHolder<W, ?, ?>> unpacker) {
-	// ObsListHolderImpl<W> ret = new ObsListHolderImpl<>();
-	// @SuppressWarnings("unchecked")
-	// ObsCollectionHolder<W, ?, ?>[] last = new ObsCollectionHolder[1];
-	// Consumer<Collection<W>> cons = v -> ret.underlying().setAll(v);
-	// target.follow(u -> {
-	// if (last[0] != null) {
-	// last[0].unfollow(cons);
-	// }
-	// last[0] = unpacker.apply(u);
-	// last[0].follow(cons);
-	// });
-	//
-	// return ret;
-	// }
 
 }
