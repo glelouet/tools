@@ -276,14 +276,16 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	@SuppressWarnings("unchecked")
 	public static <V, W> ObsObjHolder<W> unPack(ObsObjHolder<V> target, Function<V, ObsObjHolder<W>> unpacker) {
 		ObsObjHolderSimple<W> ret = new ObsObjHolderSimple<>();
-		ObsObjHolder<W>[] last = new ObsObjHolder[1];
+		ObsObjHolder<W>[] storeHolder = new ObsObjHolder[1];
 		Consumer<W> cons = v -> ret.set(v);
 		target.follow(u -> {
-			if (last[0] != null) {
-				last[0].unfollow(cons);
+			if (storeHolder[0] != null) {
+				storeHolder[0].unfollow(cons);
 			}
-			last[0] = unpacker.apply(u);
-			last[0].follow(cons, ret);
+			storeHolder[0] = unpacker.apply(u);
+			if (storeHolder[0] != null) {
+				storeHolder[0].follow(cons, ret);
+			}
 		}, ret);
 		return ret;
 	}

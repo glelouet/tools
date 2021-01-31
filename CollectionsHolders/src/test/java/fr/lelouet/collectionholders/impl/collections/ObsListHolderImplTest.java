@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.impl.collections;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -36,47 +37,13 @@ public class ObsListHolderImplTest {
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testMap() {
-		ObsListHolderImpl<String> test = new ObsListHolderImpl<>();
-		ObsMapHolder<Integer, String> mapSize2String = test.toMap(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2Size = test.toMap(s -> s, s -> s.length());
-
-		test.set(Arrays.asList("a", "bb"));
-
-		ObsMapHolder<Integer, String> mapSize2StringLate = test.toMap(s -> s.length());
-		ObsMapHolder<String, Integer> mapString2SizeLate = test.toMap(s -> s, s -> s.length());
-
-		Assert.assertEquals(mapSize2String.get().get(1), "a");
-		Assert.assertEquals(mapSize2String.get().get(2), "bb");
-
-		Assert.assertEquals(mapSize2StringLate.get().get(1), "a");
-		Assert.assertEquals(mapSize2StringLate.get().get(2), "bb");
-
-		Assert.assertEquals(mapString2Size.get().get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get().get("bb"), (Integer) 2);
-
-		Assert.assertEquals(mapString2SizeLate.get().get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get().get("bb"), (Integer) 2);
-
-		test.set(Arrays.asList("a", "bb", "c", "ddd"));
-
-		Assert.assertEquals(mapSize2String.get().get(1), "c");
-		Assert.assertEquals(mapSize2String.get().get(2), "bb");
-		Assert.assertEquals(mapSize2String.get().get(3), "ddd");
-
-		Assert.assertEquals(mapSize2StringLate.get().get(1), "c");
-		Assert.assertEquals(mapSize2StringLate.get().get(2), "bb");
-		Assert.assertEquals(mapSize2StringLate.get().get(3), "ddd");
-
-		Assert.assertEquals(mapString2Size.get().get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get().get("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2Size.get().get("c"), (Integer) 1);
-		Assert.assertEquals(mapString2Size.get().get("ddd"), (Integer) 3);
-
-		Assert.assertEquals(mapString2SizeLate.get().get("a"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get().get("bb"), (Integer) 2);
-		Assert.assertEquals(mapString2SizeLate.get().get("c"), (Integer) 1);
-		Assert.assertEquals(mapString2SizeLate.get().get("ddd"), (Integer) 3);
+		ObsListHolderImpl<String> source = ObsListHolderImpl.of("a", "b", "c", "d");
+		ObsObjHolder<String> test = source.map(l -> l.stream().collect(Collectors.joining()));
+		Assert.assertEquals(test.get(), "abcd");
+		source.set("a", "b", "b");
+		Assert.assertEquals(test.get(), "abb");
 	}
+
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testFilter() {

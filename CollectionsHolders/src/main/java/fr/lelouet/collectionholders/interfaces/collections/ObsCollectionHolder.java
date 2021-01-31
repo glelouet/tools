@@ -73,11 +73,21 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	/**
 	 * map each item in this to a new item in another collection
 	 *
-	 * @param <K>
-	 * @param <D>
-	 * @return
+	 * @return a new collection that contains the mapping this data through the
+	 *         mapper
 	 */
 	public <K> ObsCollectionHolder<K, ?> mapItems(Function<U, K> mapper);
+
+	/**
+	 * For each item in this, create a holder using a mapper, and update a
+	 * collection with the data of the holders. The returned collection is updated
+	 * when
+	 *
+	 * @param unpacker
+	 * @return a new collection that contains the mapping this data through the
+	 *         mapper
+	 */
+	public <K> ObsCollectionHolder<K, ?> unpackItems(Function<U, ObsObjHolder<K>> unpacker);
 
 	/**
 	 * map this collection to a new Map. In case of collision in the key function,
@@ -206,7 +216,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	 * @param mapper
 	 *          the function to convert each element in the collection, to a
 	 *          collection of V.
-	 * @return a new collectionholder that contains the items holds in the sub
+	 * @return a new collection holder that contains the items holds in the sub
 	 *         collections.
 	 */
 	public <V, C2 extends Collection<V>> ObsListHolder<V> flatten(Function<U, ObsCollectionHolder<V, C2>> mapper);

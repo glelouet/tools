@@ -45,6 +45,11 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		super.set(newitem == null ? Collections.emptyList() : Collections.unmodifiableList(newitem));
 	}
 
+	@SuppressWarnings("unchecked")
+	public synchronized void set(U... items) {
+		super.set(items == null ? Collections.emptyList() : Arrays.asList(items));
+	}
+
 	/**
 	 * create an unmodifiable list of items
 	 *

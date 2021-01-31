@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsCollectionHolder;
@@ -258,6 +257,58 @@ implements ObsCollectionHolder<U, C> {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public <K> ObsCollectionHolder<K, ?> unpackItems(Function<U, ObsObjHolder<K>> mapper) {
+		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>();
+		Object lock = new Object();
+		List<ObsObjHolder<K>> holders = new ArrayList<>();
+		List<Consumer<K>> followers = new ArrayList<>();
+		List<Boolean> receipt = new ArrayList<>();
+		List<K> received = new ArrayList<>();
+		Runnable update = () -> {
+			synchronized (lock) {
+				for (boolean b : receipt) {
+					if (!b) {
+						return;
+					}
+				}
+				ret.set(new ArrayList<>(received));
+			}
+		};
+		follow(l -> {
+			ObsObjHolder<K>[] mapped = l.stream().map(mapper).toArray(ObsObjHolder[]::new);
+			synchronized (lock) {
+				for (int i = 0; i < holders.size(); i++) {
+					holders.get(i).unfollow(followers.get(i));
+				}
+				holders.clear();
+				receipt.clear();
+				followers.clear();
+				received.clear();
+				for (int i = 0; i < mapped.length; i++) {
+					ObsObjHolder<K> h = mapped[i];
+					receipt.add(false);
+					holders.add(h);
+					received.add(null);
+					int fj = i;
+					Consumer<K> c = k -> {
+						synchronized (lock) {
+							receipt.set(fj, true);
+							received.set(fj, k);
+						}
+						update.run();
+					};
+					followers.add(c);
+				}
+			}
+			for (int i = 0; i < mapped.length; i++) {
+				holders.get(i).follow(followers.get(i), ret);
+			}
+		});
+		return ret;
+	}
+
 	/**
 	 * filter and applies the values
 	 *
@@ -333,11 +384,6 @@ implements ObsCollectionHolder<U, C> {
 					|| isDataAvailable() && other.isDataAvailable() && get().equals(other.get());
 		}
 		return false;
-	}
-
-	@Override
-	public <T> ObsObjHolder<T> unPack(Function<C, ObsObjHolder<T>> unpacker) {
-		return AObsObjHolder.unPack(this, unpacker);
 	}
 
 }
