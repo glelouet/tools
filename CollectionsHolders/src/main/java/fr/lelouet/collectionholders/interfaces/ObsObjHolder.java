@@ -212,4 +212,8 @@ public interface ObsObjHolder<U> {
 	<V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker);
 
 	public <V, R> ObsObjHolder<R> with(ObsObjHolder<V> other, BiFunction<U, V, R> mapper);
+
+	@SuppressWarnings("unchecked")
+	public <V> ObsObjHolder<V> reduce(Function<List<? extends U>, V> reducer, ObsObjHolder<? extends U> first,
+			ObsObjHolder<? extends U>... others);
 }

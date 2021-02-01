@@ -1,7 +1,6 @@
 package fr.lelouet.collectionholders.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +14,7 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import fr.lelouet.collectionholders.impl.collections.ObsListHolderImpl;
@@ -141,11 +141,11 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	//
 
 	/**
-	 * join two observable object holder into a third one
+	 * reduce two different observable type holder into a third one.
 	 *
 	 * @param <AType>
 	 *          type of the first object hold
-	 * @param <Btype>
+	 * @param <BType>
 	 *          type of second object hold
 	 * @param <ResType>
 	 *          joined type
@@ -162,29 +162,29 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	 * @return a new variable bound to the application of the joiner on a and b.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <AType, Btype, ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>> HolderType join(
-			ObsObjHolder<AType> a, ObsObjHolder<Btype> b, Supplier<HolderType> creator,
-			BiFunction<AType, Btype, ResType> joiner) {
+	public static <AType, BType, ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>> HolderType reduce(
+			ObsObjHolder<AType> a, ObsObjHolder<BType> b, Supplier<HolderType> creator,
+			BiFunction<AType, BType, ResType> joiner) {
 		HolderType ret = creator.get();
-		AType[] ah = (AType[]) new Object[1];
-		Btype[] bh = (Btype[]) new Object[1];
 		boolean[] receipt = new boolean[] { false, false };
+		HashMap<Integer, Object> received = new HashMap<>();
 		Runnable update = () -> {
 			if (receipt[0] && receipt[1]) {
-				ret.set(joiner.apply(ah[0], bh[0]));
+				ResType joined = joiner.apply((AType) received.get(0), (BType) received.get(1));
+				ret.set(joined);
 			}
 		};
-		a.follow((newValue) -> {
-			synchronized (receipt) {
+		a.follow(newa -> {
+			synchronized (received) {
+				received.put(0, newa);
 				receipt[0] = true;
-				ah[0] = newValue;
 				update.run();
 			}
 		}, ret);
-		b.follow((newValue) -> {
-			synchronized (receipt) {
+		b.follow(newb -> {
+			synchronized (received) {
+				received.put(1, newb);
 				receipt[1] = true;
-				bh[0] = newValue;
 				update.run();
 			}
 		}, ret);
@@ -193,56 +193,7 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
 	@Override
 	public <V, R> ObsObjHolder<R> with(ObsObjHolder<V> other, BiFunction<U, V, R> mapper) {
-		return join(this, other, ObsObjHolderSimple::new, mapper);
-	}
-
-	/**
-	 * join two observable object holder into a third one
-	 *
-	 * @param <AType>
-	 *          type of the first object hold
-	 * @param <BType>
-	 *          type of second object hold
-	 * @param <ResType>
-	 *          joined type
-	 * @param <HolderType>
-	 *          holder implementation type to hold the joined value
-	 * @param creator
-	 *          function to create a holder on the result
-	 * @param joiner
-	 *          function to be called to join an array of the types. The types are
-	 *          objects and must be cast. The array will be
-	 * @param holders
-	 *          the holders we want to join.
-	 * @return a new variable bound to the application of the joiner on a and b.
-	 */
-	@SuppressWarnings("unchecked")
-	@SafeVarargs
-	public static <ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>, JoinerType> HolderType join(
-			Supplier<HolderType> creator, Function<List<JoinerType>, ResType> joiner,
-			ObsObjHolder<? extends JoinerType>... holders) {
-		if (holders == null) {
-			return null;
-		}
-		HolderType ret = creator.get();
-		ArrayList<JoinerType> lastReceived = new ArrayList<>(
-				IntStream.rangeClosed(1, holders.length).mapToObj(i -> (JoinerType) null).collect(Collectors.toList()));
-		HashSet<Object> holderReceived = new HashSet<>();
-		for (int i = 0; i < holders.length; i++) {
-			int index = i;
-			ObsObjHolder<? extends JoinerType> h = holders[i];
-			h.follow((newValue) -> {
-				synchronized (holderReceived) {
-					holderReceived.add(h);
-					lastReceived.set(index, newValue);
-					if (holderReceived.size() == holders.length) {
-						ResType joined = joiner.apply(lastReceived);
-						ret.set(joined);
-					}
-				}
-			}, ret);
-		}
-		return ret;
+		return reduce(this, other, ObsObjHolderSimple::new, mapper);
 	}
 
 	/**
@@ -293,6 +244,49 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 	@Override
 	public <V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker) {
 		return unPack(this, unpacker);
+	}
+
+
+	/**
+	 * join several observable object holders of the same type, into another type
+	 * holder
+	 *
+	 */
+	@SuppressWarnings("unchecked")
+	public static <U, V, HolderType extends RWObsObjHolder<V> & Consumer<Object>> HolderType reduce(
+			Supplier<HolderType> creator, Function<List<? extends U>, V> joiner, List<ObsObjHolder<? extends U>> vars) {
+		HolderType ret = creator.get();
+		if (vars == null || vars.isEmpty()) {
+			ret.set(null);
+			return ret;
+		}
+		ObsObjHolder<U>[] holders = vars.toArray(ObsObjHolder[]::new);
+		HashMap<Integer, U> received = new HashMap<>();
+		for (int i = 0; i < holders.length; i++) {
+			int index = i;
+			ObsObjHolder<U> h = holders[i];
+			h.follow((newValue) -> {
+				synchronized (received) {
+					received.put(index, newValue);
+					if (received.size() == holders.length) {
+						V joined = joiner
+								.apply(IntStream.range(0, received.size()).mapToObj(received::get).collect(Collectors.toList()));
+						ret.set(joined);
+					}
+				}
+			}, ret);
+		}
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <V> ObsObjHolderSimple<V> reduce(Function<List<? extends U>, V> reducer,
+			ObsObjHolder<? extends U> first, ObsObjHolder<? extends U>... others) {
+		List<ObsObjHolder<? extends U>> list = Stream
+				.concat(Stream.of(this, first), others == null ? Stream.empty() : Stream.of(others))
+				.collect(Collectors.toList());
+		return reduce(ObsObjHolderSimple<V>::new, reducer, list);
 	}
 
 }

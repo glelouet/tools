@@ -49,7 +49,8 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>> {
 	@Override
 	ObsListHolder<U> filterWhen(Function<? super U, ObsBoolHolder> filterer);
 
-	ObsListHolder<U> concat(@SuppressWarnings("unchecked") ObsListHolder<? extends U>... lists);
+	ObsListHolder<U> concat(ObsListHolder<? extends U> first,
+			@SuppressWarnings("unchecked") ObsListHolder<? extends U>... lists);
 
 	@Override
 	<K> ObsListHolder<K> mapItems(Function<U, K> mapper);

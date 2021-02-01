@@ -60,19 +60,19 @@ extends ObsObjHolder<Contained> {
 	//
 
 	public default SelfClass add(SelfClass other) {
-		return AObsObjHolder.join(this, other, this::create, this::add);
+		return AObsObjHolder.reduce(this, other, this::create, this::add);
 	}
 
 	public default SelfClass sub(SelfClass other) {
-		return AObsObjHolder.join(this, other, this::create, this::sub);
+		return AObsObjHolder.reduce(this, other, this::create, this::sub);
 	}
 
 	public default SelfClass mult(SelfClass other) {
-		return AObsObjHolder.join(this, other, this::create, this::mult);
+		return AObsObjHolder.reduce(this, other, this::create, this::mult);
 	}
 
 	public default SelfClass div(SelfClass other) {
-		return AObsObjHolder.join(this, other, this::create, this::div);
+		return AObsObjHolder.reduce(this, other, this::create, this::div);
 	}
 
 	public default SelfClass scale(SelfClass mult, SelfClass add) {

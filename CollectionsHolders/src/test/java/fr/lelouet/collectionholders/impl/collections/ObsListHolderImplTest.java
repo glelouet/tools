@@ -62,7 +62,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(filtered2.get(), Arrays.asList("bb", "ccc", "dddd"));
 	}
 
-	@Test(timeOut = 500)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testProdList() {
 		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("a", "b");
 		ObsListHolderImpl<String> test2 = ObsListHolderImpl.of("1", "2");
@@ -71,7 +71,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(prod.get(), Arrays.asList("a1", "a2", "b1", "b2"));
 	}
 
-	@Test(timeOut = 500)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testSort() {
 		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("d", "a", "c", "b");
 
@@ -79,7 +79,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(sorted.get(), Arrays.asList("a", "b", "c", "d"));
 	}
 
-	@Test(timeOut = 500)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testReverse() {
 		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("a", "b", "c", "d");
 
@@ -87,7 +87,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(reversed.get(), Arrays.asList("d", "c", "b", "a"));
 	}
 
-	@Test(timeOut = 500)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testReduce() {
 		ObsListHolderImpl<String> test1 = ObsListHolderImpl.of("d", "a", "c", "b");
 
@@ -117,7 +117,7 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals((double) dist2.get(), 4.0);
 	}
 
-	@Test(timeOut = 500)
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testFilterWhen() {
 		ObsListHolderImpl<ObsMapHolder<String, Integer>> source = ObsListHolderImpl.of();
 
@@ -146,4 +146,13 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(test.get().size(), 1, "got : " + test.get());
 
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
+	public void testConcat() {
+		ObsListHolderImpl<String> source1 = ObsListHolderImpl.of("a", "b");
+		ObsListHolderImpl<String> source2 = new ObsListHolderImpl<>();
+		ObsListHolderImpl<String> test = source1.concat(source2);
+	}
+
 }

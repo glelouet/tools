@@ -46,7 +46,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void set(U... items) {
+	public synchronized void set(U item1, U... items) {
 		super.set(items == null ? Collections.emptyList() : Arrays.asList(items));
 	}
 
@@ -125,22 +125,25 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ObsListHolder<U> concat(ObsListHolder<? extends U>... lists) {
-		if (lists == null || lists.length == 0) {
-			return this;
-		}
-		ObsListHolder<U>[] array = Stream.concat(Stream.of(this), lists == null ? Stream.empty() : Stream.of(lists))
+	public ObsListHolderImpl<U> concat(ObsListHolder<? extends U> first, ObsListHolder<? extends U>... lists) {
+		ObsListHolder<U>[] array = Stream.concat(Stream.of(this, first), lists == null ? Stream.empty() : Stream.of(lists))
 				.filter(m -> m != null).toArray(ObsListHolder[]::new);
 		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
-		LinkedHashMap<ObsListHolder<U>, List<U>> alreadyreceived = new LinkedHashMap<>();
-		for (ObsListHolder<U> m : array) {
+		LinkedHashMap<Integer, List<U>> alreadyreceived = new LinkedHashMap<>();
+		for (int i = 0; i < array.length; i++) {
+			ObsListHolder<U> m = array[i];
+			int fi = i;
 			m.follow(list -> {
 				synchronized (alreadyreceived) {
-					alreadyreceived.remove(m);
-					alreadyreceived.put(m, list);
+					alreadyreceived.put(fi, list);
 					if (alreadyreceived.size() == array.length) {
 						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
+						System.err.println("received enough lists, sending concat ");
 						ret.set(newList);
+					}
+					else {
+						System.err.println(
+								"only received " + alreadyreceived.size() + " lists out of " + array.length + " ; just received " + fi);
 					}
 				}
 			});

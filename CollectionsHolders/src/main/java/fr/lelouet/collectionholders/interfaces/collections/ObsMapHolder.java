@@ -19,6 +19,9 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
  */
 public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 
+	@Override
+	Map<K, V> get();
+
 	/**
 	 * create a new variable bound to the value mapped to a key
 	 *

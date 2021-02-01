@@ -14,15 +14,15 @@ public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 	public <RWClass extends ObsBoolHolder & RWObsObjHolder<Boolean>> RWClass create();
 
 	public default ObsBoolHolder or(ObsBoolHolder other) {
-		return AObsObjHolder.join(this, other, this::create, (a, b) -> a || b);
+		return AObsObjHolder.reduce(this, other, this::create, (a, b) -> a || b);
 	}
 
 	public default ObsBoolHolder and(ObsBoolHolder other) {
-		return AObsObjHolder.join(this, other, this::create, (a, b) -> a && b);
+		return AObsObjHolder.reduce(this, other, this::create, (a, b) -> a && b);
 	}
 
 	public default ObsBoolHolder xor(ObsBoolHolder other) {
-		return AObsObjHolder.join(this, other, this::create, (a, b) -> a != b);
+		return AObsObjHolder.reduce(this, other, this::create, (a, b) -> a != b);
 	}
 
 	public default ObsBoolHolder or(boolean b) {
