@@ -47,6 +47,9 @@ implements ObsCollectionHolder<U, C> {
 	public AObsCollectionHolder() {
 	}
 
+	/** change the collection hold with an empty one. */
+	public abstract void setEmpty();
+
 	@Getter(lazy = true)
 	@Accessors(fluent = true)
 	private final ObsIntHolder size = mapInt(Collection::size);

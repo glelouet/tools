@@ -330,7 +330,8 @@ public interface ObsObjHolder<U> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <U, V, HolderType extends RWObsObjHolder<V> & Consumer<Object>> HolderType reduce(
-			List<ObsObjHolder<? extends U>> vars, Supplier<HolderType> creator, Function<List<? extends U>, V> reducer) {
+			List<? extends ObsObjHolder<? extends U>> vars, Supplier<HolderType> creator,
+			Function<List<? extends U>, V> reducer) {
 		HolderType ret = creator.get();
 		if (vars == null || vars.isEmpty()) {
 			ret.set(null);

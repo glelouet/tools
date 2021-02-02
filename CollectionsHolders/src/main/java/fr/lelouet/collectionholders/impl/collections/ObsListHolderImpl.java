@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -13,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
@@ -41,13 +41,18 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 	}
 
 	@Override
-	public synchronized void set(List<U> newitem) {
+	public void set(List<U> newitem) {
 		super.set(newitem == null ? Collections.emptyList() : Collections.unmodifiableList(newitem));
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void set(U item1, U... items) {
-		super.set(items == null ? Collections.emptyList() : Arrays.asList(items));
+	public void set(U item1, U... items) {
+		super.set(Stream.concat(Stream.of(item1), items == null ? Stream.empty() : Stream.of(items))
+				.collect(Collectors.toList()));
+	}
+
+	public void setEmpty() {
+		super.set(Collections.emptyList());
 	}
 
 	/**
@@ -126,29 +131,12 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 	@SuppressWarnings("unchecked")
 	@Override
 	public ObsListHolderImpl<U> concat(ObsListHolder<? extends U> first, ObsListHolder<? extends U>... lists) {
-		ObsListHolder<U>[] array = Stream.concat(Stream.of(this, first), lists == null ? Stream.empty() : Stream.of(lists))
-				.filter(m -> m != null).toArray(ObsListHolder[]::new);
-		ObsListHolderImpl<U> ret = new ObsListHolderImpl<>();
-		LinkedHashMap<Integer, List<U>> alreadyreceived = new LinkedHashMap<>();
-		for (int i = 0; i < array.length; i++) {
-			ObsListHolder<U> m = array[i];
-			int fi = i;
-			m.follow(list -> {
-				synchronized (alreadyreceived) {
-					alreadyreceived.put(fi, list);
-					if (alreadyreceived.size() == array.length) {
-						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
-						ret.set(newList);
-					}
-					else {
-						// System.err.println(
-						// "only received " + alreadyreceived.size() + " lists out of " +
-						// array.length + " ; just received " + fi);
-					}
-				}
-			});
-		}
-		return ret;
+		List<ObsListHolder<? extends U>> wholeList = Stream
+				.concat(Stream.of(this, first), lists == null ? Stream.empty() : Stream.of(lists)).filter(m -> m != null)
+				.collect(Collectors.toList());
+		Function<List<? extends List<? extends U>>, List<U>> reducer = params -> params.stream().flatMap(l -> l.stream())
+				.collect(Collectors.toList());
+		return ObsObjHolder.reduce(wholeList, ObsListHolderImpl::new, reducer);
 	}
 
 	@Override

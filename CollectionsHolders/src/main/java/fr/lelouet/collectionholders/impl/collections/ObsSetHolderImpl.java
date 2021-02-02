@@ -8,6 +8,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import fr.lelouet.collectionholders.impl.numbers.ObsBoolHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
@@ -36,8 +37,19 @@ public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> impleme
 	}
 
 	@Override
-	public synchronized void set(Set<U> newitem) {
+	public void set(Set<U> newitem) {
 		super.set(newitem == null ? Collections.emptySet() : Collections.unmodifiableSet(newitem));
+	}
+
+	@SuppressWarnings("unchecked")
+	public void set(U item1, U... items) {
+		super.set(
+				Stream.concat(Stream.of(item1), items == null ? Stream.empty() : Stream.of(items)).collect(Collectors.toSet()));
+	}
+
+	@Override
+	public void setEmpty() {
+		super.set(Collections.emptySet());
 	}
 
 	/**
