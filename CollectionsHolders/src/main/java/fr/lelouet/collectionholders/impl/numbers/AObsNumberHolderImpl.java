@@ -2,8 +2,8 @@ package fr.lelouet.collectionholders.impl.numbers;
 
 import java.util.function.BiPredicate;
 
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsNumberHolder;
 
@@ -19,6 +19,6 @@ extends NotNullObsObjHolderImpl<Contained> implements ObsNumberHolder<Contained,
 
 	@Override
 	public ObsBoolHolder test(BiPredicate<Contained, Contained> test, Self b) {
-		return AObsObjHolder.reduce(this, b, ObsBoolHolderImpl::new, (u, v) -> test.test(u, v));
+		return ObsObjHolder.combine(this, b, ObsBoolHolderImpl::new, (u, v) -> test.test(u, v));
 	}
 }

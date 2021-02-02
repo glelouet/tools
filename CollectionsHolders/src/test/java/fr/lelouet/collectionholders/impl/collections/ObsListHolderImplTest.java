@@ -153,6 +153,9 @@ public class ObsListHolderImplTest {
 		ObsListHolderImpl<String> source1 = ObsListHolderImpl.of("a", "b");
 		ObsListHolderImpl<String> source2 = new ObsListHolderImpl<>();
 		ObsListHolderImpl<String> test = source1.concat(source2);
+		Assert.assertFalse(test.isDataAvailable());
+		source2.set("c", "d");
+		Assert.assertEquals(test.get(), Arrays.asList("a", "b", "c", "d"), "got" + test.get());
 	}
 
 }

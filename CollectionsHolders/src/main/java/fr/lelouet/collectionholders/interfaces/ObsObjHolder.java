@@ -1,14 +1,18 @@
 package fr.lelouet.collectionholders.interfaces;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
@@ -211,9 +215,182 @@ public interface ObsObjHolder<U> {
 	 */
 	<V> ObsObjHolder<V> unPack(Function<U, ObsObjHolder<V>> unpacker);
 
-	public <V, R> ObsObjHolder<R> with(ObsObjHolder<V> other, BiFunction<U, V, R> mapper);
+	public <V, R> ObsObjHolder<R> combine(ObsObjHolder<V> other, BiFunction<U, V, R> mapper);
 
 	@SuppressWarnings("unchecked")
 	public <V> ObsObjHolder<V> reduce(Function<List<? extends U>, V> reducer, ObsObjHolder<? extends U> first,
 			ObsObjHolder<? extends U>... others);
+
+	//
+	// static utility methods that require the specification of a constructor
+	//
+
+	/**
+	 * map an obs object into another one through a mapping function.
+	 *
+	 * @param <U>
+	 *          The type of the object hold
+	 * @param <V>
+	 *          The type of the object mapped
+	 * @param <C>
+	 *          The Object holder type on V that we create and return
+	 * @param from
+	 *          the original object holder
+	 * @param creator
+	 *          the supplier for the observable holder returned. Typically the
+	 *          constructor.
+	 * @param mapper
+	 *          the function to translate a U into a V
+	 * @return a new constrained variable.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <U, V, C extends RWObsObjHolder<V> & Consumer<Object>> C map(ObsObjHolder<U> from, Supplier<C> creator,
+			Function<U, V> mapper) {
+		C ret = creator.get();
+		from.follow((newValue) -> {
+			ret.set(mapper.apply(newValue));
+		}, ret);
+		return ret;
+	}
+
+	/**
+	 * combine two different observable type holder into a third one. If you want
+	 * more than two items, then use {@link #reduce(Supplier, Function, List)}
+	 *
+	 * @param <AType>
+	 *          type of the first object hold
+	 * @param <BType>
+	 *          type of second object hold
+	 * @param <ResType>
+	 *          joined type
+	 * @param <HolderType>
+	 *          holder implementation type to hold the joined value
+	 * @param a
+	 *          first object to listen
+	 * @param b
+	 *          second object to listen
+	 * @param creator
+	 *          function to create a holder on the result
+	 * @param joiner
+	 *          function to be called to join an Atype and a BType into a ResType.
+	 * @return a new variable bound to the application of the joiner on a and b.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <AType, BType, ResType, HolderType extends RWObsObjHolder<ResType> & Consumer<Object>> HolderType combine(
+			ObsObjHolder<AType> a, ObsObjHolder<BType> b, Supplier<HolderType> creator,
+			BiFunction<AType, BType, ResType> joiner) {
+		HolderType ret = creator.get();
+		boolean[] receipt = new boolean[] { false, false };
+		Object[] received = new Object[2];
+		Runnable update = () -> {
+			if (receipt[0] && receipt[1]) {
+				ResType joined = joiner.apply((AType) received[0], (BType) received[1]);
+				ret.set(joined);
+			}
+		};
+		a.follow(newa -> {
+			synchronized (received) {
+				received[0] = newa;
+				receipt[0] = true;
+				update.run();
+			}
+		}, ret);
+		b.follow(newb -> {
+			synchronized (received) {
+				received[1] = newb;
+				receipt[1] = true;
+				update.run();
+			}
+		}, ret);
+		return ret;
+	}
+
+	/**
+	 * reduces a list of several observable object holders of the same type, into
+	 * another type.
+	 * <p>
+	 * If the types are different in the variables, then object will be used. Be
+	 * sure to cast the items accordingly in
+	 * </p>
+	 *
+	 * @param <U>
+	 *          the internal type of the holders that are reduced. If various
+	 *          types are hold, this should be Object.
+	 * @param <V>
+	 *          the type produced from the reduction.
+	 * @param <HolderType>
+	 *          the holder type we return.
+	 * @param the
+	 *          list of variables we want to use
+	 * @param creator
+	 *          typically constructor on the writable implementation.
+	 * @param reducer
+	 *          transforms the list in the hold type.
+	 * @return a new variable bound to the reduction of the list.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <U, V, HolderType extends RWObsObjHolder<V> & Consumer<Object>> HolderType reduce(
+			List<ObsObjHolder<? extends U>> vars, Supplier<HolderType> creator, Function<List<? extends U>, V> reducer) {
+		HolderType ret = creator.get();
+		if (vars == null || vars.isEmpty()) {
+			ret.set(null);
+			return ret;
+		}
+		ObsObjHolder<U>[] holders = vars.toArray(ObsObjHolder[]::new);
+		HashMap<Integer, U> received = new HashMap<>();
+		for (int i = 0; i < holders.length; i++) {
+			int index = i;
+			ObsObjHolder<U> h = holders[i];
+			h.follow((newValue) -> {
+				synchronized (received) {
+					received.put(index, newValue);
+					if (received.size() == holders.length) {
+						V joined = reducer
+								.apply(IntStream.range(0, received.size()).mapToObj(received::get).collect(Collectors.toList()));
+						ret.set(joined);
+					}
+				}
+			}, ret);
+		}
+		return ret;
+	}
+
+	/**
+	 * Unpack an observable into another one. Typically used to transform an
+	 * obsobjhoder<obsobjhodler<U>> into the holder on the internal type
+	 * obsobjhodler<U>, but can be used to other goals.
+	 *
+	 * @param <U>
+	 *          internal type hold
+	 * @param <V>
+	 *          internal type mapped
+	 * @param <H>
+	 *          holder type returned.
+	 * @param target
+	 *          the holder on a type we want to unpack
+	 * @param creator
+	 *          creation of the holder type, typically the constructor
+	 * @param unpacker
+	 *          function to transform the type hold into the mapped type.
+	 * @return a new variable that holds the mapped type.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <U, V, H extends RWObsObjHolder<V> & Consumer<Object>> H unPack(ObsObjHolder<U> target,
+			Supplier<H> creator, Function<U, ObsObjHolder<V>> unpacker) {
+		H ret = creator.get();
+		ObsObjHolder<V>[] storeHolder = new ObsObjHolder[1];
+		Consumer<V> cons = ret::set;
+		target.follow(u -> {
+			synchronized (storeHolder) {
+				if (storeHolder[0] != null) {
+					storeHolder[0].unfollow(cons);
+				}
+				storeHolder[0] = unpacker.apply(u);
+				if (storeHolder[0] != null) {
+					storeHolder[0].follow(cons, ret);
+				}
+			}
+		}, ret);
+		return ret;
+	}
 }

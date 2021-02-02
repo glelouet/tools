@@ -3,7 +3,6 @@ package fr.lelouet.collectionholders.interfaces.numbers;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 
@@ -60,19 +59,19 @@ extends ObsObjHolder<Contained> {
 	//
 
 	public default SelfClass add(SelfClass other) {
-		return AObsObjHolder.reduce(this, other, this::create, this::add);
+		return ObsObjHolder.combine(this, other, this::create, this::add);
 	}
 
 	public default SelfClass sub(SelfClass other) {
-		return AObsObjHolder.reduce(this, other, this::create, this::sub);
+		return ObsObjHolder.combine(this, other, this::create, this::sub);
 	}
 
 	public default SelfClass mult(SelfClass other) {
-		return AObsObjHolder.reduce(this, other, this::create, this::mult);
+		return ObsObjHolder.combine(this, other, this::create, this::mult);
 	}
 
 	public default SelfClass div(SelfClass other) {
-		return AObsObjHolder.reduce(this, other, this::create, this::div);
+		return ObsObjHolder.combine(this, other, this::create, this::div);
 	}
 
 	public default SelfClass scale(SelfClass mult, SelfClass add) {
@@ -80,19 +79,19 @@ extends ObsObjHolder<Contained> {
 	}
 
 	public default SelfClass add(Contained b) {
-		return AObsObjHolder.map(this, this::create, a -> add(a, b));
+		return ObsObjHolder.map(this, this::create, a -> add(a, b));
 	}
 
 	public default SelfClass sub(Contained b) {
-		return AObsObjHolder.map(this, this::create, a -> sub(a, b));
+		return ObsObjHolder.map(this, this::create, a -> sub(a, b));
 	}
 
 	public default SelfClass mult(Contained b) {
-		return AObsObjHolder.map(this, this::create, a -> mult(a, b));
+		return ObsObjHolder.map(this, this::create, a -> mult(a, b));
 	}
 
 	public default SelfClass div(Contained b) {
-		return AObsObjHolder.map(this, this::create, a -> div(a, b));
+		return ObsObjHolder.map(this, this::create, a -> div(a, b));
 	}
 
 	public default SelfClass scale(Contained mult, Contained add) {

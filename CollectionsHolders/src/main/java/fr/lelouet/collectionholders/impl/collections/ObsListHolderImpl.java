@@ -138,12 +138,12 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 					alreadyreceived.put(fi, list);
 					if (alreadyreceived.size() == array.length) {
 						List<U> newList = alreadyreceived.values().stream().flatMap(m2 -> m2.stream()).collect(Collectors.toList());
-						System.err.println("received enough lists, sending concat ");
 						ret.set(newList);
 					}
 					else {
-						System.err.println(
-								"only received " + alreadyreceived.size() + " lists out of " + array.length + " ; just received " + fi);
+						// System.err.println(
+						// "only received " + alreadyreceived.size() + " lists out of " +
+						// array.length + " ; just received " + fi);
 					}
 				}
 			});

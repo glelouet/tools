@@ -2,8 +2,8 @@ package fr.lelouet.collectionholders.impl.numbers;
 
 import java.util.function.Consumer;
 
-import fr.lelouet.collectionholders.impl.AObsObjHolder;
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
+import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
 public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implements ObsBoolHolder {
@@ -26,7 +26,7 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 		if (not == null) {
 			synchronized (this) {
 				if (not == null) {
-					ObsBoolHolderImpl other = AObsObjHolder.map(this, ObsBoolHolderImpl::new, (a) -> !a);
+					ObsBoolHolderImpl other = ObsObjHolder.map(this, ObsBoolHolderImpl::new, (a) -> !a);
 					other.not = this;
 					not = other;
 				}
