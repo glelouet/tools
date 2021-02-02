@@ -1,7 +1,5 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import java.util.function.Consumer;
-
 import fr.lelouet.collectionholders.interfaces.numbers.ObsDoubleHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import lombok.Getter;
@@ -78,11 +76,5 @@ public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleH
 	@Override
 	public boolean eq(Double a, Double b) {
 		return a == b;
-	}
-
-	@Override
-	public ObsDoubleHolderImpl peek(Consumer<Double> observer) {
-		follow(observer);
-		return this;
 	}
 }

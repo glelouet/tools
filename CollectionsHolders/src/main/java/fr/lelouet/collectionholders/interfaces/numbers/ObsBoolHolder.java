@@ -1,7 +1,5 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
-import java.util.function.Consumer;
-
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
 
@@ -43,7 +41,5 @@ public interface ObsBoolHolder extends ObsObjHolder<Boolean> {
 	 */
 	public ObsBoolHolder not();
 
-	@Override
-	ObsBoolHolder peek(Consumer<Boolean> observer);
 
 }

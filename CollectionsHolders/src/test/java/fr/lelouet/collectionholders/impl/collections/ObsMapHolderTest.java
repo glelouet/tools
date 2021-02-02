@@ -134,4 +134,15 @@ public class ObsMapHolderTest {
 		Assert.assertEquals(test.get().get("b1"), null);
 	}
 
+	@Test(timeOut = 500)
+	public void testContainsKey() {
+		Map<String, String> imap = new HashMap<>();
+		imap.put("a", "aaa");
+		imap.put("b", "bbb");
+		ObsMapHolderImpl<String, String> map = new ObsMapHolderImpl<>(imap);
+		Assert.assertTrue(map.containsKey("a").get());
+		Assert.assertFalse(map.containsKey("c").get());
+
+	}
+
 }

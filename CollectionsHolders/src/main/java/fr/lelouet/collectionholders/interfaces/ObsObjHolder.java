@@ -93,7 +93,7 @@ public interface ObsObjHolder<U> {
 	 *          weak reachable, the listener will be removed.
 	 */
 	@SuppressWarnings("unchecked")
-	public void follow(Consumer<U> cons, Consumer<Object>... holders);
+	public ObsObjHolder<U> follow(Consumer<U> cons, Consumer<Object>... holders);
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
@@ -101,13 +101,8 @@ public interface ObsObjHolder<U> {
 	 *
 	 * @param cons
 	 */
-	public default void follow(Consumer<U> cons) {
-		follow(cons, (Consumer<Object>[]) null);
-	}
-
-	default ObsObjHolder<U> peek(Consumer<U> observer) {
-		follow(observer, (Consumer<Object>[]) null);
-		return this;
+	public default ObsObjHolder<U> follow(Consumer<U> cons) {
+		return follow(cons, (Consumer<Object>[]) null);
 	}
 
 	/**
@@ -331,7 +326,7 @@ public interface ObsObjHolder<U> {
 	@SuppressWarnings("unchecked")
 	public static <U, V, HolderType extends RWObsObjHolder<V> & Consumer<Object>> HolderType reduce(
 			List<? extends ObsObjHolder<? extends U>> vars, Supplier<HolderType> creator,
-			Function<List<? extends U>, V> reducer) {
+					Function<List<? extends U>, V> reducer) {
 		HolderType ret = creator.get();
 		if (vars == null || vars.isEmpty()) {
 			ret.set(null);

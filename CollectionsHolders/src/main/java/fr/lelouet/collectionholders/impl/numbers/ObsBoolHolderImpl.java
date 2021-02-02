@@ -1,7 +1,5 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import java.util.function.Consumer;
-
 import fr.lelouet.collectionholders.impl.NotNullObsObjHolderImpl;
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
@@ -39,12 +37,6 @@ public class ObsBoolHolderImpl extends NotNullObsObjHolderImpl<Boolean> implemen
 	@Override
 	public ObsBoolHolderImpl create() {
 		return new ObsBoolHolderImpl();
-	}
-
-	@Override
-	public ObsBoolHolderImpl peek(Consumer<Boolean> observer) {
-		follow(observer);
-		return this;
 	}
 
 }

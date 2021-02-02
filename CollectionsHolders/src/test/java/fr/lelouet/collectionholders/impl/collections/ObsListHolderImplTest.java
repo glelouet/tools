@@ -44,6 +44,13 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(test.get(), "abb");
 	}
 
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
+	public void testMapItems() {
+		ObsListHolderImpl<String> source = ObsListHolderImpl.of("a", "bb", "c", "ddd");
+		ObsListHolderImpl<Integer> test = source.mapItems(String::length);
+		Assert.assertEquals(test.get(), Arrays.asList(1, 2, 1, 3));
+	}
+
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testFilter() {
@@ -156,6 +163,14 @@ public class ObsListHolderImplTest {
 		Assert.assertFalse(test.isDataAvailable());
 		source2.set("c", "d");
 		Assert.assertEquals(test.get(), Arrays.asList("a", "b", "c", "d"), "got" + test.get());
+	}
+
+	@Test
+	public void testPos() {
+		ObsListHolderImpl<String> source = ObsListHolderImpl.of("a", "b");
+		Assert.assertEquals(source.pos(0, "").get(), "a");
+		Assert.assertEquals(source.pos(1, "").get(), "b");
+		Assert.assertEquals(source.pos(2, "").get(), "");
 	}
 
 }

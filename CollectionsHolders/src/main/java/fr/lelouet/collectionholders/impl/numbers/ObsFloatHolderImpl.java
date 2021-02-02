@@ -1,7 +1,5 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import java.util.function.Consumer;
-
 import fr.lelouet.collectionholders.interfaces.numbers.ObsFloatHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import lombok.Getter;
@@ -78,11 +76,5 @@ public class ObsFloatHolderImpl extends AObsNumberHolderImpl<Float, ObsFloatHold
 	@Getter(lazy = true)
 	@Accessors(fluent = true)
 	private final ObsIntHolder floor = mapInt(d -> (int) Math.floor(d));
-
-	@Override
-	public ObsFloatHolder peek(Consumer<Float> observer) {
-		follow(observer);
-		return this;
-	}
 
 }

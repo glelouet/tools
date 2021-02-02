@@ -1,7 +1,6 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -28,12 +27,6 @@ public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>> {
 		return map(
 				l -> position < l.size() && -position <= l.size() ? l.get(position >= 0 ? position : l.size() - 1 - position)
 						: oob);
-	}
-
-	@Override
-	default ObsListHolder<U> peek(Consumer<List<U>> observer) {
-		follow(observer);
-		return this;
 	}
 
 	/**

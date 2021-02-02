@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -271,12 +270,6 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 			update.run();
 		});
 		return ret;
-	}
-
-	@Override
-	public ObsMapHolderImpl<K, V> peek(Consumer<Map<K, V>> observer) {
-		follow(observer);
-		return this;
 	}
 
 }

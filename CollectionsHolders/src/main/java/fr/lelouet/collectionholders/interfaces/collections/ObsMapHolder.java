@@ -3,7 +3,6 @@ package fr.lelouet.collectionholders.interfaces.collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -150,10 +149,5 @@ public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
 	 */
 	ObsMapHolder<K, V> filterKeys(ObsCollectionHolder<K, ?> allowedKeys);
 
-	@Override
-	default ObsMapHolder<K, V> peek(Consumer<Map<K, V>> observer) {
-		follow(observer);
-		return this;
-	}
 
 }

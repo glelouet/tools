@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
@@ -35,12 +34,6 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	public ObsIntHolder size();
 
 	public ObsBoolHolder isEmpty();
-
-	@Override
-	default ObsCollectionHolder<U, C> peek(Consumer<C> observer) {
-		follow(observer);
-		return this;
-	}
 
 	/**
 	 * create a filtered collection working on bulk process

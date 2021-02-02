@@ -1,7 +1,5 @@
 package fr.lelouet.collectionholders.impl.numbers;
 
-import java.util.function.Consumer;
-
 import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 
 public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder> implements ObsIntHolder {
@@ -66,12 +64,6 @@ public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder
 	@Override
 	public boolean eq(Integer a, Integer b) {
 		return a == b;
-	}
-
-	@Override
-	public ObsIntHolderImpl peek(Consumer<Integer> observer) {
-		follow(observer);
-		return this;
 	}
 
 }

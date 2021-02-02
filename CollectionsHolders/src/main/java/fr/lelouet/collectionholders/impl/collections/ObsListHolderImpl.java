@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,6 +50,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 				.collect(Collectors.toList()));
 	}
 
+	@Override
 	public void setEmpty() {
 		super.set(Collections.emptyList());
 	}
@@ -137,12 +137,6 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		Function<List<? extends List<? extends U>>, List<U>> reducer = params -> params.stream().flatMap(l -> l.stream())
 				.collect(Collectors.toList());
 		return ObsObjHolder.reduce(wholeList, ObsListHolderImpl::new, reducer);
-	}
-
-	@Override
-	public ObsListHolderImpl<U> peek(Consumer<List<U>> observer) {
-		follow(observer);
-		return this;
 	}
 
 }

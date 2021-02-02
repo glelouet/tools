@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
-public class ObsIntImplTest {
+public class ObsIntHolderImplTest {
 
 	@Test(timeOut = 500)
 	public void testCreation() {

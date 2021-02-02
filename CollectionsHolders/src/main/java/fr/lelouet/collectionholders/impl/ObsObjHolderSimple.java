@@ -56,7 +56,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void follow(Consumer<U> cons, Consumer<Object>... holders) {
+	public synchronized ObsObjHolder<U> follow(Consumer<U> cons, Consumer<Object>... holders) {
 		if (holders == null || holders.length == 0) {
 			followers.add(new UsualRef<>(cons));
 		} else {
@@ -69,6 +69,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 		if (dataReceivedLatch.getCount() == 0) {
 			cons.accept(item);
 		}
+		return this;
 	}
 
 	@Override
