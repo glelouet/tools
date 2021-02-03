@@ -10,27 +10,4 @@ public interface StoreCache {
 
 	public Requested<Integer> fetchPrice(Item item);
 
-	default int getPrice(Item item) {
-		if (!cachedPrices().containsKey(item)) {
-			synchronized (cachedPrices()) {
-				if (!cachedPrices().containsKey(item)) {
-					Requested<Integer> ret = fetchPrice(item);
-					cachedPrices().put(item, ret);
-					return ret.get();
-				}
-			}
-		}
-		Requested<Integer> ret = cachedPrices().get(item);
-		if (ret.getExpiry().getTime() <= System.currentTimeMillis()) {
-			synchronized (cachedPrices()) {
-				if (ret == cachedPrices().get(item)) {
-					ret = fetchPrice(item);
-					cachedPrices().put(item, ret);
-					return ret.get();
-				}
-			}
-		}
-		return ret.get();
-	}
-
 }

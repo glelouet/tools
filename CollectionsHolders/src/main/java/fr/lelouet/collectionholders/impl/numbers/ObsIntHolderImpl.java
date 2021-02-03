@@ -4,8 +4,8 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 
 public class ObsIntHolderImpl extends AObsNumberHolderImpl<Integer, ObsIntHolder> implements ObsIntHolder {
 
-	public static ObsIntHolderImpl of(int value) {
-		return new ObsIntHolderImpl(value);
+	public static ObsIntHolderImpl of(Number value) {
+		return new ObsIntHolderImpl(value.intValue());
 	}
 
 	public ObsIntHolderImpl() {

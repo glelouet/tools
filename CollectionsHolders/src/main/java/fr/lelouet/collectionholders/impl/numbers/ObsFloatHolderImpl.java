@@ -7,8 +7,8 @@ import lombok.experimental.Accessors;
 
 public class ObsFloatHolderImpl extends AObsNumberHolderImpl<Float, ObsFloatHolder> implements ObsFloatHolder {
 
-	public static ObsFloatHolderImpl of(float value) {
-		return new ObsFloatHolderImpl(value);
+	public static ObsFloatHolderImpl of(Number value) {
+		return new ObsFloatHolderImpl(value.floatValue());
 	}
 
 	public ObsFloatHolderImpl() {

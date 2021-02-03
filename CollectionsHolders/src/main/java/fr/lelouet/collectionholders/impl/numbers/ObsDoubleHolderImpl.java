@@ -7,8 +7,8 @@ import lombok.experimental.Accessors;
 
 public class ObsDoubleHolderImpl extends AObsNumberHolderImpl<Double, ObsDoubleHolder> implements ObsDoubleHolder {
 
-	public static ObsDoubleHolderImpl of(double value) {
-		return new ObsDoubleHolderImpl(value);
+	public static ObsDoubleHolderImpl of(Number value) {
+		return new ObsDoubleHolderImpl(value.doubleValue());
 	}
 
 	public ObsDoubleHolderImpl() {

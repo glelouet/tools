@@ -4,8 +4,8 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
 
 public class ObsLongHolderImpl extends AObsNumberHolderImpl<Long, ObsLongHolder> implements ObsLongHolder {
 
-	public static ObsLongHolderImpl of(long value) {
-		return new ObsLongHolderImpl(value);
+	public static ObsLongHolderImpl of(Number value) {
+		return new ObsLongHolderImpl(value.longValue());
 	}
 	public ObsLongHolderImpl() {
 	}

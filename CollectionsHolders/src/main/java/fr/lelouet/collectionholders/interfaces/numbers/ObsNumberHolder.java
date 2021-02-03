@@ -147,11 +147,11 @@ extends ObsObjHolder<Contained> {
 		return test(this::lt, other);
 	}
 
-	public default ObsBoolHolder lte(SelfClass other) {
+	public default ObsBoolHolder le(SelfClass other) {
 		return test(this::le, other);
 	}
 
-	public default ObsBoolHolder lte(Contained other) {
+	public default ObsBoolHolder le(Contained other) {
 		return test(this::le, other);
 	}
 

@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.impl.collections;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,9 +26,21 @@ public class ObsListHolderImplTest {
 
 		Assert.assertNull(last[0]);
 
+		test.setEmpty();
+		Assert.assertEquals(test.get(), Collections.emptyList());
+		Assert.assertEquals(test.size().get(), (Integer) 0);
+		Assert.assertTrue(test.isEmpty().get());
+
 		test.set(Arrays.asList("a", "b"));
 		Assert.assertNotNull(last[0]);
 		Assert.assertEquals(test.get(), Arrays.asList("a", "b"));
+		Assert.assertEquals(test.size().get(), (Integer) 2);
+		Assert.assertFalse(test.isEmpty().get());
+
+		test.set(null);
+		Assert.assertEquals(test.get(), Collections.emptyList());
+		Assert.assertEquals(test.size().get(), (Integer) 0);
+		Assert.assertTrue(test.isEmpty().get());
 
 		test.set(Arrays.asList("a", "b", "a", "b"));
 		Assert.assertNotNull(last[0]);
@@ -51,6 +64,16 @@ public class ObsListHolderImplTest {
 		Assert.assertEquals(test.get(), Arrays.asList(1, 2, 1, 3));
 	}
 
+	@Test(dependsOnMethods = "testCreation", timeOut = 500)
+	public void testToMap() {
+		ObsListHolderImpl<String> source = ObsListHolderImpl.of("a", "bb", "c", "ddd");
+		ObsMapHolder<Integer, String> test = source.toMap(String::length);
+		Assert.assertEquals(test.get().get(1), "c");
+		Assert.assertEquals(test.get().get(2), "bb");
+		Assert.assertEquals(test.get().get(3), "ddd");
+		Assert.assertEquals(test.get().get(4), null);
+
+	}
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
 	public void testFilter() {
@@ -122,6 +145,9 @@ public class ObsListHolderImplTest {
 				.mapDouble(l -> Math.sqrt(l.stream().mapToDouble(s -> s.length() * s.length()).sum()));
 		test2.set(Arrays.asList("aa", "bb", "cc", "dd"));
 		Assert.assertEquals((double) dist2.get(), 4.0);
+
+		ObsIntHolder sumSize = test1.reduceInt(String::length, Integer::sum, 0);
+		Assert.assertEquals(sumSize.get(), (Integer) 4);
 	}
 
 	@Test(dependsOnMethods = "testCreation", timeOut = 500)
