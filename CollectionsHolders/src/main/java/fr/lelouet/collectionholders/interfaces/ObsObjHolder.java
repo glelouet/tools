@@ -14,6 +14,7 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import fr.lelouet.collectionholders.impl.ObsObjHolderSimple;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsSetHolder;
@@ -83,7 +84,40 @@ public interface ObsObjHolder<U> {
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
-	 * consumer receives that data before exiting this method
+	 * consumer receives that data before exiting this method.
+	 * <p>
+	 * Implementation notes : for implementation in
+	 * {@link ObsObjHolderSimple#follow(Consumer)}<br />
+	 * This implementation stores a weak reference over the listener, if at least
+	 * one holder is provided. The holders are also asked to keep a strong
+	 * reference on both this and the consumer. This ensures both this, and the
+	 * consumer, won't be garbage collected unless the holders already are.<br />
+	 * If no holder is provided, then the strong reference is hold on this and the
+	 * consumer through an external class' static fields. This will lead to memory
+	 * leak, that's why providing a holder is VERY recommended. However in some
+	 * cases, there is no way to do otherwise, such as printing data to a debuger,
+	 * etc since those are not consumer <Object> to maintain the ref.
+	 * </p>
+	 * <p>
+	 * For example, with holder specified, if I have a source holder over an int,
+	 * a mult2 holder defined as mult2=source.mult(2), and a dest holder defined
+	 * as dest=mult2.plus(1), in a direct way :
+	 * <code>dest = source.mult(2).plus(1);</code> ; then it's clear that the
+	 * mult2 holder should not be GC before the dest holder, since the later
+	 * relies on the former. So dest should hold a strong ref to mult2, as well as
+	 * a strong ref to the lambda i->i+1 . When dest is GC, then if mult2 is not
+	 * used anywhere else it can be GC ; and if it's used, the lambda it stored as
+	 * listener can still be GC.
+	 * </p>
+	 * <p>
+	 * In the case no example is provided, eg
+	 * <code>source.mult(2).follow(System.err::println);</code>, then there is no
+	 * way to deduce when the listener and the intermediate mult2 should be GC.
+	 * Maybe the code is started in another class loader, in another thread.
+	 * Therefore, what we do is force intermediate object mult2 to never be GC.
+	 * Any static manager would make it possible to be a total mess, therefore we
+	 * kepp it simple.
+	 * </p>
 	 *
 	 * @param cons
 	 *          the consumer that will receive new values.
@@ -92,8 +126,7 @@ public interface ObsObjHolder<U> {
 	 *          to null, the class is used instead. Once the holder is no more
 	 *          weak reachable, the listener will be removed.
 	 */
-	@SuppressWarnings("unchecked")
-	public ObsObjHolder<U> follow(Consumer<U> cons, Consumer<Object>... holders);
+	public ObsObjHolder<U> follow(Consumer<U> cons, Consumer<Object> holder);
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
@@ -102,7 +135,7 @@ public interface ObsObjHolder<U> {
 	 * @param cons
 	 */
 	public default ObsObjHolder<U> follow(Consumer<U> cons) {
-		return follow(cons, (Consumer<Object>[]) null);
+		return follow(cons, null);
 	}
 
 	/**
@@ -238,7 +271,6 @@ public interface ObsObjHolder<U> {
 	 *          the function to translate a U into a V
 	 * @return a new constrained variable.
 	 */
-	@SuppressWarnings("unchecked")
 	public static <U, V, C extends RWObsObjHolder<V> & Consumer<Object>> C map(ObsObjHolder<U> from, Supplier<C> creator,
 			Function<U, V> mapper) {
 		C ret = creator.get();
@@ -344,6 +376,7 @@ public interface ObsObjHolder<U> {
 						V joined = reducer
 								.apply(IntStream.range(0, received.size()).mapToObj(received::get).collect(Collectors.toList()));
 						ret.set(joined);
+					} else {
 					}
 				}
 			}, ret);

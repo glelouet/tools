@@ -38,7 +38,6 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
  */
 public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <V> ObsObjHolder<V> map(Function<U, V> mapper) {
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
@@ -46,7 +45,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ObsBoolHolder test(Predicate<U> test) {
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
@@ -54,7 +52,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ObsIntHolder mapInt(ToIntFunction<U> mapper) {
 		ObsIntHolderImpl ret = new ObsIntHolderImpl();
@@ -62,7 +59,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ObsLongHolder mapLong(ToLongFunction<U> mapper) {
 		ObsLongHolderImpl ret = new ObsLongHolderImpl();
@@ -70,7 +66,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ObsFloatHolder mapFloat(ToDoubleFunction<U> mapper) {
 		ObsFloatHolderImpl ret = new ObsFloatHolderImpl();
@@ -78,7 +73,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper) {
 		ObsDoubleHolderImpl ret = new ObsDoubleHolderImpl();
@@ -86,7 +80,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <K> ObsListHolder<K> mapList(Function<U, List<K>> mapper) {
 		ObsListHolderImpl<K> ret = new ObsListHolderImpl<>();
@@ -97,7 +90,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> ObsMapHolder<K, V> mapMap(Function<U, Map<K, V>> mapper) {
 		ObsMapHolderImpl<K, V> ret = new ObsMapHolderImpl<>();
@@ -108,7 +100,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <V> ObsListHolder<V> toList(Function<U, Iterable<V>> generator) {
 		ObsListHolderImpl<V> ret = new ObsListHolderImpl<>();
@@ -120,7 +111,6 @@ public abstract class AObsObjHolder<U> implements ObsObjHolder<U> {
 		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <V> ObsSetHolder<V> toSet(Function<U, Iterable<V>> generator) {
 		ObsSetHolderImpl<V> ret = new ObsSetHolderImpl<>();

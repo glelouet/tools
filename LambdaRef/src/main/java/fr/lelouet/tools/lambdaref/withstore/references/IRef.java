@@ -16,4 +16,16 @@ public interface IRef<U> {
 	 */
 	public U get();
 
+	public static <V> IRef<V> weak(V item) {
+		return new WeakRef<>(item);
+	}
+
+	public static <V> IRef<V> strong(V item) {
+		return new UsualRef<>(item);
+	}
+
+	public static <V> IRef<V> hard(V item) {
+		return new HardRef<>(item);
+	}
+
 }

@@ -15,11 +15,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>fr.lelouet.tools</groupId>
 			<artifactId>Synchronization</artifactId>
 		</dependency>
@@ -30,6 +25,11 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

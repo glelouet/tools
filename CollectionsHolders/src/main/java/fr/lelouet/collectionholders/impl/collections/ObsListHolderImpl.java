@@ -85,7 +85,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		filterWhen(filteredStream -> {
 			List<U> filteredList = filteredStream.collect(Collectors.toList());
 			ret.set(filteredList);
-		}, filterer);
+		}, filterer, ret);
 		return ret;
 	}
 
@@ -134,8 +134,8 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		List<ObsListHolder<? extends U>> wholeList = Stream
 				.concat(Stream.of(this, first), lists == null ? Stream.empty() : Stream.of(lists)).filter(m -> m != null)
 				.collect(Collectors.toList());
-		Function<List<? extends List<? extends U>>, List<U>> reducer = params -> params.stream().flatMap(l -> l.stream())
-				.collect(Collectors.toList());
+		Function<List<? extends List<? extends U>>, List<U>> reducer = newLists -> newLists.stream()
+				.flatMap(l -> l.stream()).collect(Collectors.toList());
 		return ObsObjHolder.reduce(wholeList, ObsListHolderImpl::new, reducer);
 	}
 

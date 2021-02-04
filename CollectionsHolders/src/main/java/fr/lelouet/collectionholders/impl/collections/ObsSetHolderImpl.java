@@ -82,7 +82,7 @@ public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> impleme
 		filterWhen(filteredStream -> {
 			Set<U> filteredSet = filteredStream.collect(Collectors.toSet());
 			ret.set(filteredSet);
-		}, filterer);
+		}, filterer, ret);
 		return ret;
 	}
 

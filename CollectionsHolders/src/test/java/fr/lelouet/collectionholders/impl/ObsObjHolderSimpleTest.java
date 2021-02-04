@@ -12,28 +12,96 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsListHolder;
 import fr.lelouet.collectionholders.interfaces.collections.ObsMapHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsFloatHolder;
+import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsLongHolder;
+import fr.lelouet.tools.lambdaref.GCManage;
 
 public class ObsObjHolderSimpleTest {
 
-	// TODO fix
-	// @Test(timeOut = 10000)
-	// public void testWeakRef() {
-	// ObsObjHolderSimple<String> test = new ObsObjHolderSimple<>("a");
-	// internalCall(test);
-	// GCManage.force();
-	// test.set("c");
-	// Assert.assertEquals(test.followers(), 0);
-	// }
+	/**
+	 * test when a follower is added, then no more reachable. The calls to
+	 * {@link GCManage.#force()} allow to force the garbage collector to be
+	 * triggered on a (internal) weak reference. The expected result is that the
+	 * follower will be removed on next change of the data, while still keeping a
+	 * follower that is still reachable(the length variable)
+	 */
+	@Test(timeOut = 500)
+	public void testMemoryClean() {
+		ObsObjHolderSimple<String> test = new ObsObjHolderSimple<>("a");
+		addWeakReference(test);
+		GCManage.force();
+		test.set("c");
+		Assert.assertEquals(test.followers(), 0);
+		addWeakReference(test);
+		ObsIntHolder length = test.mapInt(String::length);
+		GCManage.force();
+		test.set("aaa");
+		Assert.assertEquals(test.followers(), 1);
+		Assert.assertEquals(length.get(), (Integer) 3);
+	}
 
+	/**
+	 * add a listener that is not referenced out of the call. This listener should
+	 * not remain after enough data are allocated and the garbage collector is
+	 * called.
+	 *
+	 * @param test
+	 */
+	protected void addWeakReference(ObsObjHolderSimple<String> test) {
+		Assert.assertEquals(test.followers(), 0);
+		for (int i = 1; i <= 1; i++) {
+			ObsIntHolder length = test.mapInt(String::length);
+			Assert.assertEquals(length.get(), (Integer) 1);
+			Assert.assertEquals(test.followers(), i);
+		}
+	}
 
-	// protected void internalCall(ObsObjHolderSimple<String> test) {
-	// for (int i = 1; i <= 1; i++) {
-	// ObsIntHolder length = test.mapInt(String::length);
-	// Assert.assertEquals(length.get(), (Integer) 1);
-	// Assert.assertEquals(test.followers(), i);
-	// }
-	// }
+	/**
+	 * test with chained weak references
+	 */
+	@Test(timeOut = 500, dependsOnMethods = "testMemoryClean")
+	public void testChainRef() {
+		ObsIntHolderImpl source = new ObsIntHolderImpl(2);
+		// source times 2^4 = 16
+		ObsIntHolder times16 = source.mult(2).mult(2).mult(2).mult(2);
+
+		// first simple state check
+		Assert.assertEquals(times16.get(), (Integer) 32);
+		GCManage.force();
+		source.set(3);
+		Assert.assertEquals(times16.get(), (Integer) 48);
+
+		// then add a weak reference and check if it is removed
+		addWeakReference((ObsObjHolderSimple<String>) source.map(i -> "" + i));
+		Assert.assertEquals(source.followers(), 2);
+		GCManage.force();
+		source.set(4);
+		Assert.assertEquals(times16.get(), (Integer) 64);
+		Assert.assertEquals(source.followers(), 1);
+
+		// Same but with a block variable instead of a method variable.
+		{
+			source.mult(2);
+		}
+		Assert.assertEquals(source.followers(), 2);
+		GCManage.force();
+		source.set(5);
+		Assert.assertEquals(times16.get(), (Integer) 80);
+		Assert.assertEquals(source.followers(), 1);
+	}
+
+	@Test(timeOut = 500)
+	public void testFollowNoref() {
+		String[] hold = new String[1];
+		ObsObjHolderSimple<String> test = new ObsObjHolderSimple<>();
+		test.map(s -> s == null ? "" : s + s).follow(s -> hold[0] = s);
+		Assert.assertEquals(hold[0], null);
+		test.set("a");
+		Assert.assertEquals(hold[0], "aa");
+		GCManage.force();
+		test.set("b");
+		Assert.assertEquals(hold[0], "bb");
+	}
 
 	@Test(timeOut = 500)
 	public void testMaps() {
