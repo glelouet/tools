@@ -75,7 +75,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		follow((t) -> {
 			List<U> filteredList = t.stream().filter(predicate).collect(Collectors.toList());
 			ret.set(filteredList);
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -97,7 +97,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 		ObsSetHolderImpl<U> ret = new ObsSetHolderImpl<>();
 		follow((l) -> {
 			ret.set(new HashSet<>(l));
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -119,7 +119,7 @@ public class ObsListHolderImpl<U> extends AObsCollectionHolder<U, List<U>> imple
 						List<U> reverseList = new ArrayList<>(o);
 						Collections.reverse(reverseList);
 						ret.set(reverseList);
-					});
+					}, ret);
 					ret.reverse = this;
 					reverse = ret;
 				}

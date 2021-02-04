@@ -149,7 +149,7 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 					} else {
 					}
 				}
-			});
+			}, ret);
 		}
 		return ret;
 	}
@@ -181,14 +181,14 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 				receivedMap[0] = t;
 				updateValue.run();
 			}
-		});
+		}, ret);
 		key.follow((newValue) -> {
 			synchronized (receipt) {
 				receipt[1] = true;
 				receivedKey[0] = newValue;
 				updateValue.run();
 			}
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -197,7 +197,7 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 		ObsObjHolderSimple<V> ret = new ObsObjHolderSimple<>();
 		follow(t -> {
 			ret.set(t.getOrDefault(key, defaultValue));
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -237,7 +237,7 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 				}
 			}
 			ret.set(newMap);
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -262,13 +262,13 @@ public class ObsMapHolderImpl<K, V> extends ObsObjHolderSimple<Map<K, V>> implem
 				lastMap[0] = m;
 			}
 			update.run();
-		});
+		}, ret);
 		allowedKeys.follow(l -> {
 			synchronized (lastMap) {
 				lastCol[0] = l;
 			}
 			update.run();
-		});
+		}, ret);
 		return ret;
 	}
 

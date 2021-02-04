@@ -94,7 +94,7 @@ public class ObsObjHolderSimple<U> extends AObsObjHolder<U> implements RWObsObjH
 	@Override
 	public ObsObjHolder<U> or(U defaultValue) {
 		ObsObjHolderSimple<U> ret = new ObsObjHolderSimple<>(defaultValue);
-		follow(ret::set);
+		follow(ret::set, ret);
 		return ret;
 	}
 

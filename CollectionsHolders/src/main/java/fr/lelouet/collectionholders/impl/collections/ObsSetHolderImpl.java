@@ -72,7 +72,7 @@ public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> impleme
 		follow((t) -> {
 			Set<U> filteredSet = t.stream().filter(predicate).collect(Collectors.toSet());
 			ret.set(filteredSet);
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -97,7 +97,7 @@ public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> impleme
 		ObsBoolHolderImpl ret = new ObsBoolHolderImpl();
 		follow((t) -> {
 			ret.set(t.contains(value));
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -121,14 +121,14 @@ public class ObsSetHolderImpl<U> extends AObsCollectionHolder<U, Set<U>> impleme
 				recSet[0] = t;
 				update.run();
 			}
-		});
+		}, ret);
 		value.follow((newValue) -> {
 			synchronized (receipt) {
 				receipt[1] = true;
 				recVal[0] = newValue;
 				update.run();
 			}
-		});
+		}, ret);
 		return ret;
 	}
 

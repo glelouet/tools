@@ -64,7 +64,7 @@ implements ObsCollectionHolder<U, C> {
 		follow((o) -> {
 			List<K> mappedList = o.stream().map(mapper).collect(Collectors.toList());
 			ret.set(mappedList);
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -75,7 +75,7 @@ implements ObsCollectionHolder<U, C> {
 			List<U> sortedList = new ArrayList<>(o);
 			Collections.sort(sortedList, comparator);
 			ret.set(sortedList);
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -96,11 +96,11 @@ implements ObsCollectionHolder<U, C> {
 		follow((lo) -> {
 			leftCollection[0] = lo;
 			update.run();
-		});
+		}, ret);
 		right.follow((ro) -> {
 			rightCollection[0] = ro;
 			update.run();
-		});
+		}, ret);
 		return ret;
 	}
 
@@ -256,7 +256,7 @@ implements ObsCollectionHolder<U, C> {
 				holder.addListener();
 			}
 			tryUpdate.run();
-		});
+		}, ret);
 		return ret;
 	}
 
