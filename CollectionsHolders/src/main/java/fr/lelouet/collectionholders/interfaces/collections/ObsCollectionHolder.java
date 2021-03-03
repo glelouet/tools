@@ -2,6 +2,7 @@ package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -71,6 +72,10 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	 */
 	public <K> ObsCollectionHolder<K, ?> mapItems(Function<U, K> mapper);
 
+	public default <K> ObsMapHolder<K, List<U>> grouping(Function<U, K> indexer) {
+		return mapMap(coll -> coll.stream().collect(Collectors.groupingBy(indexer)));
+	}
+
 	/**
 	 * For each item in this, create a holder using a mapper, and update a
 	 * collection with the data of the holders. The returned collection is updated
@@ -135,7 +140,10 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 			BinaryOperator<V> collisionHandler);
 
 	/**
-	 * join the items in this using a mapper and a joiner
+	 * join the items in this using a mapper and a joiner.<br />
+	 * example : if this is a collections of the strings "my", "cat", then joining
+	 * it with the mapper String::size, the joiner Integer::sum and the neutral 0
+	 * will result in the sum of the sizes of the strings 0+2+3 = 5
 	 *
 	 * @param <V>
 	 *          Conversion class
@@ -146,21 +154,25 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	 * @param neutral
 	 *          the neutral value for joining. if not data is present, this value
 	 *          is returned.
-	 * @return a new variable V, only modified when this receives data.
+	 * @return a new holder containing the joining of the elements of this
+	 *         collection.
 	 */
 	public default <V> ObsObjHolder<V> reduce(Function<U, V> mapper, BinaryOperator<V> joiner, V neutral) {
 		return map(l -> l.stream().map(mapper).collect(Collectors.reducing(neutral, joiner)));
 	}
 
 	/**
-	 * join the items in this using a joiner
+	 * join the items in this using a joiner.<br />
+	 * Example : if this is a collection of integers 1,2,3 , then joining them
+	 * with "+" and the neutral "0" will result in the sum 0+1+2+3 = 6.
 	 *
 	 * @param joiner
 	 *          joins items into one.
 	 * @param neutral
 	 *          the neutral value for joining. if not data is present, this value
 	 *          is returned.
-	 * @return a new variable U, only modified when this receives data.
+	 * @return a new holder containing the joining on the elements of this
+	 *         collection.
 	 */
 	public default ObsObjHolder<U> reduce(BinaryOperator<U> joiner, U neutral) {
 		return map(l -> l.stream().collect(Collectors.reducing(neutral, joiner)));
@@ -185,11 +197,14 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	public ObsListHolder<U> sorted(Comparator<U> comparator);
 
 	/**
-	 * make the product List of this collection elements with another one
+	 * make the product List of this collection elements with another one. Example
+	 * if this is the collection of chars 'a', 'b' and the other collection
+	 * contains the ints '1', '2', if the operand is the concatentaion then this
+	 * will return the collection containing 'a1', 'a2', 'b1', 'b2'.
 	 *
 	 * @param <V>
 	 * @param <O>
-	 *          the elemnts of the returned list
+	 *          the elements of the returned list
 	 * @param right
 	 *          the other collection
 	 * @param operand
@@ -197,7 +212,7 @@ public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjH
 	 *          collection × the other collection
 	 * @return a new list
 	 */
-	public <V, O> ObsListHolder<O> prodList(ObsCollectionHolder<V, ?> right, BiFunction<U, V, O> operand);
+	public <V, O> ObsCollectionHolder<O, ?> prodList(ObsCollectionHolder<V, ?> right, BiFunction<U, V, O> operand);
 
 	/**
 	 * flatten this by converting all the elements to {@link ObsCollectionHolder}

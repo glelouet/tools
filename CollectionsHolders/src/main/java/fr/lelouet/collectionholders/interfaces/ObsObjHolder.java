@@ -119,35 +119,38 @@ public interface ObsObjHolder<U> {
 	 * kepp it simple.
 	 * </p>
 	 *
-	 * @param cons
-	 *          the consumer that will receive new values.
+	 * @param listener
+	 *          the listener that will receive new values.
 	 * @param holder
-	 *          the holder that ensure the consumer is useful. if omitted or set
-	 *          to null, the class is used instead. Once the holder is no more
-	 *          weak reachable, the listener will be removed.
+	 *          the holder that ensure the consumer is useful. Once the holder is
+	 *          no more Strong reachable, the listener may be removed from this.
+	 *          If set to null, a specific class field is used to consider the
+	 *          always strong reachable.
 	 */
-	public ObsObjHolder<U> follow(Consumer<U> cons, Consumer<Object> holder);
+	public ObsObjHolder<U> follow(Consumer<U> listener, Consumer<Object> holder);
 
 	/**
 	 * add a consumer that follows the data inside. if there is already data, the
-	 * consumer receives that data before exiting this method
+	 * consumer receives that data before exiting this method. This redirects to
+	 * {@link #follow(Consumer, Consumer)} with a null holder.
 	 *
 	 * @param cons
 	 */
-	public default ObsObjHolder<U> follow(Consumer<U> cons) {
-		return follow(cons, null);
+	public default ObsObjHolder<U> follow(Consumer<U> listener) {
+		return follow(listener, null);
 	}
 
 	/**
-	 * remove a follower added with {@link #follow(Consumer)}
+	 * remove a follower added with {@link #follow(Consumer)} or
+	 * {@link #follow(Consumer, Consumer)}
 	 *
-	 * @param cons
+	 * @param listener
 	 */
-	public void unfollow(Consumer<U> cons);
+	public void unfollow(Consumer<U> listener);
 
 	/**
-	 * create a new obsObjHolder that mirros the value contained after
-	 * transforming it.
+	 * create a new obsObjHolder that contains the transformation of the value
+	 * hold in this.
 	 *
 	 * @param <V>
 	 *          the type of the value contained
@@ -187,10 +190,34 @@ public interface ObsObjHolder<U> {
 	 */
 	ObsDoubleHolder mapDouble(ToDoubleFunction<U> mapper);
 
+	/**
+	 * create a new object that mirrors the value hold in this, by transforming it
+	 * into a float.
+	 *
+	 * @param mapper
+	 *          the method to transform the value
+	 * @return a new holder
+	 */
 	ObsFloatHolder mapFloat(ToDoubleFunction<U> mapper);
 
+	/**
+	 * create a new object that mirrors the value hold in this, by transforming it
+	 * into a map.
+	 *
+	 * @param mapper
+	 *          the method to transform the value
+	 * @return a new holder
+	 */
 	<K, V> ObsMapHolder<K, V> mapMap(Function<U, Map<K, V>> mapper);
 
+	/**
+	 * create a new object that mirrors the value hold in this, by transforming it
+	 * into a list.
+	 *
+	 * @param mapper
+	 *          the method to transform the value
+	 * @return a new holder
+	 */
 	<K> ObsListHolder<K> mapList(Function<U, List<K>> mapper);
 
 	/**
