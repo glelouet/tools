@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -8,6 +9,12 @@ import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
 
 public interface ObsSetHolder<U> extends ObsCollectionHolder<U, Set<U>> {
+
+	@Override
+	default ObsSetHolder<U> follow(Consumer<Set<U>> listener) {
+		ObsCollectionHolder.super.follow(listener);
+		return this;
+	}
 
 	/**
 	 * create a variable which is set to true whenever this contains a specific

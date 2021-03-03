@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.numbers;
 
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 import fr.lelouet.collectionholders.interfaces.ObsObjHolder;
 import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
@@ -21,6 +22,17 @@ import fr.lelouet.collectionholders.interfaces.RWObsObjHolder;
  */
 public interface ObsNumberHolder<Contained extends Number, SelfClass extends ObsNumberHolder<Contained, SelfClass>>
 extends ObsObjHolder<Contained> {
+
+	@Override
+	default SelfClass follow(Consumer<Contained> listener) {
+		ObsObjHolder.super.follow(listener);
+		return self();
+	}
+
+	@SuppressWarnings("unchecked")
+	default SelfClass self() {
+		return (SelfClass) this;
+	}
 
 	/**
 	 * internal function to create a copy (useful for binding modification, eg

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
@@ -24,6 +25,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
  *          Collection type to hold the data (eg List&lt;U&gt;)
  */
 public interface ObsCollectionHolder<U, C extends Collection<U>> extends ObsObjHolder<C> {
+
+	@Override
+	default ObsCollectionHolder<U, C> follow(Consumer<C> listener) {
+		ObsObjHolder.super.follow(listener);
+		return this;
+	}
 
 	/**
 	 *

@@ -1,6 +1,7 @@
 package fr.lelouet.collectionholders.interfaces.collections;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -12,6 +13,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsBoolHolder;
  *
  */
 public interface ObsListHolder<U> extends ObsCollectionHolder<U, List<U>> {
+
+	@Override
+	default ObsListHolder<U> follow(Consumer<List<U>> listener) {
+		ObsCollectionHolder.super.follow(listener);
+		return this;
+	}
 
 	/**
 	 * map the list to a specific index, or a default value in case the list is

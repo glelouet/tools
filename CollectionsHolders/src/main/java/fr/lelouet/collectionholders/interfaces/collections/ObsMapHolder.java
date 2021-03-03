@@ -3,6 +3,7 @@ package fr.lelouet.collectionholders.interfaces.collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -17,6 +18,12 @@ import fr.lelouet.collectionholders.interfaces.numbers.ObsIntHolder;
  * @param <V>
  */
 public interface ObsMapHolder<K, V> extends ObsObjHolder<Map<K, V>> {
+
+	@Override
+	default ObsMapHolder<K, V> follow(Consumer<Map<K, V>> listener) {
+		ObsObjHolder.super.follow(listener);
+		return this;
+	}
 
 	@Override
 	Map<K, V> get();
