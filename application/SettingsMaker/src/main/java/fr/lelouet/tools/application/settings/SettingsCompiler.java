@@ -44,9 +44,11 @@ public class SettingsCompiler {
 		delDir(out);
 		out.mkdirs();
 		// try to open a stream;
-		InputStream input = SettingsCompiler.class.getClassLoader().getResourceAsStream(source);
+		ClassLoader classloader = SettingsCompiler.class.getClassLoader();
+		InputStream input = classloader.getResourceAsStream(source);
 		SettingsDescription settings = null;
 		if (input == null) {
+			System.err.println("no stream for resource " + source);
 			try {
 				Class<SettingsLoader> clazz = (Class<SettingsLoader>) SettingsCompiler.class.getClassLoader().loadClass(source);
 				SettingsLoader loader = clazz.getConstructor().newInstance();

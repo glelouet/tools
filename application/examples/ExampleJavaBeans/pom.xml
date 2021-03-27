@@ -3,18 +3,26 @@
   <parent>
     <groupId>fr.lelouet.tools.application</groupId>
     <artifactId>examples</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
   </parent>
   <groupId>fr.lelouet.tools.application.examples</groupId>
   <artifactId>ExampleJavaBeans</artifactId>
   <name>Example Java Beans</name>
   <description>example of code produced by creating a simple settings with java beans</description>
 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
+				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<id>generate-items</id>
@@ -23,6 +31,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
+							<addResourcesToClasspath>true</addResourcesToClasspath>
 							<mainClass>fr.lelouet.tools.application.settings.SettingsCompiler</mainClass>
 							<arguments>
 								<argument>ExampleWithBeans.yaml</argument>
