@@ -138,11 +138,11 @@
 		<choco-version>4.10.2</choco-version>
 	</properties>
 	<modules>
-		<module>CollectionsHolders</module>
-		<module>Compilation</module>
-		<module>Synchronization</module>
-		<module>LambdaRef</module>
 		<module>application</module>
+		<module>Compilation</module>
+		<module>Holders</module>
+		<module>LambdaRef</module>
 		<module>solver</module>
+		<module>Synchronization</module>
 	</modules>
 </project>
