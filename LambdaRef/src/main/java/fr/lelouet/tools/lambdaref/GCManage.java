@@ -1,5 +1,6 @@
 package fr.lelouet.tools.lambdaref;
 
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
 import org.slf4j.Logger;
@@ -15,7 +16,8 @@ public class GCManage {
 	 * of arbitrary size until the reference returns null.
 	 */
 	public static void force() {
-		WeakReference<Object> wr = new WeakReference<>(new Object());
+		ReferenceQueue<Object> queue = new ReferenceQueue<>();
+		WeakReference<Object> wr = new WeakReference<>(new Object(), queue);
 		int nb = 0;
 		int arraySize = (int) (Math.min(Runtime.getRuntime().freeMemory() / 32 / 8, Integer.MAX_VALUE - 5) / 10);
 		while (wr.get() != null) {
@@ -27,6 +29,10 @@ public class GCManage {
 		boolean debug = false;
 		if (debug) {
 			logger.debug("gc after " + nb + " buffers");
+		}
+		// we also need to wait for the queue to contain the reference wr.
+		while (queue.poll() == null) {
+			Thread.yield();
 		}
 	}
 

@@ -20,8 +20,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.lelouet.tools</groupId>
-			<artifactId>LambdaRef</artifactId>
-		</dependency>
+			<artifactId>LambdaRef</artifactId>		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
