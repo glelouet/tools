@@ -1,4 +1,4 @@
-package fr.lelouet.holders.impl;
+package fr.lelouet.holders.cache;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
