@@ -4,7 +4,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
 
-import fr.lelouet.holders.impl.numbers.IntHolderImpl;
 import fr.lelouet.holders.interfaces.numbers.IntHolder;
 
 public class ExamplePeriodic {
@@ -14,12 +13,11 @@ public class ExamplePeriodic {
 	public static void main(String[] args) throws InterruptedException {
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(10);
 		int[] add = new int[1];
-		RemoteResourceHolderCache<Integer, IntHolder> cache = RemoteResourceHolderCache.periodic(
-				stpe,
-				IntHolderImpl::new,
-				o -> o,
-				uri -> uri.length() + add[0],
-				1000);
+		RemoteResourceHolderCache<Integer, IntHolder> cache = Periodic
+				.cacheToInt(
+						stpe,
+						uri -> uri.length() + add[0],
+						1000);
 		cache.get("my uri").follow(i -> log.info("received from 'my uri' " + i));
 		cache.get("my 2nd uri").follow(i -> log.info("received from 'my 2nd uri' " + i));
 		while (true) {

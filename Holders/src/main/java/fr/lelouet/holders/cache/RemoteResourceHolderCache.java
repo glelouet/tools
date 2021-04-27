@@ -1,8 +1,5 @@
 package fr.lelouet.holders.cache;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -120,59 +117,6 @@ extends WeakCache<String, Hold> {
 		Runnable exec = new SelfSchedule<>(executor, ret, fetch, newValue, extractor, reschedule, nextSchedule);
 		executor.accept(exec, 0l);
 		return convert.apply(ret);
-	}
-
-	/**
-	 * create a periodic fetcher cache.
-	 *
-	 * @param <Resource>
-	 * @param <Hold>
-	 * @param <RWHold>
-	 * @param executor
-	 *          the executor that handles the actual calls. Typically if you have
-	 *          a {@link ScheduledThreadPoolExecutor} exec, this would be (r,l)->
-	 *          exec.schedule(r, l, TimeUnit.millisecond) .
-	 * @param init
-	 *          constructor of a RW holder.
-	 * @param convert
-	 *          conversion from a RW to a RO holder, typically o->o
-	 * @param access
-	 *          fetch the resource for a given URI.
-	 * @param delay_MS
-	 *          the minimum delay in ms between the end of the fetch and the start
-	 *          of the next.
-	 * @return
-	 */
-	public static <
-		Resource,
-		Hold extends ObjHolder<Resource>,
-		RWHold extends RWObjHolder<Resource>
-	>	RemoteResourceHolderCache<Resource, Hold> periodic(
-			BiConsumer<Runnable, Long> executor,
-			Supplier<RWHold> init,
-			Function<RWHold, Hold> convert,
-			Function<String, Resource> access,
-			long delay_MS
-	) {
-		return new <Resource, RWHold>RemoteResourceHolderCache<Resource, Hold>(executor, init, convert,
-				(s, l) -> access.apply(s), o -> true, o -> o,
-				o -> true, o -> delay_MS);
-	}
-	
-	public static <
-		Resource,
-		Hold extends ObjHolder<Resource>,
-		RWHold extends RWObjHolder<Resource>
-	>	RemoteResourceHolderCache<Resource, Hold> periodic(
-			ScheduledExecutorService exec,
-			Supplier<RWHold> init,
-			Function<RWHold, Hold> convert,
-			Function<String, Resource> access,
-			long delay_MS
-	) {
-		return 
-				periodic((r, l) -> exec.schedule(r, delay_MS, TimeUnit.MILLISECONDS),
-						init, convert, access, delay_MS);
 	}
 
 	protected static class SelfSchedule<
