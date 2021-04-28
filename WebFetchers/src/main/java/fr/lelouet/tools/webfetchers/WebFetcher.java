@@ -1,6 +1,8 @@
 package fr.lelouet.tools.webfetchers;
 
 import java.time.Instant;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -21,6 +23,9 @@ import reactor.core.publisher.Mono;
 /**
  * provide static utility methods to represent a Web resource cache. Each cached
  * resource must be of the same type.
+ * <p>
+ * The schedule for resource update is based on the expires header, if present, or a
+ * </p>
  *
  * @author glelouet
  *
@@ -59,7 +64,9 @@ public class WebFetcher {
 				construct.header(HttpHeaders.ETAG, old.getHeaders().getETag());
 			}
 		}
-		return construct.retrieve().toEntity(retClass);
+		Mono<ResponseEntity<T>> ret = construct.retrieve().toEntity(retClass);
+		// ret = ret.doOnEach(s -> System.out.println("received " + s));
+		return ret;
 	}
 
 	//
@@ -92,11 +99,24 @@ public class WebFetcher {
 			Supplier<RWHold> init,
 			Function<RWHold, Hold> convert, long defaultDelay
 			) {
-		BiFunction<String, ResponseEntity<Resource>, ResponseEntity<Resource>> fetch = (uri, old) -> webFetchSync(wc, uri,
+		BiFunction<String, ResponseEntity<Resource>, ResponseEntity<Resource>> fetcher = (uri, old) -> webFetchSync(wc, uri,
 				old, retClass);
-		return new <ResponseEntity<Resource>, RWHold>URIBasedCache<Resource, Hold>(executor, init, convert, fetch,
+		return new <ResponseEntity<Resource>, RWHold>URIBasedCache<Resource, Hold>(executor, init, convert, fetcher,
 				WebFetcher::isReplace, WebFetcher::extract, WebFetcher::isReschedule, WebFetcher.rescheduler(defaultDelay));
+	}
 
+	public static <
+	Resource,
+	Hold extends ObjHolder<Resource>,
+	RWHold extends RWObjHolder<Resource>
+	> URIBasedCache<Resource, Hold> cacheSync(
+			ScheduledExecutorService exec,
+			WebClient wc,
+			Class<Resource> retClass,
+			Supplier<RWHold> init,
+			Function<RWHold, Hold> convert, long defaultDelay
+			) {
+		return cacheSync((r, l) -> exec.schedule(r, l, TimeUnit.MILLISECONDS), wc, retClass, init, convert, defaultDelay);
 	}
 
 	protected static boolean isReplace(ResponseEntity<?> response) {
@@ -123,7 +143,8 @@ public class WebFetcher {
 
 	protected static <T> ResponseEntity<T> webFetchSync(WebClient wc, String uri, ResponseEntity<T> old,
 			Class<T> retClass) {
-		return makeMono(wc, uri, old, retClass).block();
+		ResponseEntity<T> ret = makeMono(wc, uri, old, retClass).block();
+		return ret;
 	}
 
 	//

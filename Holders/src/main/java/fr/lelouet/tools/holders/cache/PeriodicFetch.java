@@ -93,7 +93,7 @@ public class PeriodicFetch {
 			Function<String, Resource> access,
 			long delay_MS
 			) {
-		return cache((r, l) -> exec.schedule(r, delay_MS, TimeUnit.MILLISECONDS), init, convert, access, delay_MS);
+		return cache((r, l) -> exec.schedule(r, l, TimeUnit.MILLISECONDS), init, convert, access, delay_MS);
 	}
 
 	public static URIBasedCache<Integer, IntHolder> cacheToInt(ScheduledExecutorService exec,
