@@ -41,9 +41,9 @@ import fr.lelouet.holders.interfaces.numbers.LongHolder;
  * @author glelouet
  *
  */
-public class Periodic {
+public class PeriodicFetch {
 
-	private Periodic() {
+	private PeriodicFetch() {
 	};
 
 	/**

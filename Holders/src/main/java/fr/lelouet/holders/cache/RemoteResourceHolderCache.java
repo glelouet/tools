@@ -10,6 +10,8 @@ import java.util.function.ToLongFunction;
 
 import fr.lelouet.holders.interfaces.ObjHolder;
 import fr.lelouet.holders.interfaces.RWObjHolder;
+import fr.lelouet.holders.interfaces.collections.MapHolder;
+import fr.lelouet.holders.interfaces.numbers.IntHolder;
 
 /**
  * common class for caching various fetching methods.
@@ -19,7 +21,11 @@ import fr.lelouet.holders.interfaces.RWObjHolder;
  * @param <Resource>
  *          the resource that is stored
  * @param <Hold>
- *          the type of holder that is created for each resource.
+ *          the type of holder that is created for each resource. It's important
+ *          since a cache can produce an {@link IntHolder} to store an int
+ *          instead of an Holder&lt;Integer&gt;, or a {@link MapHolder} instead
+ *          of a Holder&lt;Map&gt; because the former allows more expressive
+ *          manipulation.
  */
 public class RemoteResourceHolderCache<Resource, Hold extends ObjHolder<Resource>>
 extends WeakCache<String, Hold> {
@@ -80,10 +86,10 @@ extends WeakCache<String, Hold> {
 
 
 	protected static <
-		Resource,
-		Intermediate,
-		Hold extends ObjHolder<Resource>,
-		RWHold extends RWObjHolder<Resource>
+	Resource,
+	Intermediate,
+	Hold extends ObjHolder<Resource>,
+	RWHold extends RWObjHolder<Resource>
 	> Function<String, Hold> generator(
 			BiConsumer<Runnable, Long> executor,
 			Supplier<RWHold> init,
@@ -100,10 +106,10 @@ extends WeakCache<String, Hold> {
 	}
 
 	protected static <
-		Resource,
-		Intermediate,
-		Hold extends ObjHolder<Resource>,
-		RWHold extends RWObjHolder<Resource>
+	Resource,
+	Intermediate,
+	Hold extends ObjHolder<Resource>,
+	RWHold extends RWObjHolder<Resource>
 	> Hold generator(
 			BiConsumer<Runnable, Long> executor,
 			Supplier<RWHold> init,
@@ -139,9 +145,9 @@ extends WeakCache<String, Hold> {
 	 * @param <RWHold>
 	 */
 	protected static class SelfSchedule<
-		Resource,
-		Intermediate,
-		RWHold extends RWObjHolder<Resource>
+	Resource,
+	Intermediate,
+	RWHold extends RWObjHolder<Resource>
 	>  implements Runnable{
 
 		private final BiConsumer<Runnable, Long> executor;

@@ -13,7 +13,7 @@ public class ExamplePeriodic {
 	public static void main(String[] args) throws InterruptedException {
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(10);
 		int[] add = new int[1];
-		RemoteResourceHolderCache<Integer, IntHolder> cache = Periodic
+		RemoteResourceHolderCache<Integer, IntHolder> cache = PeriodicFetch
 				.cacheToInt(
 						stpe,
 						uri -> uri.length() + add[0],
