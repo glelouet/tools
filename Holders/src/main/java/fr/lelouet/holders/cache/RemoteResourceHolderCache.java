@@ -1,5 +1,6 @@
 package fr.lelouet.holders.cache;
 
+import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -79,10 +80,10 @@ extends WeakCache<String, Hold> {
 
 
 	protected static <
-	Resource,
-	Intermediate,
-	Hold extends ObjHolder<Resource>,
-	RWHold extends RWObjHolder<Resource>
+		Resource,
+		Intermediate,
+		Hold extends ObjHolder<Resource>,
+		RWHold extends RWObjHolder<Resource>
 	> Function<String, Hold> generator(
 			BiConsumer<Runnable, Long> executor,
 			Supplier<RWHold> init,
@@ -99,10 +100,10 @@ extends WeakCache<String, Hold> {
 	}
 
 	protected static <
-	Resource,
-	Intermediate,
-	Hold extends ObjHolder<Resource>,
-	RWHold extends RWObjHolder<Resource>
+		Resource,
+		Intermediate,
+		Hold extends ObjHolder<Resource>,
+		RWHold extends RWObjHolder<Resource>
 	> Hold generator(
 			BiConsumer<Runnable, Long> executor,
 			Supplier<RWHold> init,
@@ -119,20 +120,37 @@ extends WeakCache<String, Hold> {
 		return convert.apply(ret);
 	}
 
+	/**
+	 * Once executed, will fetch the resource and self schedule itself to update
+	 * the resource later.
+	 * <p>
+	 * The holder to set the resource is actually internally a WeakReference so
+	 * that this class does not hold it. If the store becomes null later, then
+	 * this stops the scheduling. This is required because otherwise the
+	 * SelfSchedule being strong refered in the executor, then the holder would be
+	 * also strong referenced and this could lead to memory leakage when the
+	 * selfschedule is the only one strongly referencing it.
+	 * </p>
+	 *
+	 * @author glelouet
+	 *
+	 * @param <Resource>
+	 * @param <Intermediate>
+	 * @param <RWHold>
+	 */
 	protected static class SelfSchedule<
-	Resource,
-	Intermediate,
-	RWHold extends RWObjHolder<Resource>
+		Resource,
+		Intermediate,
+		RWHold extends RWObjHolder<Resource>
 	>  implements Runnable{
 
 		private final BiConsumer<Runnable, Long> executor;
-		private final RWHold store;
+		private final WeakReference<RWHold> store;
 		private final Function<Intermediate, Intermediate> fetch;
 		private final Predicate<Intermediate> newValue;
-		private final  Function<Intermediate, Resource> extractor;
+		private final Function<Intermediate, Resource> extractor;
 		private final Predicate<Intermediate> reschedule;
 		private final ToLongFunction<Intermediate> nextSchedule;
-
 		private Intermediate last = null;
 
 		public SelfSchedule(
@@ -144,7 +162,7 @@ extends WeakCache<String, Hold> {
 				Predicate<Intermediate> reschedule,
 				ToLongFunction<Intermediate> nextSchedule) {
 			this.executor = executor;
-			this.store = store;
+			this.store = new WeakReference<>(store);
 			this.fetch = fetch;
 			this.newValue = newValue;
 			this.extractor = extractor;
@@ -154,9 +172,13 @@ extends WeakCache<String, Hold> {
 
 		@Override
 		public void run() {
+			RWHold storeRef = store.get();
+			if (storeRef == null) {
+				return;
+			}
 			last = fetch.apply(last);
 			if (newValue.test(last)) {
-				store.set(extractor.apply(last));
+				storeRef.set(extractor.apply(last));
 			}
 			if (reschedule.test(last)) {
 				executor.accept(this, nextSchedule.applyAsLong(last));
