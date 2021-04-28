@@ -71,8 +71,28 @@
 				<version>${openjfx-version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.choco-solver</groupId>
+				<artifactId>choco-solver</artifactId>
+				<version>${choco-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>Holders</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>LambdaRef</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>fr.lelouet.tools</groupId>
 				<artifactId>Synchronization</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.lelouet.tools</groupId>
+				<artifactId>WebFetchers</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -83,16 +103,6 @@
 			<dependency>
 				<groupId>fr.lelouet.tools.application</groupId>
 				<artifactId>YamlSettings</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.choco-solver</groupId>
-				<artifactId>choco-solver</artifactId>
-				<version>${choco-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.lelouet.tools</groupId>
-				<artifactId>LambdaRef</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
@@ -144,5 +154,6 @@
 		<module>LambdaRef</module>
 		<module>solver</module>
 		<module>Synchronization</module>
+		<module>WebFetchers</module>
 	</modules>
 </project>
