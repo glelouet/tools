@@ -1,4 +1,4 @@
-package fr.lelouet.tools.lambdaref.withstore.references;
+package fr.lelouet.tools.lambdaref.references;
 
 /**
  * reference that keeps strong link to the refered item.

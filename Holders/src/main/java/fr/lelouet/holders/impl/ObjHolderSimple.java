@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 
 import fr.lelouet.holders.interfaces.ObjHolder;
 import fr.lelouet.holders.interfaces.RWObjHolder;
-import fr.lelouet.tools.lambdaref.withstore.references.HardRef;
-import fr.lelouet.tools.lambdaref.withstore.references.IRef;
-import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
-import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
+import fr.lelouet.tools.lambdaref.references.HardRef;
+import fr.lelouet.tools.lambdaref.references.IRef;
+import fr.lelouet.tools.lambdaref.references.UsualRef;
+import fr.lelouet.tools.lambdaref.references.WeakRef;
 import lombok.Getter;
 import lombok.Setter;
 

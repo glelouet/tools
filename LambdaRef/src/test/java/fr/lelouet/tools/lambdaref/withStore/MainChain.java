@@ -1,4 +1,4 @@
-package fr.lelouet.tools.lambdaref.withstore;
+package fr.lelouet.tools.lambdaref.withStore;
 
 import fr.lelouet.tools.lambdaref.GCManage;
 

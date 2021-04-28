@@ -1,4 +1,4 @@
-package fr.lelouet.tools.lambdaref.withstore.references;
+package fr.lelouet.tools.lambdaref.references;
 
 /**
  * a ref on a non null item. Used for mixing of weak reference( {@link WeakRef}

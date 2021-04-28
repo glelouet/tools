@@ -1,4 +1,4 @@
-package fr.lelouet.tools.lambdaref.withstore.references;
+package fr.lelouet.tools.lambdaref.references;
 
 import java.lang.ref.WeakReference;
 

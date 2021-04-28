@@ -1,13 +1,13 @@
-package fr.lelouet.tools.lambdaref.withstore;
+package fr.lelouet.tools.lambdaref.withStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import fr.lelouet.tools.lambdaref.withstore.references.IRef;
-import fr.lelouet.tools.lambdaref.withstore.references.UsualRef;
-import fr.lelouet.tools.lambdaref.withstore.references.WeakRef;
+import fr.lelouet.tools.lambdaref.references.IRef;
+import fr.lelouet.tools.lambdaref.references.UsualRef;
+import fr.lelouet.tools.lambdaref.references.WeakRef;
 
 public class StringHolder implements WeakListener<String> {
 
