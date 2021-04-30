@@ -3,6 +3,7 @@ package fr.lelouet.tools.holders.cache;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -72,13 +73,13 @@ public class PeriodicFetch {
 	Hold extends ObjHolder<Resource>,
 	RWHold extends RWObjHolder<Resource>>
 	URIBasedCache<Resource, Hold> cache(
-			BiConsumer<Runnable, Long> executor,
+					BiConsumer<Callable<?>, Long> executor,
 			Supplier<RWHold> init,
 			Function<RWHold, Hold> convert,
 			Function<String, Resource> access,
 			long delay_MS
 			) {
-				return new <Resource, RWHold>URIBasedCache<Resource, Hold>(executor, init, convert,
+		return new <Resource, RWHold>URIBasedCache<Resource, Hold>(executor, init, convert,
 				(s, l) -> access.apply(s), o -> true, o -> o, o -> true, o -> delay_MS);
 	}
 

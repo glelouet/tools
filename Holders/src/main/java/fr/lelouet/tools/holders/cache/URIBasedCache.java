@@ -1,6 +1,7 @@
 package fr.lelouet.tools.holders.cache;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -51,7 +52,8 @@ extends WeakCache<String, Hold> {
 	 *          the actual RW holder type (which must be then converted in an RO
 	 *          holder type)
 	 * @param executor
-	 *          The object that will execute a Runnable after given delay in ms.
+	 *          The object that will execute a Callable<?> after given delay in
+	 *          ms.
 	 * @param init
 	 *          The constructor of the RW holder, eg ListHolderImpl::new
 	 * @param convert
@@ -78,7 +80,7 @@ extends WeakCache<String, Hold> {
 	 *          called when reschedule is true, indicates the delay in ms after
 	 *          which the executor should run the fecth method again.
 	 */
-	public <Intermediate, RWHold extends RWObjHolder<Resource>> URIBasedCache(BiConsumer<Runnable, Long> executor,
+	public <Intermediate, RWHold extends RWObjHolder<Resource>> URIBasedCache(BiConsumer<Callable<?>, Long> executor,
 			Supplier<RWHold> init, Function<RWHold, Hold> convert, BiFunction<String, Intermediate, Intermediate> fetch,
 			Predicate<Intermediate> newValue, Function<Intermediate, Resource> extractor, Predicate<Intermediate> reschedule,
 			ToLongFunction<Intermediate> nextSchedule) {
@@ -86,7 +88,7 @@ extends WeakCache<String, Hold> {
 	}
 
 	public static <Resource, Hold extends ObjHolder<Resource>, Intermediate, RWHold extends RWObjHolder<Resource>> URIBasedCache<Resource, Hold> sync(
-			BiConsumer<Runnable, Long> executor, Supplier<RWHold> init, Function<RWHold, Hold> convert,
+			BiConsumer<Callable<?>, Long> executor, Supplier<RWHold> init, Function<RWHold, Hold> convert,
 			BiFunction<String, Intermediate, Intermediate> fetch, Predicate<Intermediate> newValue,
 			Function<Intermediate, Resource> extractor, Predicate<Intermediate> reschedule,
 			ToLongFunction<Intermediate> nextSchedule) {
@@ -100,7 +102,7 @@ extends WeakCache<String, Hold> {
 	Hold extends ObjHolder<Resource>,
 	RWHold extends RWObjHolder<Resource>
 	> Function<String, Hold> generatorSync(
-			BiConsumer<Runnable, Long> executor,
+			BiConsumer<Callable<?>, Long> executor,
 			Supplier<RWHold> init,
 			Function<RWHold, Hold> convert,
 			BiFunction<String, Intermediate, Intermediate> fetch,
@@ -120,7 +122,7 @@ extends WeakCache<String, Hold> {
 	Hold extends ObjHolder<Resource>,
 	RWHold extends RWObjHolder<Resource>
 	> Hold generateSync(
-			BiConsumer<Runnable, Long> executor,
+			BiConsumer<Callable<?>, Long> executor,
 			Supplier<RWHold> init,
 			Function<RWHold, Hold> convert,
 			Function<Intermediate, Intermediate> fetch,
@@ -140,7 +142,7 @@ extends WeakCache<String, Hold> {
 	Hold extends ObjHolder<Resource>,
 	RWHold extends RWObjHolder<Resource>
 	> Hold generateSync(
-			BiConsumer<Runnable, Long> executor,
+			BiConsumer<Callable<?>, Long> executor,
 			RWHold store,
 			Hold cached,
 			Function<Intermediate, Intermediate> fetch,
@@ -149,7 +151,7 @@ extends WeakCache<String, Hold> {
 			Predicate<Intermediate> reschedule,
 			ToLongFunction<Intermediate> nextSchedule
 			) {
-		Runnable exec = new SelfSchedule<>(executor, store, fetch, newValue, extractor, reschedule, nextSchedule);
+				Callable<Void> exec = new SelfSchedule<>(executor, store, fetch, newValue, extractor, reschedule, nextSchedule);
 		executor.accept(exec, 0l);
 		return cached;
 	}
@@ -176,9 +178,9 @@ extends WeakCache<String, Hold> {
 	Resource,
 	Intermediate,
 	RWHold extends RWObjHolder<Resource>
-	>  implements Runnable{
+	> implements Callable<Void> {
 
-		private final BiConsumer<Runnable, Long> executor;
+		private final BiConsumer<Callable<?>, Long> executor;
 		private final WeakReference<RWHold> store;
 		private final Function<Intermediate, Intermediate> fetch;
 		private final Predicate<Intermediate> newValue;
@@ -188,7 +190,7 @@ extends WeakCache<String, Hold> {
 		private Intermediate last = null;
 
 		public SelfSchedule(
-				BiConsumer<Runnable, Long> executor,
+				BiConsumer<Callable<?>, Long> executor,
 				RWHold store,
 				Function<Intermediate, Intermediate> fetch,
 				Predicate<Intermediate> newValue,
@@ -205,10 +207,10 @@ extends WeakCache<String, Hold> {
 		}
 
 		@Override
-		public void run() {
+		public Void call() {
 			RWHold storeRef = store.get();
 			if (storeRef == null) {
-				return;
+				return null;
 			}
 			last = fetch.apply(last);
 			if (newValue.test(last)) {
@@ -217,6 +219,7 @@ extends WeakCache<String, Hold> {
 			if (reschedule.test(last)) {
 				executor.accept(this, nextSchedule.applyAsLong(last));
 			}
+			return null;
 		}
 
 	}

@@ -1,14 +1,19 @@
 package fr.lelouet.tools.webfetchers;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +24,7 @@ import fr.lelouet.tools.holders.cache.URIBasedCache;
 import fr.lelouet.tools.holders.interfaces.ObjHolder;
 import fr.lelouet.tools.holders.interfaces.RWObjHolder;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 /**
  * provide static utility methods to represent a Web resource cache. Each cached
@@ -31,6 +37,8 @@ import reactor.core.publisher.Mono;
  *
  */
 public class WebFetcher {
+
+	private static final Logger log = LoggerFactory.getLogger(WebFetcher.class);
 
 	private WebFetcher() {
 	};
@@ -61,10 +69,18 @@ public class WebFetcher {
 		RequestHeadersSpec<?> construct = wc.get().uri(uri);
 		if (old != null) {
 			if (old.getHeaders().getETag() != null) {
-				construct.header(HttpHeaders.ETAG, old.getHeaders().getETag());
+				construct.ifNoneMatch(old.getHeaders().getETag());
+			}
+			if (old.getHeaders().getLastModified() > -1) {
+				construct.header(HttpHeaders.IF_MODIFIED_SINCE, "" + old.getHeaders().getLastModified());
 			}
 		}
 		Mono<ResponseEntity<T>> ret = construct.retrieve().toEntity(retClass);
+		ret = ret.retryWhen(Retry.backoff(4, Duration.ofSeconds(1)));
+		ret = ret.onErrorResume(t -> {
+			log.error("for uri " + uri, t);
+			return Mono.justOrEmpty(null);
+		});
 		// ret = ret.doOnEach(s -> System.out.println("received " + s));
 		return ret;
 	}
@@ -75,7 +91,7 @@ public class WebFetcher {
 
 	/**
 	 * make a cache on a given type, for which each URI's resource is fetches
-	 * synchronously in the exectuors calls.
+	 * synchronously in the executors calls.
 	 *
 	 * @param <Resource>
 	 * @param <Hold>
@@ -93,7 +109,7 @@ public class WebFetcher {
 	Hold extends ObjHolder<Resource>,
 	RWHold extends RWObjHolder<Resource>
 	> URIBasedCache<Resource, Hold> cacheSync(
-			BiConsumer<Runnable, Long> executor,
+			BiConsumer<Callable<?>, Long> executor,
 			WebClient wc,
 			Class<Resource> retClass,
 			Supplier<RWHold> init,
@@ -102,7 +118,7 @@ public class WebFetcher {
 		BiFunction<String, ResponseEntity<Resource>, ResponseEntity<Resource>> fetcher = (uri, old) -> webFetchSync(wc, uri,
 				old, retClass);
 		return new <ResponseEntity<Resource>, RWHold>URIBasedCache<Resource, Hold>(executor, init, convert, fetcher,
-				WebFetcher::isReplace, WebFetcher::extract, WebFetcher::isReschedule, WebFetcher.rescheduler(defaultDelay));
+				WebFetcher::isReplace, WebFetcher::extract, WebFetcher.isRescheduler(defaultDelay), WebFetcher.rescheduler(defaultDelay));
 	}
 
 	public static <
@@ -120,15 +136,15 @@ public class WebFetcher {
 	}
 
 	protected static boolean isReplace(ResponseEntity<?> response) {
-		return response.getStatusCode() == HttpStatus.OK;
+		return response == null || response.getStatusCode() == HttpStatus.OK;
 	}
 
 	protected static <Resource> Resource extract(ResponseEntity<Resource> response) {
-		return response.getBody();
+		return response == null ? null : response.getBody();
 	}
 
-	protected static boolean isReschedule(ResponseEntity<?> response) {
-		return true;
+	protected static <Resource> Predicate<ResponseEntity<Resource>> isRescheduler(long default_delay_ms) {
+		return response -> (response.getHeaders().getExpires() > -1 || default_delay_ms > -1);
 	}
 
 	protected static <Resource> ToLongFunction<ResponseEntity<Resource>> rescheduler(long defaultdelay) {
@@ -151,6 +167,7 @@ public class WebFetcher {
 	// async
 	//
 
+	// TODO
 	protected static <T> Mono<ResponseEntity<T>> webFetchAsync(WebClient wc, String uri, Mono<ResponseEntity<T>> old,
 			Class<T> retClass) {
 		Mono<ResponseEntity<T>> ret = makeMono(wc, uri, old == null ? null : old.block(), retClass);
