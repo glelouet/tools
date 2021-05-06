@@ -1,5 +1,6 @@
 package fr.lelouet.tools.holders.interfaces;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,6 +162,19 @@ public interface ObjHolder<U> {
 	<V> ObjHolder<V> map(Function<U, V> mapper);
 
 	/**
+	 * cf {@link #map(Function)} ; the nullValue will be stored when the item is
+	 * null instead of calling the mapper function.
+	 *
+	 * @param <V>
+	 * @param mapper
+	 * @param nullValue
+	 * @return
+	 */
+	default <V> ObjHolder<V> map(Function<U, V> mapper, V nullValue) {
+		return map(u -> u == null ? nullValue : mapper.apply(u));
+	}
+
+	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
 	 * into an int.
 	 *
@@ -169,6 +183,10 @@ public interface ObjHolder<U> {
 	 * @return a new holder
 	 */
 	IntHolder mapInt(ToIntFunction<U> mapper);
+
+	default IntHolder mapInt(ToIntFunction<U> mapper, int nullValue) {
+		return mapInt(u -> u == null ? nullValue : mapper.applyAsInt(u));
+	}
 
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
@@ -180,6 +198,10 @@ public interface ObjHolder<U> {
 	 */
 	LongHolder mapLong(ToLongFunction<U> mapper);
 
+	default LongHolder mapLong(ToLongFunction<U> mapper, long nullValue) {
+		return mapLong(u -> u == null ? nullValue : mapper.applyAsLong(u));
+	}
+
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
 	 * into a double.
@@ -189,6 +211,10 @@ public interface ObjHolder<U> {
 	 * @return a new holder
 	 */
 	DoubleHolder mapDouble(ToDoubleFunction<U> mapper);
+
+	default DoubleHolder mapDouble(ToDoubleFunction<U> mapper, double nullValue) {
+		return mapDouble(u -> u == null ? nullValue : mapper.applyAsDouble(u));
+	}
 
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
@@ -200,6 +226,10 @@ public interface ObjHolder<U> {
 	 */
 	FloatHolder mapFloat(ToDoubleFunction<U> mapper);
 
+	default FloatHolder mapFloat(ToDoubleFunction<U> mapper, float nullValue) {
+		return mapFloat(u -> u == null ? nullValue : mapper.applyAsDouble(u));
+	}
+
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
 	 * into a map.
@@ -209,6 +239,10 @@ public interface ObjHolder<U> {
 	 * @return a new holder
 	 */
 	<K, V> MapHolder<K, V> mapMap(Function<U, Map<K, V>> mapper);
+
+	default <K, V> MapHolder<K, V> mapMapNulEmpty(Function<U, Map<K, V>> mapper) {
+		return mapMap(u -> u == null ? Collections.emptyMap() : mapper.apply(u));
+	}
 
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
@@ -220,6 +254,10 @@ public interface ObjHolder<U> {
 	 */
 	<K> ListHolder<K> mapList(Function<U, List<K>> mapper);
 
+	default <K> ListHolder<K> mapListNullEmpty(Function<U, List<K>> mapper) {
+		return mapList(u -> u == null ? Collections.emptyList() : mapper.apply(u));
+	}
+
 	/**
 	 * create a new object that mirrors the value hold in this, by transforming it
 	 * into a boolean.
@@ -229,6 +267,10 @@ public interface ObjHolder<U> {
 	 * @return a new holder
 	 */
 	BoolHolder test(Predicate<U> test);
+
+	default BoolHolder test(Predicate<U> test, boolean nullValue) {
+		return test(u -> u == null ? nullValue : test.test(u));
+	}
 
 	/**
 	 * create a new observable list that mirrors the value hold in this, after
@@ -244,6 +286,19 @@ public interface ObjHolder<U> {
 	<V> ListHolder<V> toList(Function<U, Iterable<V>> generator);
 
 	/**
+	 * cf {@link #toList(Function)} but a null item automatically translates into
+	 * empty list.
+	 *
+	 * @param <V>
+	 * @param generator
+	 * @return
+	 */
+	default <V> ListHolder<V> toListNullEmpty(Function<U, Iterable<V>> generator) {
+		return toList(u -> u == null ? Collections.emptyList() : generator.apply(u));
+	}
+
+
+	/**
 	 * create a new observable set that mirrors the value hold in this, after
 	 * transforming it into a set
 	 *
@@ -255,6 +310,18 @@ public interface ObjHolder<U> {
 	 * @return a new set holder.
 	 */
 	<V> SetHolder<V> toSet(Function<U, Iterable<V>> generator);
+
+	/**
+	 * cf {@link #toSet(Function)} but a null item automatically translates into
+	 * empty set
+	 *
+	 * @param <V>
+	 * @param generator
+	 * @return
+	 */
+	default <V> SetHolder<V> toSetNullEmpty(Function<U, Iterable<V>> generator) {
+		return toSet(u -> u == null ? Collections.emptyList() : generator.apply(u));
+	}
 
 	/**
 	 * unpack the internal value into an internal observable field.
@@ -272,6 +339,21 @@ public interface ObjHolder<U> {
 
 	public <V, R> ObjHolder<R> combine(ObjHolder<V> other, BiFunction<U, V, R> mapper);
 
+	/**
+	 * combine this with other holder of the same type.
+	 *
+	 * @param <V>
+	 *          combined result
+	 * @param reducer
+	 *          function that transforms each element into a V.
+	 * @param first
+	 *          first other item, not null
+	 * @param others
+	 *          optional other items
+	 * @return a new holder based on the observation of the list of (this, first,
+	 *         others) and the application of the reducer to that list once all
+	 *         items are received.
+	 */
 	@SuppressWarnings("unchecked")
 	public <V> ObjHolder<V> reduce(Function<List<? extends U>, V> reducer, ObjHolder<? extends U> first,
 			ObjHolder<? extends U>... others);
