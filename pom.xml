@@ -143,7 +143,7 @@
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<jackson-version>2.11.0</jackson-version>
+		<jackson-version>2.12.6.1</jackson-version>
 		<openjfx-version>15-ea+4</openjfx-version>
 		<choco-version>4.10.2</choco-version>
 	</properties>
