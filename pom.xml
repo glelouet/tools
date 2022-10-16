@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>tools</artifactId>
-	<version>1.7.1</version>
+	<version>1.7.2</version>
 	<packaging>pom</packaging>
 
 	<description>provide several tools, with classes or static methods</description>
@@ -143,8 +143,8 @@
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<jackson-version>2.12.6.1</jackson-version>
-		<openjfx-version>15-ea+4</openjfx-version>
+		<jackson-version>2.13.4</jackson-version>
+		<openjfx-version>19</openjfx-version>
 		<choco-version>4.10.2</choco-version>
 	</properties>
 	<modules>
