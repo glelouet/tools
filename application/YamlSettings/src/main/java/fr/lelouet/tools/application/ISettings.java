@@ -170,10 +170,10 @@ public interface ISettings {
 			}
 			// hook listeners on all public non transient field
 			for (Field f : ob.getClass().getFields()) {
-				// do not store the transient fields
-				if ((f.getModifiers() & Modifier.TRANSIENT) == 0) {
+				// do not store the transient fields nor static fields
+				if ((f.getModifiers() & Modifier.TRANSIENT) == 0 && (f.getModifiers() & Modifier.STATIC) == 0) {
 					try {
-						logger.trace(indent + "on field " + f.getName());
+						logger.trace(indent + "on field " + ob.getClass().getSimpleName() + "." + f.getName());
 						attachStoreListener(f.get(ob), store, indent + " ");
 					} catch (IllegalArgumentException | IllegalAccessException e) {
 						throw new UnsupportedOperationException("catch this", e);
