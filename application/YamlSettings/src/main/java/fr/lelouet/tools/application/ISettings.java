@@ -160,11 +160,11 @@ public interface ISettings {
 						logger.trace(indent + "on method " + m.getName());
 						attachStoreListener(m.invoke(ob), store, indent + " ");
 					} catch (IllegalAccessException e) {
-						throw new UnsupportedOperationException("catch this", e);
+						throw new UnsupportedOperationException(e);
 					} catch (IllegalArgumentException e) {
-						throw new UnsupportedOperationException("catch this", e);
+						throw new UnsupportedOperationException(e);
 					} catch (InvocationTargetException e) {
-						throw new UnsupportedOperationException("catch this", e);
+						throw new UnsupportedOperationException(e);
 					}
 				}
 			}

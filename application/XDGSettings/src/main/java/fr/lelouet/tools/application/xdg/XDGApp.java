@@ -20,13 +20,13 @@ public class XDGApp {
 	 * called for tests only
 	 *
 	 * @param appName
-	 * @param map
+	 * @param env
 	 *          the properties to override system.getenv . This allow to test
 	 *          reaction.
 	 */
-	public XDGApp(String appName, Map<String, String> map) {
+	public XDGApp(String appName, Map<String, String> env) {
 		this.appName = appName;
-		properties = map;
+		properties = env;
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class XDGApp {
 	 * @return an existing file, or null
 	 */
 	public File findDataFile(String... subPath) {
-		return findFile(XDG_DATA_HOME_KEY, getHome() + File.pathSeparator + XDG_DATA_HOME_DEFAULT, XDG_DATA_DIRS_KEY,
+		return findFile(XDG_DATA_HOME_KEY, getHome() + File.separator + XDG_DATA_HOME_DEFAULT, XDG_DATA_DIRS_KEY,
 				XDG_DATA_DIRS_DEFAULT, subPath);
 	}
 
@@ -71,7 +71,7 @@ public class XDGApp {
 	 *         file, it may as well return to an absurd path if badly configured.
 	 */
 	public File dataFile(String... subPaths) {
-		return makeFile(XDG_DATA_HOME_KEY, getHome() + File.pathSeparator + XDG_DATA_HOME_DEFAULT, subPaths);
+		return makeFile(XDG_DATA_HOME_KEY, getHome() + File.separator + XDG_DATA_HOME_DEFAULT, subPaths);
 	}
 
 	//
@@ -84,7 +84,7 @@ public class XDGApp {
 	protected static final String XDG_CONFIG_DIRS_DEFAULT = "/etc/xdg";
 
 	public File findConfigFile(String... subPath) {
-		return findFile(XDG_CONFIG_HOME_KEY, getHome() + File.pathSeparator + XDG_CONFIG_HOME_DEFAULT, XDG_CONFIG_DIRS_KEY,
+		return findFile(XDG_CONFIG_HOME_KEY, getHome() + File.separator + XDG_CONFIG_HOME_DEFAULT, XDG_CONFIG_DIRS_KEY,
 				XDG_CONFIG_DIRS_DEFAULT, subPath);
 	}
 
@@ -98,7 +98,7 @@ public class XDGApp {
 	 *         file, it may as well return to an absurd path if badly configured.
 	 */
 	public File configFile(String... subPaths) {
-		return makeFile(XDG_CONFIG_HOME_KEY, getHome() + File.pathSeparator + XDG_CONFIG_HOME_DEFAULT, subPaths);
+		return makeFile(XDG_CONFIG_HOME_KEY, getHome() + File.separator + XDG_CONFIG_HOME_DEFAULT, subPaths);
 	}
 
 	//
@@ -118,7 +118,7 @@ public class XDGApp {
 	 *         app.
 	 */
 	public File cacheFile(String... subPaths) {
-		return makeFile(XDG_CACHE_HOME_KEY, getHome() + File.pathSeparator + XDG_CACHE_HOME_DEFAULT, subPaths);
+		return makeFile(XDG_CACHE_HOME_KEY, getHome() + File.separator + XDG_CACHE_HOME_DEFAULT, subPaths);
 	}
 
 	//
@@ -164,6 +164,7 @@ public class XDGApp {
 	//
 
 	protected String getHome() {
+		System.err.println("HOME is " + properties.get("HOME"));
 		return properties.getOrDefault("HOME", "./");
 	}
 
@@ -242,8 +243,12 @@ public class XDGApp {
 		}
 		String endpathFinal = endpath;
 		String dirs = properties.getOrDefault(dir_key, dir_default);
-		return Stream.concat(Stream.of(properties.getOrDefault(home_key, home_default)),
-				dirs != null ? Stream.of(dirs.split(":")) : Stream.empty()).map(str -> str + File.separator + endpathFinal);
+		String homes = properties.getOrDefault(home_key, home_default);
+		return Stream.concat(
+				Stream.of(homes.split(":")),
+				Stream.of(dirs.split(":")))
+				.map(str -> str + File.separator + endpathFinal)
+		;
 	}
 
 }
