@@ -6,8 +6,8 @@ import java.util.stream.Stream;
 
 import org.testng.Assert;
 
-import com.helger.jcodemodel.JClassAlreadyExistsException;
 import com.helger.jcodemodel.JCodeModel;
+import com.helger.jcodemodel.JCodeModelException;
 import com.helger.jcodemodel.JDefinedClass;
 import com.helger.jcodemodel.JExpr;
 import com.helger.jcodemodel.JMethod;
@@ -17,7 +17,7 @@ public class TestJCodeModel {
 
 	// ignored because this is a bug in jcodemodel
 	// @org.testng.annotations.Test
-	public void testProduceObject() throws JClassAlreadyExistsException, ClassNotFoundException, IOException {
+	public void testProduceObject() throws ClassNotFoundException, IOException, JCodeModelException {
 
 		// create public boolean my.pckg.Object#equals(java.lang.Object other){
 		// return true; }
@@ -36,7 +36,7 @@ public class TestJCodeModel {
 
 	// ignored because this is a bug in jcodemodel
 	// @org.testng.annotations.Test
-	public void testBadPackage() throws JClassAlreadyExistsException, ClassNotFoundException {
+	public void testBadPackage() throws ClassNotFoundException, JCodeModelException {
 		JCodeModel cm = new JCodeModel();
 		JDefinedClass myclass = cm._class(JMod.PUBLIC, "mypck.MyClass");
 		JDefinedClass myObject = myclass._class(JMod.PUBLIC | JMod.STATIC, "Object");

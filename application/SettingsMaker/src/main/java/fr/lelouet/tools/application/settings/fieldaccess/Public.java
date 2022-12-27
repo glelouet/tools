@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import com.helger.jcodemodel.AbstractJClass;
 import com.helger.jcodemodel.AbstractJType;
 import com.helger.jcodemodel.JClassAlreadyExistsException;
+import com.helger.jcodemodel.JCodeModelException;
 import com.helger.jcodemodel.JDefinedClass;
 import com.helger.jcodemodel.JFieldVar;
 import com.helger.jcodemodel.JMod;
@@ -61,8 +62,8 @@ public class Public implements FieldAccess {
 				}
 			}
 			return ret;
-		} catch (JClassAlreadyExistsException | ClassNotFoundException e) {
-			throw new UnsupportedOperationException("catch this", e);
+		} catch (JCodeModelException | ClassNotFoundException e) {
+			throw new UnsupportedOperationException(e);
 		}
 	}
 
@@ -78,7 +79,11 @@ public class Public implements FieldAccess {
 
 	@Override
 	public JDefinedClass makeClass(JPackage pck, String className) throws JClassAlreadyExistsException {
-		return pck._class(JMod.PUBLIC, className);
+		try {
+			return pck._class(JMod.PUBLIC, className);
+		} catch (JCodeModelException e) {
+			throw new UnsupportedOperationException(e);
+		}
 	}
 
 	protected AccessDescription params = null;

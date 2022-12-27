@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.helger.jcodemodel.JPackage;
 import com.helger.jcodemodel.writer.AbstractCodeWriter;
 
 /**
@@ -30,17 +29,6 @@ public class MapCodeWriter extends AbstractCodeWriter {
 	private HashMap<String, ByteArrayOutputStream> binaries = new HashMap<>();
 
 	@Override
-	public OutputStream openBinary(JPackage pkg, String fileName) throws IOException {
-		String fullname = (pkg.name() + "." + fileName).replace(".java", "");
-		ByteArrayOutputStream ret = binaries.get(fullname);
-		if (ret == null) {
-			ret = new ByteArrayOutputStream();
-			binaries.put(fullname, ret);
-		}
-		return ret;
-	}
-
-	@Override
 	public void close() throws IOException {
 		// nothing.
 	}
@@ -51,6 +39,17 @@ public class MapCodeWriter extends AbstractCodeWriter {
 	 */
 	public Map<String, ByteArrayOutputStream> getBinaries() {
 		return Collections.unmodifiableMap(binaries);
+	}
+
+	@Override
+	public OutputStream openBinary(String sDirName, String sFilename) throws IOException {
+		String fullname = (sDirName + "." + sFilename).replace(".java", "");
+		ByteArrayOutputStream ret = binaries.get(fullname);
+		if (ret == null) {
+			ret = new ByteArrayOutputStream();
+			binaries.put(fullname, ret);
+		}
+		return ret;
 	}
 
 }
