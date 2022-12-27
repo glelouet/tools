@@ -164,7 +164,6 @@ public class XDGApp {
 	//
 
 	protected String getHome() {
-		System.err.println("HOME is " + properties.get("HOME"));
 		return properties.getOrDefault("HOME", "./");
 	}
 
