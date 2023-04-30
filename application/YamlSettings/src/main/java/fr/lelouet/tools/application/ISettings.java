@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
@@ -34,14 +35,14 @@ import javafx.collections.SetChangeListener;
  */
 public interface ISettings {
 
-	static final Logger logger = LoggerFactory.getLogger(ISettings.class);
+	Logger logger = LoggerFactory.getLogger(ISettings.class);
 
 	/**
 	 *
 	 * @return the name of the application, defaults to
 	 *         this.getClass().getcannonicalName()
 	 */
-	public default String getAppName() {
+	default String getAppName() {
 		return getClass().getCanonicalName();
 	}
 
@@ -49,22 +50,22 @@ public interface ISettings {
 	 *
 	 * @return the file used to store this
 	 */
-	public File getStoreFile();
+	File getStoreFile();
 
 	/**
 	 * store this settings locally, overriding previous stored settings
 	 */
-	public void store();
+	void store();
 
 	/**
 	 * request to store this after a delay. This aims at reducing disk overhead.
 	 */
-	public void storeLater();
+	void storeLater();
 
 	/**
 	 * delete the file used to store this.
 	 */
-	public default void erase() {
+	default void erase() {
 		File f = getStoreFile();
 		if (f.exists()) {
 			f.delete();
@@ -78,11 +79,11 @@ public interface ISettings {
 	 *
 	 * @param sets
 	 */
-	public static void attachStoreListeners(ISettings sets) {
+	static void attachStoreListeners(ISettings sets) {
 		attachStoreListener(sets, sets::storeLater, "");
 	}
 
-	public static void attachStoreListener(Object ob, Runnable store, String indent) {
+	static void attachStoreListener(Object ob, Runnable store, String indent) {
 		if (ob == null) {
 			logger.warn("null pointer in the setting");
 			return;
@@ -105,13 +106,13 @@ public interface ISettings {
 					// we added a new key
 					if (!change.wasRemoved()) {
 						Object key = change.getKey();
-						if (key != null && key instanceof Observable) {
+						if (key instanceof Observable) {
 							attachStoreListener(key, store, indent + " ");
 						}
 					}
 					if (change.wasAdded()) {
 						Object value = change.getValueAdded();
-						if (value != null && value instanceof Observable) {
+						if (value instanceof Observable) {
 							attachStoreListener(value, store, indent + " ");
 						}
 					}
@@ -126,7 +127,7 @@ public interface ISettings {
 				store.run();
 				if (change.wasAdded()) {
 					Object value = change.getElementAdded();
-					if (value != null && value instanceof Observable) {
+					if (value instanceof Observable) {
 						attachStoreListener(value, store, indent + " ");
 					}
 				}
@@ -140,7 +141,7 @@ public interface ISettings {
 				store.run();
 				if (change.wasAdded()) {
 					for (Object value : change.getAddedSubList()) {
-						if (value != null && value instanceof Observable) {
+						if (value instanceof Observable) {
 							attachStoreListener(value, store, indent + " ");
 						}
 					}
@@ -159,11 +160,7 @@ public interface ISettings {
 					try {
 						logger.trace(indent + "on method " + m.getName());
 						attachStoreListener(m.invoke(ob), store, indent + " ");
-					} catch (IllegalAccessException e) {
-						throw new UnsupportedOperationException(e);
-					} catch (IllegalArgumentException e) {
-						throw new UnsupportedOperationException(e);
-					} catch (InvocationTargetException e) {
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						throw new UnsupportedOperationException(e);
 					}
 				}
@@ -188,21 +185,21 @@ public interface ISettings {
 	 *
 	 * @return
 	 */
-	public default Yaml makeDumpYaml() {
+	default Yaml makeDumpYaml() {
 		Yaml ret = new Yaml(makeYamlConstructor(true), makeYamlRepresenter(true), makeYamlOptions(true));
 		return ret;
 	}
 
-	public default Yaml makeLoadYaml() {
+	default Yaml makeLoadYaml() {
 		Yaml ret = new Yaml(makeYamlConstructor(false), makeYamlRepresenter(false), makeYamlOptions(false));
 		return ret;
 	}
 
-	public default Constructor makeYamlConstructor(boolean dump) {
-		return new Constructor(getClass());
+	default Constructor makeYamlConstructor(boolean dump) {
+		return new Constructor(getClass(), new LoaderOptions());
 	}
 
-	public default Representer makeYamlRepresenter(boolean dump) {
+	default Representer makeYamlRepresenter(boolean dump) {
 		CleanRepresenter ret = new CleanRepresenter();
 		if (dump) {
 			// ret.getPropertyUtils().setBeanAccess(BeanAccess.FIELD);
@@ -212,7 +209,7 @@ public interface ISettings {
 		return ret;
 	}
 
-	public default DumperOptions makeYamlOptions(boolean dump) {
+	default DumperOptions makeYamlOptions(boolean dump) {
 		return YAMLTools.blockDumper();
 	}
 

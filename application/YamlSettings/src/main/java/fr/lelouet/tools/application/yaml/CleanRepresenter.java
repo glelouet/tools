@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.NodeTuple;
@@ -13,6 +14,14 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
 public class CleanRepresenter extends Representer {
+
+	public CleanRepresenter(DumperOptions options) {
+		super(options);
+	}
+
+	public CleanRepresenter() {
+		this(YAMLTools.blockDumper());
+	}
 
 	protected static Set<Object> ZEROS = new HashSet<>(
 			Arrays.asList(Integer.valueOf(0), Long.valueOf(0), Float.valueOf(0), Double.valueOf(0)));
