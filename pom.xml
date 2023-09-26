@@ -21,31 +21,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-yaml</artifactId>
-				<version>${jackson-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${jackson-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.swagger.parser.v3</groupId>
-				<artifactId>swagger-parser</artifactId>
-				<version>2.1.13</version>
-			</dependency>
-			<dependency>
-				<groupId>com.helger</groupId>
-				<artifactId>jcodemodel</artifactId>
-				<version>3.4.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
 				<version>3.29.2-GA</version>
@@ -54,31 +29,6 @@
 				<groupId>org.mdkt.compiler</groupId>
 				<artifactId>InMemoryJavaCompiler</artifactId>
 				<version>1.3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-graphics</artifactId>
-				<version>${openjfx-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-controls</artifactId>
-				<version>${openjfx-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-fxml</artifactId>
-				<version>${openjfx-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.choco-solver</groupId>
-				<artifactId>choco-solver</artifactId>
-				<version>${choco-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>1.18.26</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.lelouet.tools</groupId>
@@ -109,11 +59,6 @@
 				<groupId>fr.lelouet.tools.application</groupId>
 				<artifactId>YamlSettings</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.yaml</groupId>
-				<artifactId>snakeyaml</artifactId>
-				<version>2.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -153,9 +98,6 @@
 	</parent>
 	<name>Tools</name>
 	<properties>
-		<jackson-version>2.15.0</jackson-version>
-		<openjfx-version>21-ea+5</openjfx-version>
-		<choco-version>4.10.12</choco-version>
 	</properties>
 	<modules>
 		<module>application</module>
