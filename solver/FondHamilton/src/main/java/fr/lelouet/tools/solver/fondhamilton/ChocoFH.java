@@ -119,7 +119,7 @@ public class ChocoFH implements IFondHamilton {
 		return ret;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected <T> AbstractStrategy[] addSearch(Modeled<T> model) {
 		var choco = model.choco;
 
@@ -127,7 +127,6 @@ public class ChocoFH implements IFondHamilton {
 		StrategiesSequencer optimalSearch = new StrategiesSequencer(
 				// removeHighEdges,
 				nextRouteClosest, Search.defaultSearch(choco));
-		@SuppressWarnings("unchecked")
 		FindAndProve<Variable> fap = new FindAndProve<Variable>(choco.getVars(), (AbstractStrategy) nextRouteClosest,
 				optimalSearch);
 		return new AbstractStrategy[] { fap };
