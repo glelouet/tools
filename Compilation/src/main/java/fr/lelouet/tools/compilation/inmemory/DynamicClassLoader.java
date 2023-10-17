@@ -74,7 +74,7 @@ public class DynamicClassLoader extends ClassLoader {
 		try {
 			new JCMWriter(cm).build(codeWriter);
 		} catch (IOException e) {
-			throw new UnsupportedOperationException("catch this exception", e);
+			throw new UnsupportedOperationException(e);
 		}
 		ArrayList<JavaFileObject> compilationUnits = new ArrayList<>();
 		for (Entry<String, ByteArrayOutputStream> e : codeWriter.getBinaries().entrySet()) {
@@ -83,7 +83,7 @@ public class DynamicClassLoader extends ClassLoader {
 				CompiledCode cc = new CompiledCode(e.getKey());
 				cl.setCode(cc);
 			} catch (Exception e1) {
-				throw new UnsupportedOperationException("catch this exception", e1);
+				throw new UnsupportedOperationException("while iterating on binary " + e.getKey(), e1);
 			}
 		}
 		try {
@@ -94,7 +94,7 @@ public class DynamicClassLoader extends ClassLoader {
 					diagnostic -> System.err.println(" compile diagnostic " + diagnostic), null, null, compilationUnits);
 			task.call();
 		} catch (Exception e1) {
-			throw new UnsupportedOperationException("catch this exception", e1);
+			throw new UnsupportedOperationException(e1);
 		}
 		return cl;
 	}
