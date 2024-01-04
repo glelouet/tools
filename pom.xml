@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>tools</artifactId>
-	<version>1.7.9</version>
+	<version>1.7.10</version>
 	<packaging>pom</packaging>
 
 	<description>provide several tools, with classes or static methods</description>
@@ -26,11 +26,7 @@
 	<repositories>
 		<repository>
 			<id>github-glelouet-commonmaven</id>
-			<url>https://glelouet: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@maven.pkg.github.com/glelouet/common-maven</url>
-		</repository>
-		<repository>
-			<id>github-glelouet-tools</id>
-			<url>https://glelouet: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@maven.pkg.github.com/glelouet/tools</url>
+			<url>https://glelouet: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@maven.pkg.github.com/glelouet/common-maven</url>
 		</repository>
 	</repositories>
 	<distributionManagement>
