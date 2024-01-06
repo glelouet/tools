@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>fr.lelouet.tools</groupId>
 		<artifactId>application</artifactId>
-		<version>1.7.10</version>
+		<version>1.7.11</version>
 	</parent>
 	<artifactId>XDGSettings</artifactId>
 	<groupId>fr.lelouet.tools.application</groupId>
