@@ -23,18 +23,35 @@
 		<module>WebFetchers</module>
 	</modules>
 
+
 	<repositories>
 		<repository>
-			<id>github-glelouet-commonmaven</id>
-			<url>https://glelouet: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@maven.pkg.github.com/glelouet/common-maven</url>
+			<id>kimsufi-web-release</id>
+			<url>http://176.31.182.197/~maven/release/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>kimsufi-web-snapshot</id>
+			<url>http://176.31.182.197/~maven/snapshot/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
-			<id>github-glelouet-tools</id>
-			<name>Releases</name>
-			<url>https://maven.pkg.github.com/glelouet/tools</url>
+			<id>kimsufi-ftp-release</id>
+			<url>ftp://176.31.182.197/release</url>
 		</repository>
+		<snapshotRepository>
+			<id>kimsufi-ftp-snapshot</id>
+			<url>ftp://176.31.182.197/snapshot</url>
+		</snapshotRepository>
 	</distributionManagement>
 	
 	<developers>
