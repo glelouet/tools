@@ -3,13 +3,12 @@
 	<parent>
 		<groupId>fr.lelouet</groupId>
 		<artifactId>tools</artifactId>
-		<version>1.7.11</version>
+		<version>1.7.12</version>
 	</parent>
 	<groupId>fr.lelouet.tools</groupId>
 	<artifactId>Holders</artifactId>
 	<name>Holders</name>
 	<description>A library to contain an evolving representation of data, and the formal representation for dynamic transformations.</description>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -22,7 +21,8 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.lelouet.tools</groupId>
-			<artifactId>LambdaRef</artifactId>		</dependency>
+			<artifactId>LambdaRef</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -34,5 +34,4 @@
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
-
 </project>

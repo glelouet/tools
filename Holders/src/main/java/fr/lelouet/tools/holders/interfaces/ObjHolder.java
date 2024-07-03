@@ -383,7 +383,7 @@ public interface ObjHolder<U> {
 	public static <U, V, C extends RWObjHolder<V> & Consumer<Object>> C map(ObjHolder<U> from, Supplier<C> creator,
 			Function<U, V> mapper) {
 		C ret = creator.get();
-		from.follow((newValue) -> {
+		from.follow(newValue -> {
 			ret.set(mapper.apply(newValue));
 		}, ret);
 		return ret;
@@ -416,7 +416,7 @@ public interface ObjHolder<U> {
 			ObjHolder<AType> a, ObjHolder<BType> b, Supplier<HolderType> creator,
 			BiFunction<AType, BType, ResType> joiner) {
 		HolderType ret = creator.get();
-		boolean[] receipt = new boolean[] { false, false };
+		boolean[] receipt = { false, false };
 		Object[] received = new Object[2];
 		Runnable update = () -> {
 			if (receipt[0] && receipt[1]) {
@@ -466,7 +466,8 @@ public interface ObjHolder<U> {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <U, V, HolderType extends RWObjHolder<V> & Consumer<Object>> HolderType reduce(
-			List<? extends ObjHolder<? extends U>> vars, Supplier<HolderType> creator,
+			List<? extends ObjHolder<? extends U>> vars,
+					Supplier<HolderType> creator,
 					Function<List<? extends U>, V> reducer) {
 		HolderType ret = creator.get();
 		if (vars == null || vars.isEmpty()) {
@@ -478,7 +479,7 @@ public interface ObjHolder<U> {
 		for (int i = 0; i < holders.length; i++) {
 			int index = i;
 			ObjHolder<U> h = holders[i];
-			h.follow((newValue) -> {
+			h.follow(newValue -> {
 				synchronized (received) {
 					received.put(index, newValue);
 					if (received.size() == holders.length) {

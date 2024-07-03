@@ -9,90 +9,44 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /** lock watchdog to watch what acquires and releases synchronization items */
-public class LockWatchDog {
+@Slf4j
+public class LockWatchDog implements IWatchDog {
 
-	private static final Logger logger = LoggerFactory.getLogger(LockWatchDog.class);
+	private static boolean skip = System.getProperties().containsKey("nowatchdog");
 
-	public static class AquireData {
+	/** singleton */
+	public static final IWatchDog BARKER = createSingleton();
 
-		public HashMap<Thread, List<StackTraceElement>> takerTraces = new HashMap<>();
-		public ArrayList<Date> dates = new ArrayList<>();
+	protected static IWatchDog createSingleton() {
+		log.info("skip = " + skip);
+		return skip ? new NoWatchDog() : new LockWatchDog();
+	}
+
+	protected static class AquireData {
+
+		public final HashMap<Thread, List<StackTraceElement>> takerTraces = new HashMap<>();
+		public final ArrayList<Date> dates = new ArrayList<>();
 
 		public Thread holder;
 
 	}
 
-	/**
-	 * execute a callable in a try block, which starts by syncing on a lock. the
-	 * finally block releases the lock.
-	 *
-	 * @param <T>
-	 *          the type returned by the callable
-	 *
-	 * @param lock
-	 *          the lock to sync over
-	 * @param run
-	 *          the callable to execute
-	 */
-	public <T> T syncExecute(Object lock, Callable<T> run) {
-		try {
-			tak(lock);
-			synchronized (lock) {
-				hld(lock);
-				T ret = run.call();
-				rel(lock);
-				return ret;
-			}
-		} catch (Exception e) {
-			throw new UnsupportedOperationException("catch this", e);
-		} finally {
-			rel(lock);
-		}
-	}
+	protected final IdentityHashMap<Object, AquireData> acquireData = new IdentityHashMap<>();
 
-	/**
-	 * execute a runnable in a try block, which starts by syncing on a lock. the
-	 * finally block releases the lock.
-	 *
-	 *
-	 * @param lock
-	 *          the lock to sync over
-	 * @param run
-	 *          the runnable to execute
-	 */
-	public void syncExecute(Object lock, Runnable run) {
-		syncExecute(lock, () -> {
-			run.run();
-			return null;
-		});
-	}
-
-	private final IdentityHashMap<Object, AquireData> aquisitions = new IdentityHashMap<>();
-
-	/** for each thread, the set of locks it holds */
-	private final HashMap<Thread, IdentityHashMap<Object, Object>> threadsLocksHolding = new HashMap<>();
-
-	public static boolean skip = System.getProperties().contains("nowatchdog");
-	// true;
-
+	@Override
 	public void tak(Object lock) {
-		if (skip) {
-			return;
-		}
 		Thread th = Thread.currentThread();
-		synchronized (aquisitions) {
-			AquireData data = aquisitions.get(lock);
+		synchronized (acquireData) {
+			AquireData data = acquireData.get(lock);
 			if (data == null) {
 				data = new AquireData();
-				aquisitions.put(lock, data);
+				acquireData.put(lock, data);
 			} else {
 				Set<Object> idset = Collections.newSetFromMap(new IdentityHashMap<>());
 				idset.add(lock);
@@ -100,7 +54,7 @@ public class LockWatchDog {
 					searchdeadlocks(idset, th);
 				} catch (NullPointerException npe) {
 					debug(" while thread " + th + " is taking lock " + identityPrint(lock) + " on "
-							+ Thread.currentThread().getStackTrace()[2]);
+					    + Thread.currentThread().getStackTrace()[2]);
 					throw npe;
 				}
 			}
@@ -110,6 +64,65 @@ public class LockWatchDog {
 		}
 	}
 
+	/** for each thread, the set of locks it holds */
+	private final HashMap<Thread, IdentityHashMap<Object, Object>> threadsLocksHolding = new HashMap<>();
+
+	@Override
+	public void hld(Object lock) {
+		Thread th = Thread.currentThread();
+		synchronized (acquireData) {
+			for (Entry<Thread, IdentityHashMap<Object, Object>> e : threadsLocksHolding.entrySet()) {
+				if (e.getValue().containsKey(lock)) {
+					debug("lock " + identityPrint(lock) + " requested by " + th + " already hold by " + e.getKey());
+					AquireData acqa = acquireData.get(lock);
+					if (acqa != null) {
+						for (Entry<Thread, List<StackTraceElement>> e2 : acqa.takerTraces.entrySet()) {
+							debug(" " + e2.getKey());
+							debugtrace(e2.getValue());
+							debug("  currently");
+							debugtrace(Arrays.asList(e2.getKey().getStackTrace()));
+						}
+					}
+					throw new NullPointerException("double hold");
+				}
+			}
+			AquireData data = acquireData.get(lock);
+			if (data == null || data.takerTraces.size() == 0) {
+				throw new NullPointerException("holding lock not acquired " + identityPrint(lock));
+			}
+			data.holder = th;
+			IdentityHashMap<Object, Object> locks = threadsLocksHolding.get(th);
+			if (locks == null) {
+				locks = new IdentityHashMap<>();
+				threadsLocksHolding.put(th, locks);
+			}
+			locks.put(lock, null);
+		}
+
+	}
+
+	@Override
+	public void rel(Object lock) {
+		Thread th = Thread.currentThread();
+		synchronized (acquireData) {
+			AquireData data = acquireData.get(lock);
+			if (data == null) {
+				return;
+			}
+			data.takerTraces.remove(th);
+			data.holder = null;
+			if (data.takerTraces.size() == 0) {
+				data.dates.clear();
+			}
+			IdentityHashMap<Object, Object> threadSets = threadsLocksHolding.get(th);
+			if (threadSets != null) {
+				threadSets.remove(lock);
+				if (threadSets.isEmpty()) {
+					threadsLocksHolding.remove(th);
+				}
+			}
+		}
+	}
 	/**
 	 * search for a deadlock
 	 * <p>
@@ -127,15 +140,15 @@ public class LockWatchDog {
 	 * recursion allows for easy stack trace explanation.
 	 * </p>
 	 *
-	 * @param forbidden
-	 * @param currentthread
+	 * @param forbidden     objects we are trying to acquire
+	 * @param currentthread the current thread in which this is called
 	 */
 	private void searchdeadlocks(Set<Object> forbidden, Thread currentthread) {
 		IdentityHashMap<Object, Object> locksHoldByLoopThread = threadsLocksHolding.get(currentthread);
 		if (locksHoldByLoopThread != null) {
 			for (Object nextLock : locksHoldByLoopThread.keySet()) {
 				if (forbidden.contains(nextLock)) {
-					AquireData acq = aquisitions.get(nextLock);
+					AquireData acq = acquireData.get(nextLock);
 					debug("deadlock : " + currentthread + " holds " + identityPrint(nextLock));
 					for (Entry<Thread, List<StackTraceElement>> e : acq.takerTraces.entrySet()) {
 						debug("    " + e.getKey());
@@ -148,7 +161,7 @@ public class LockWatchDog {
 				} else {
 					forbidden.add(nextLock);
 					try {
-						AquireData ad = aquisitions.get(nextLock);
+						AquireData ad = acquireData.get(nextLock);
 						for (Thread nextthread : ad.takerTraces.keySet()) {
 							// we need to avoid checking which locks
 							if (nextthread != currentthread) {
@@ -156,7 +169,7 @@ public class LockWatchDog {
 							}
 						}
 					} catch (Throwable e) {
-						AquireData acq = aquisitions.get(nextLock);
+						AquireData acq = acquireData.get(nextLock);
 						debug(" " + currentthread + " holds " + identityPrint(nextLock) + " on " + acq.takerTraces.get(acq.holder));
 						for (Entry<Thread, List<StackTraceElement>> entry : acq.takerTraces.entrySet()) {
 							debug("    " + entry.getKey());
@@ -180,81 +193,20 @@ public class LockWatchDog {
 		return ob.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(ob));
 	}
 
-	private static void debugtrace(List<StackTraceElement> list) {
+	protected void debugtrace(List<StackTraceElement> list) {
 		for (StackTraceElement e : list) {
 			debug("  at " + e);
 		}
 	}
 
-	public void rel(Object lock) {
-		if (skip) {
-			return;
-		}
-		Thread th = Thread.currentThread();
-		synchronized (aquisitions) {
-			AquireData data = aquisitions.get(lock);
-			if (data == null) {
-				return;
-			}
-			data.takerTraces.remove(th);
-			data.holder = null;
-			if (data.takerTraces.size() == 0) {
-				data.dates.clear();
-			}
-			IdentityHashMap<Object, Object> threadSets = threadsLocksHolding.get(th);
-			if (threadSets != null) {
-				threadSets.remove(lock);
-				if (threadSets.isEmpty()) {
-					threadsLocksHolding.remove(th);
-				}
-			}
-		}
-	}
-
-	public void hld(Object lock) {
-		if (skip) {
-			return;
-		}
-		Thread th = Thread.currentThread();
-		synchronized (aquisitions) {
-			for (Entry<Thread, IdentityHashMap<Object, Object>> e : threadsLocksHolding.entrySet()) {
-				if (e.getValue().containsKey(lock)) {
-					debug("lock " + identityPrint(lock) + " requested by " + th + " already hold by " + e.getKey());
-					AquireData acqa = aquisitions.get(lock);
-					if (acqa != null) {
-						for (Entry<Thread, List<StackTraceElement>> e2 : acqa.takerTraces.entrySet()) {
-							debug(" " + e2.getKey());
-							debugtrace(e2.getValue());
-							debug("  currently");
-							debugtrace(Arrays.asList(e2.getKey().getStackTrace()));
-						}
-					}
-					throw new NullPointerException("double hold");
-				}
-			}
-			AquireData data = aquisitions.get(lock);
-			if (data == null || data.takerTraces.size() == 0) {
-				throw new NullPointerException("holding lock not acquired " + identityPrint(lock));
-			}
-			data.holder = th;
-			IdentityHashMap<Object, Object> locks = threadsLocksHolding.get(th);
-			if (locks == null) {
-				locks = new IdentityHashMap<>();
-				threadsLocksHolding.put(th, locks);
-			}
-			locks.put(lock, null);
-		}
-
-	}
-
-	public void logLocks() {
+	protected void logLocks() {
 		Date now = new Date();
-		synchronized (aquisitions) {
+		synchronized (acquireData) {
 			boolean nolock = true;
-			for (Entry<Object, AquireData> e : aquisitions.entrySet()) {
+			for (Entry<Object, AquireData> e : acquireData.entrySet()) {
 				AquireData val = e.getValue();
 				Date firstdate = val.dates.stream().sorted((d1, d2) -> (int) Math.signum(d2.getTime() - d1.getTime()))
-						.findFirst().orElse(null);
+				    .findFirst().orElse(null);
 				long acquired = firstdate == null ? 0 : (now.getTime() - firstdate.getTime()) / 1000;
 				if (val.takerTraces.size() == 0 || acquired < periodLogSeconds) {
 					continue;
@@ -270,78 +222,27 @@ public class LockWatchDog {
 				}
 			}
 			if (nolock) {
-				logger.trace("watchdog no lock");
+				log.trace("watchdog no lock");
 			}
 		}
 	}
 
-	private static void debug(String s) {
-		// System.err.println(s);
-		logger.debug(s);
+	protected void debug(String s) {
+		log.debug(s);
 	}
 
 	public static final long periodLogSeconds = 30;
 
-	private LockWatchDog() {
-		if (!skip) {
-			Executors.newScheduledThreadPool(1, r -> {
-				Thread t = Executors.defaultThreadFactory().newThread(r);
-				t.setDaemon(true);
-				return t;
-			}).scheduleAtFixedRate(this::log, periodLogSeconds, periodLogSeconds, TimeUnit.SECONDS);
-		}
+	protected LockWatchDog() {
+		Executors.newScheduledThreadPool(1, r -> {
+			Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			return t;
+		}).scheduleAtFixedRate(this::log, periodLogSeconds, periodLogSeconds, TimeUnit.SECONDS);
 	}
 
-	private HashMap<Thread, Date> monitorTime = new HashMap<>();
-
-	public void monitor(Runnable run) throws Exception {
-		Thread thread = Thread.currentThread();
-		Date date = new Date();
-		boolean added = false;
-		Exception ex = null;
-		try {
-			synchronized (monitorTime) {
-				added = monitorTime.putIfAbsent(thread, date) == null;
-			}
-			run.run();
-		} catch (Exception e) {
-			ex = e;
-		} finally {
-			if (added) {
-				synchronized (monitorTime) {
-					monitorTime.remove(thread);
-				}
-			}
-			if (ex != null) {
-				throw ex;
-			}
-		}
+	protected void log() {
+		logLocks();
 	}
-
-	public void logMonitors() {
-		if (monitorTime.size() > 0) {
-			synchronized (monitorTime) {
-				logger.debug("monitored threads : ");
-				Date now = new Date();
-				for (Entry<Thread, Date> e : monitorTime.entrySet()) {
-					Exception ex = new Exception("thread at position");
-					ex.setStackTrace(e.getKey().getStackTrace());
-					long secondsAcquired = (now.getTime() - e.getValue().getTime()) / 1000;
-					if (secondsAcquired > periodLogSeconds) {
-						logger.debug(" " + (now.getTime() - e.getValue().getTime()) / 1000 + "s ago", ex);
-					}
-				}
-			}
-		}
-	}
-
-	public void log() {
-		if (!skip) {
-			logLocks();
-		}
-		logMonitors();
-	}
-
-	public static final LockWatchDog BARKER = new LockWatchDog();
 
 }
