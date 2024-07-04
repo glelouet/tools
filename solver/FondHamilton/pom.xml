@@ -3,7 +3,7 @@
   <parent>
     <groupId>fr.lelouet.tools</groupId>
     <artifactId>solver</artifactId>
-    <version>1.7.13</version>
+    <version>1.7.14</version>
   </parent>
   <groupId>fr.lelouet.tools.solver</groupId>
   <artifactId>FondHamilton</artifactId>
