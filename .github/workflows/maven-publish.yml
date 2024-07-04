@@ -23,10 +23,15 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        server-id: github-glelouet-tools # Value of the distributionManagement/repository/id field of the pom.xml
+        server-id: kimsufi-ftp-release # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy -ntp -s $GITHUB_WORKSPACE/settings.xml -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        MAVEN_USERNAME: ${{ secrets.FTP_USER }}
+        MAVEN_PASSWORD: ${{ secrets.FTP_PASS }}
+        
