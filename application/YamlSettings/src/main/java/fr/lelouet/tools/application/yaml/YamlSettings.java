@@ -9,18 +9,19 @@ import java.lang.reflect.InvocationTargetException;
 
 import fr.lelouet.tools.application.ASettings;
 import fr.lelouet.tools.application.xdg.XDGApp;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 public class YamlSettings extends ASettings {
 
-	public XDGApp appStorage() {
-		return new XDGApp(getAppName());
-	}
+	@Getter(lazy = true)
+	@Accessors(fluent = true)
+	private final XDGApp appStorage = new XDGApp(getAppName());
 
 	/**
 	 * load stored settings if exists, or default settings
 	 *
 	 * @return
-	 * @throws FileNotFoundException
 	 */
 	public static <T extends YamlSettings> T load(Class<T> clazz) {
 		T inst = null;
@@ -28,7 +29,7 @@ public class YamlSettings extends ASettings {
 			inst = clazz.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e1) {
-			throw new UnsupportedOperationException("catch this", e1);
+			throw new UnsupportedOperationException(e1);
 		}
 		File f = inst.findStoreFile();
 		if (f != null && f.exists()) {
@@ -38,7 +39,7 @@ public class YamlSettings extends ASettings {
 					inst = newInst;
 				}
 			} catch (FileNotFoundException e) {
-				throw new UnsupportedOperationException("catch this", e);
+				throw new RuntimeException(e);
 			}
 		} else {
 			logger.warn("can't load settings for " + inst.getAppName() + " from " + f);
