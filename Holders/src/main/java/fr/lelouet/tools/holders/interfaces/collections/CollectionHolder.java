@@ -203,6 +203,10 @@ public interface CollectionHolder<U, C extends Collection<U>> extends ObjHolder<
 	 */
 	public ListHolder<U> sorted(Comparator<U> comparator);
 
+	public default <T extends Comparable<? super T>> ListHolder<U> sorted(Function<? super U, ? extends T> keyExtractor) {
+		return sorted(Comparator.comparing(keyExtractor));
+	}
+
 	/**
 	 * make the product List of this collection elements with another one. Example
 	 * if this is the collection of chars 'a', 'b' and the other collection
