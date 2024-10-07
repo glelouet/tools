@@ -20,7 +20,6 @@
 		<module>LambdaRef</module>
 		<module>solver</module>
 		<module>Synchronization</module>
-		<module>WebFetchers</module>
 	</modules>
 
 	<repositories>

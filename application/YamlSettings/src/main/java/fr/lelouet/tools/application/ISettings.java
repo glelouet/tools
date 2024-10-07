@@ -85,7 +85,7 @@ public interface ISettings {
 
 	static void attachStoreListener(Object ob, Runnable store, String indent) {
 		if (ob == null) {
-			logger.warn("null pointer in the setting");
+			logger.warn("null object to attach listener in the setting", new NullPointerException());
 			return;
 		}
 		if (ob.getClass().isPrimitive()

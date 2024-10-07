@@ -1,10 +1,12 @@
+
+
+**/.classpath
+**/.factorypath
 **/.project
 **/.settings/
-**/.classpath
-**/.classpath
-**/target/
 **/bin/
-**/test-output/
 **/pom.xml.releaseBackup
-**/release.properties
 **/pom.xml.versionsBackup
+**/release.properties
+**/target/
+**/test-output/
