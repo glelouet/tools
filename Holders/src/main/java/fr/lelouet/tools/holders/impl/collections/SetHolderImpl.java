@@ -3,6 +3,7 @@ package fr.lelouet.tools.holders.impl.collections;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -47,11 +48,6 @@ public class SetHolderImpl<U> extends ACollectionHolder<U, Set<U>> implements Se
 				Stream.concat(Stream.of(item1), items == null ? Stream.empty() : Stream.of(items)).collect(Collectors.toSet()));
 	}
 
-	@Override
-	public void setEmpty() {
-		super.set(Collections.emptySet());
-	}
-
 	/**
 	 * create a unmodifiable observable set of items
 	 *
@@ -64,6 +60,27 @@ public class SetHolderImpl<U> extends ACollectionHolder<U, Set<U>> implements Se
 	@SafeVarargs
 	public static <U> SetHolderImpl<U> of(U... items) {
 		return new SetHolderImpl<>(new HashSet<>(Arrays.asList(items)));
+	}
+
+	@SafeVarargs
+	public static <U> SetHolderImpl<U> union(SetHolder<U>... items) {
+		if (items == null || items.length == 0) {
+			return new SetHolderImpl<>();
+		}
+		return ObjHolder.reduce(List.of(items),
+		    () -> new SetHolderImpl<>(),
+		    sets -> {
+			    Set<U> union = new HashSet<>();
+			    for (Set<U> set : sets) {
+				    union.addAll(set);
+			    }
+			    return union;
+		    });
+	}
+
+	@Override
+	public void setEmpty() {
+		super.set(Collections.emptySet());
 	}
 
 	@Override
