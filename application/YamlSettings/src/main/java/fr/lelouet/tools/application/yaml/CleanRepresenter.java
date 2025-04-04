@@ -2,6 +2,7 @@ package fr.lelouet.tools.application.yaml;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class CleanRepresenter extends Representer {
 		protected Set<Property> createPropertySet(Class<? extends Object> type, BeanAccess bAccess) {
 			return getPropertiesMap(type, bAccess).values().stream().sequential()
 					.filter(prop -> prop.isReadable() && (isAllowReadOnlyProperties() || prop.isWritable()))
+					.sorted(Comparator.comparing(Property::getName))
 					.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
 	};
